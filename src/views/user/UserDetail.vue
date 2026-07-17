@@ -6,7 +6,7 @@
           <span class="card-title">个人信息</span>
           <span v-if="form.uId" class="header-meta">用户ID #{{ form.uId }}</span>
         </div>
-        <el-button type="text" icon="el-icon-back" @click="goBack">返回</el-button>
+        <el-button type="text" size="small" icon="el-icon-back" class="btn-back" @click="goBack">返回</el-button>
       </div>
 
       <div class="detail-body">
@@ -51,8 +51,8 @@
             />
           </el-form-item>
           <el-form-item class="form-actions">
-            <el-button type="primary" :loading="submitting" @click="handleSave">保存修改</el-button>
-            <el-button @click="handleReset">重置</el-button>
+            <el-button type="primary" class="btn-save" icon="el-icon-check" :loading="submitting" @click="handleSave">保存修改</el-button>
+            <el-button class="btn-reset" icon="el-icon-refresh-left" @click="handleReset">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -175,9 +175,16 @@ export default {
 <style scoped>
 .user-detail {
   min-height: 100vh;
-  padding: 20px;
+  padding: 24px;
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.user-detail > .el-card {
+  width: 100%;
+  max-width: 920px;
 }
 .card-header {
   display: flex;
@@ -188,6 +195,18 @@ export default {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+.btn-back {
+  color: #5a6478;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+.btn-back:hover,
+.btn-back:focus {
+  color: #667eea;
+  background: #f5f7ff;
 }
 .card-title {
   font-size: 17px;
@@ -220,7 +239,7 @@ export default {
 }
 .detail-body {
   display: flex;
-  gap: 36px;
+  gap: 40px;
   align-items: flex-start;
   padding: 8px 4px 0;
 }
@@ -228,24 +247,29 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 200px;
+  width: 220px;
   flex-shrink: 0;
+  padding: 28px 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #f8f9ff 0%, #f3f0fa 100%);
+  border: 1px solid #edeaf7;
 }
 .avatar {
-  width: 88px;
-  height: 88px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
-  font-size: 38px;
+  font-size: 40px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
+  border: 3px solid #fff;
 }
 .avatar-info {
-  margin-top: 14px;
+  margin-top: 16px;
   text-align: center;
 }
 .avatar-name {
@@ -254,20 +278,81 @@ export default {
   color: #1f2733;
 }
 .avatar-sub {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 13px;
   color: #8a93a4;
   font-family: 'Menlo', 'Consolas', monospace;
+  background: #fff;
+  padding: 2px 10px;
+  border-radius: 10px;
+  display: inline-block;
 }
 .profile-form {
   flex: 1;
   max-width: 560px;
+  padding-top: 4px;
+}
+@media (max-width: 768px) {
+  .user-detail {
+    padding: 12px;
+  }
+  .detail-body {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .avatar-box {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .profile-form {
+    max-width: none;
+    width: 100%;
+  }
 }
 .form-actions {
   margin-top: 8px;
 }
 .form-actions >>> .el-form-item__content {
   margin-left: 0 !important;
+  display: flex;
+  gap: 12px;
+}
+.form-actions >>> .el-button + .el-button {
+  margin-left: 0;
+}
+.form-actions >>> .btn-save {
+  min-width: 120px;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+  transition: all 0.25s ease;
+}
+.form-actions >>> .btn-save:hover,
+.form-actions >>> .btn-save:focus {
+  background: linear-gradient(135deg, #7286f0 0%, #855bb3 100%);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.45);
+  transform: translateY(-1px);
+}
+.form-actions >>> .btn-save:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+}
+.form-actions >>> .btn-reset {
+  min-width: 96px;
+  border-radius: 8px;
+  padding: 10px 22px;
+  color: #5a6478;
+  border-color: #dcdfe6;
+  transition: all 0.25s ease;
+}
+.form-actions >>> .btn-reset:hover,
+.form-actions >>> .btn-reset:focus {
+  color: #667eea;
+  border-color: #b3c0f5;
+  background: #f5f7ff;
 }
 </style>
 
@@ -284,7 +369,10 @@ export default {
   border-bottom: 1px solid #eef0f4;
 }
 .user-detail .el-card__body {
-  padding: 24px;
+  padding: 28px 32px;
+}
+.user-detail .profile-form .el-form-item {
+  margin-bottom: 22px;
 }
 .user-detail .profile-form .el-form-item__label {
   color: #4a5568;
@@ -292,9 +380,25 @@ export default {
 }
 .user-detail .profile-form .el-input__inner {
   border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.user-detail .profile-form .el-input__inner:hover {
+  border-color: #b3c0f5;
 }
 .user-detail .profile-form .el-input__inner:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+.user-detail .profile-form .el-input.is-disabled .el-input__inner {
+  background: #f7f8fc;
+  border-color: #e8ebf2;
+  color: #8a93a4;
+}
+.user-detail .profile-form .el-radio__input.is-checked .el-radio__inner {
+  border-color: #667eea;
+  background: #667eea;
+}
+.user-detail .profile-form .el-radio__input.is-checked + .el-radio__label {
+  color: #667eea;
 }
 </style>
