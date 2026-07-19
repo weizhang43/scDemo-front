@@ -85,8 +85,10 @@
         <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-            <el-button type="text" icon="el-icon-edit" @click="openStatusDialog(scope.row)">更新状态</el-button>
-            <el-button type="text" icon="el-icon-delete" class="btn-danger" @click="handleDelete(scope.row)">删除</el-button>
+<!--            <el-button type="text" icon="el-icon-edit" @click="openStatusDialog(scope.row)">更新状态</el-button>-->
+<!--            <el-button type="text" icon="el-icon-delete"  @click="handleDelete(scope.row)">删除</el-button>-->
+            <el-button :disabled="scope.row.orderStatus != 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
+            <el-button :disabled="scope.row.orderStatus != 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,0)">取消订单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -226,6 +228,21 @@ export default {
     },
     indexMethod(index) {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
+    },
+    updateOrderStatus(id,status){
+      let msg = status===0 ? "是否确认取消订单？":"是否确认完成订单？";
+      this.$confirm(msg, '操作确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+          .then(() =>
+              updateOrderStatus(id, status).then(() => {
+                this.$message.success('操作成功');
+                this.fetchData();
+              })
+              .catch(() => {}))
+          .catch(() => {});
     },
     goDetail(id) {
       this.$router.push(`/order/${id}`);
@@ -427,6 +444,12 @@ export default {
 }
 .btn-danger:hover {
   color: #d9363e !important;
+}
+.btn-danger.is-disabled,
+.btn-danger.is-disabled:hover,
+.btn-danger.is-disabled:focus {
+  color: #c0c4cc !important;
+  cursor: not-allowed;
 }
 </style>
 

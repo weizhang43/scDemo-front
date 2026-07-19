@@ -103,3 +103,15 @@ export function downloadExportFile(taskId) {
     responseType: 'blob'
   });
 }
+
+export function uploadProductImage(file) {
+  const form = new FormData();
+  form.append('file', file);
+  return request({
+    url: '/product/image/upload',
+    method: 'post',
+    data: form,
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 30000
+  });
+}

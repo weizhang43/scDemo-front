@@ -14,8 +14,17 @@
 
       <div v-if="product" class="detail-body">
         <div class="detail-hero">
-          <div class="hero-icon">
-            <i class="el-icon-goods"></i>
+          <div class="hero-image-wrap">
+            <el-image
+              v-if="product.imageUrl"
+              :src="product.imageUrl"
+              :preview-src-list="[product.imageUrl]"
+              fit="cover"
+              class="hero-image"
+            />
+            <div v-else class="hero-icon">
+              <i class="el-icon-goods"></i>
+            </div>
           </div>
           <div class="hero-info">
             <div class="hero-name">{{ product.pName }}</div>
@@ -208,6 +217,17 @@ export default {
 .hero-icon i {
   font-size: 28px;
   color: #fff;
+}
+.hero-image-wrap {
+  flex-shrink: 0;
+}
+.hero-image {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  border: 1px solid #e6e9f5;
+  object-fit: cover;
+  display: block;
 }
 .hero-info {
   flex: 1;

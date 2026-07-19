@@ -74,6 +74,18 @@
         <el-table-column type="selection" width="46" align="center" :selectable="canSelect" />
         <el-table-column type="index" label="序号" width="60" align="center"
                          :index="indexMethod" />
+        <el-table-column label="图片" width="80" align="center">
+          <template slot-scope="scope">
+            <el-image
+              v-if="scope.row.imageUrl"
+              :src="scope.row.imageUrl"
+              :preview-src-list="[scope.row.imageUrl]"
+              fit="cover"
+              class="product-thumb"
+            />
+            <i v-else class="el-icon-picture-outline no-image" />
+          </template>
+        </el-table-column>
         <el-table-column prop="pName" label="商品名称" min-width="160" align="center">
           <template slot-scope="scope">
             <span class="cell-strong" v-html="highlight(scope.row.pName, activeKeyword.pName)" />
@@ -182,6 +194,22 @@
         <el-form-item label="厂家名称" prop="manufacturer">
           <el-input v-model="addForm.manufacturer" placeholder="请输入厂家名称" />
         </el-form-item>
+        <el-form-item label="商品图片">
+          <el-upload
+            class="image-uploader"
+            action="/product/image/upload"
+            :show-file-list="false"
+            :headers="uploadHeaders"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            :before-upload="beforeImageUpload"
+            :on-success="handleAddImageSuccess"
+            :on-error="handleImageError"
+          >
+            <img v-if="addForm.imageUrl" :src="addForm.imageUrl" class="uploaded-image" alt="商品图片">
+            <i v-else class="el-icon-plus image-uploader-icon" />
+          </el-upload>
+          <el-button v-if="addForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn" @click="addForm.imageUrl = ''">移除</el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer">
         <el-button @click="addVisible = false">取消</el-button>
@@ -266,6 +294,22 @@
         <el-form-item label="厂家名称" prop="manufacturer">
           <el-input v-model="editForm.manufacturer" placeholder="请输入厂家名称" />
         </el-form-item>
+        <el-form-item label="商品图片">
+          <el-upload
+            class="image-uploader"
+            action="/product/image/upload"
+            :show-file-list="false"
+            :headers="uploadHeaders"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            :before-upload="beforeImageUpload"
+            :on-success="handleEditImageSuccess"
+            :on-error="handleImageError"
+          >
+            <img v-if="editForm.imageUrl" :src="editForm.imageUrl" class="uploaded-image" alt="商品图片">
+            <i v-else class="el-icon-plus image-uploader-icon" />
+          </el-upload>
+          <el-button v-if="editForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn" @click="editForm.imageUrl = ''">移除</el-button>
+        </el-form-item>
       </el-form>
       <div slot="footer">
         <el-button @click="editVisible = false">取消</el-button>
@@ -302,6 +346,7 @@ import { pageQuery, addProduct, updateProduct, likeProduct, exportProductAsync, 
 import { placeOrderV2, seckill, getSeckillResult } from '../../api/order';
 import { getAddressList } from '../../api/address';
 import { downloadBlob } from '../../utils/export';
+import { getToken } from '../../utils/auth';
 
 export default {
   name: 'ProductList',
@@ -328,6 +373,7 @@ export default {
       addVisible: false,
       submitting: false,
       addForm: this.defaultAddForm(),
+      uploadingImage: false,
       orderVisible: false,
       orderSubmitting: false,
       orderItems: [],
@@ -343,7 +389,8 @@ export default {
         productionDate: '',
         shelfLife: 365,
         origin: '北京',
-        manufacturer: ''
+        manufacturer: '',
+        imageUrl: ''
       },
       restockVisible: false,
       restockSubmitting: false,
@@ -385,6 +432,10 @@ export default {
     },
     totalAmount() {
       return this.orderItems.reduce((sum, it) => sum + Number(this.subtotal(it) || 0), 0).toFixed(2);
+    },
+    uploadHeaders() {
+      const token = getToken();
+      return token ? { Authorization: 'Bearer ' + token } : {};
     }
   },
   created() {
@@ -404,7 +455,8 @@ export default {
         productionDate: '',
         shelfLife: 365,
         origin: '北京',
-        manufacturer: ''
+        manufacturer: '',
+        imageUrl: ''
       };
     },
     fetchData() {
@@ -621,6 +673,41 @@ export default {
         this.$refs.addForm && this.$refs.addForm.clearValidate();
       });
     },
+    beforeImageUpload(file) {
+      const ok = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type);
+      if (!ok) {
+        this.$message.error('仅支持 png/jpg/jpeg/gif/webp 格式');
+        return false;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        this.$message.error('图片大小不能超过 5MB');
+        return false;
+      }
+      this.uploadingImage = true;
+      return true;
+    },
+    handleAddImageSuccess(res) {
+      this.uploadingImage = false;
+      if (res && res.code === 200 && res.daoResult) {
+        this.addForm.imageUrl = res.daoResult;
+        this.$message.success('图片上传成功');
+      } else {
+        this.$message.error((res && res.msg) || '图片上传失败');
+      }
+    },
+    handleEditImageSuccess(res) {
+      this.uploadingImage = false;
+      if (res && res.code === 200 && res.daoResult) {
+        this.editForm.imageUrl = res.daoResult;
+        this.$message.success('图片上传成功');
+      } else {
+        this.$message.error((res && res.msg) || '图片上传失败');
+      }
+    },
+    handleImageError() {
+      this.uploadingImage = false;
+      this.$message.error('图片上传失败');
+    },
     submitAdd() {
       this.$refs.addForm.validate(valid => {
         if (!valid) return;
@@ -740,7 +827,8 @@ export default {
         productionDate: this.formatDate(row.productionDate),
         shelfLife: row.shelfLife || 365,
         origin: row.origin || '北京',
-        manufacturer: row.manufacturer || ''
+        manufacturer: row.manufacturer || '',
+        imageUrl: row.imageUrl || ''
       };
       this.editVisible = true;
       this.$nextTick(() => {
@@ -784,7 +872,8 @@ export default {
           productionDate: this.formatDate(this.restockRow.productionDate),
           shelfLife: this.restockRow.shelfLife,
           origin: this.restockRow.origin,
-          manufacturer: this.restockRow.manufacturer
+          manufacturer: this.restockRow.manufacturer,
+          imageUrl: this.restockRow.imageUrl || ''
         };
         this.restockSubmitting = true;
         updateProduct(this.restockRow.pId, payload)
@@ -1091,6 +1180,48 @@ export default {
 }
 .order-total .price-text {
   font-size: 16px;
+}
+.product-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid #e8ecf5;
+  object-fit: cover;
+}
+.no-image {
+  font-size: 28px;
+  color: #c0c4cc;
+}
+.image-uploader >>> .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafbfd;
+  transition: border-color 0.2s ease;
+}
+.image-uploader >>> .el-upload:hover {
+  border-color: #667eea;
+}
+.image-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+}
+.uploaded-image {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  display: block;
+}
+.clear-image-btn {
+  margin-top: 4px;
+  color: #f56c6c;
 }
 </style>
 

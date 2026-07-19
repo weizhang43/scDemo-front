@@ -77,6 +77,30 @@ const routes = [
         meta: { requiresAuth: true }
       }
     ]
+  },
+  {
+    path: '/system',
+    component: () => import('../layout/SystemLayout.vue'),
+    children: [
+      {
+        path: 'users',
+        name: 'SystemUserList',
+        component: () => import('../views/user/UserList.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'roles',
+        name: 'RoleList',
+        component: () => import('../views/system/RoleList.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'modules',
+        name: 'ModuleList',
+        component: () => import('../views/system/ModuleList.vue'),
+        meta: { requiresAuth: true }
+      }
+    ]
   }
 ];
 

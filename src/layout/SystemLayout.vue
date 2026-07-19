@@ -34,15 +34,29 @@
         </div>
       </div>
     </el-header>
-    <el-main class="layout-main">
-      <router-view />
-    </el-main>
+    <el-container class="body-container">
+      <el-aside width="200px" class="side-menu">
+        <div class="side-title">系统管理</div>
+        <el-menu
+          :default-active="activeMenu"
+          router
+          class="side-nav"
+        >
+          <el-menu-item index="/system/users"><i class="el-icon-user" />用户管理</el-menu-item>
+          <el-menu-item index="/system/roles"><i class="el-icon-s-check" />角色管理</el-menu-item>
+          <el-menu-item index="/system/modules"><i class="el-icon-set-up" />权限管理</el-menu-item>
+        </el-menu>
+      </el-aside>
+      <el-main class="layout-main">
+        <router-view />
+      </el-main>
+    </el-container>
   </el-container>
 </template>
 
 <script>
 export default {
-  name: 'Layout',
+  name: 'SystemLayout',
   computed: {
     username() {
       const user = this.$store.state.userInfo || {};
@@ -216,8 +230,47 @@ export default {
   margin-left: 4px;
   font-size: 12px;
 }
+
+/* 二级左侧菜单 */
+.body-container {
+  height: calc(100vh - 60px);
+}
+.side-menu {
+  background: #fff;
+  border-right: 1px solid #e4e7ed;
+  box-shadow: 1px 0 6px rgba(0, 0, 0, 0.04);
+}
+.side-title {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2a5298;
+  border-bottom: 1px solid #eef0f5;
+  letter-spacing: 1px;
+}
+.side-nav {
+  border-right: none;
+}
+.side-nav >>> .el-menu-item {
+  height: 48px;
+  line-height: 48px;
+  border-left: 3px solid transparent;
+}
+.side-nav >>> .el-menu-item:hover {
+  background-color: #f3f6fb;
+  color: #2a5298;
+}
+.side-nav >>> .el-menu-item.is-active {
+  background-color: #eaf1ff;
+  color: #2a5298;
+  font-weight: 600;
+  border-left-color: #2a5298;
+}
 .layout-main {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   padding: 20px;
+  overflow: auto;
 }
 </style>

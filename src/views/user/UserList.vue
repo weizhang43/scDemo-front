@@ -78,10 +78,11 @@
             <span class="cell-text">{{ scope.row.birthday || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="220" align="center" fixed="right">
+        <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.uId)">详情</el-button>
             <el-button type="text" icon="el-icon-location-outline" @click="goAddress(scope.row.uId)">收货地址</el-button>
+            <el-button type="text" icon="el-icon-s-check" @click="openRole(scope.row)">关联角色</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -99,11 +100,44 @@
         />
       </div>
     </el-card>
+
+    <!-- 关联角色弹窗 -->
+    <el-dialog
+      :title="`关联角色 - ${currentRow ? (currentRow.realName || currentRow.uName || '') : ''}`"
+      :visible.sync="roleDialogVisible"
+      width="480px"
+      :close-on-click-modal="false"
+    >
+      <div v-loading="roleLoading">
+        <div v-if="roleOptions.length === 0 && !roleLoading" style="color:#999;text-align:center;padding:20px 0;">
+          暂无可用角色
+        </div>
+        <el-checkbox-group v-model="checkedRoleIds" class="role-checkbox-group">
+          <el-checkbox
+            v-for="r in roleOptions"
+            :key="r.id"
+            :label="r.id"
+            :disabled="r.status !== 1"
+            class="role-checkbox-item"
+          >
+            <span class="role-name">{{ r.name }}</span>
+            <span class="role-code">[{{ r.code }}]</span>
+            <span v-if="r.status !== 1" class="role-disabled">禁用</span>
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
+      <div slot="footer">
+        <el-button @click="roleDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="roleSaving" @click="handleSaveRoles">保存</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getUserList, exportUser } from '../../api/user';
+import { getRoleList } from '../../api/role';
+import { getUserRoleIds, assignUserRoles } from '../../api/userRole';
 import { downloadBlob } from '../../utils/export';
 
 const GENDER_MAP = {
@@ -120,7 +154,14 @@ export default {
       tableData: [],
       loading: false,
       exporting: false,
-      pagination: { pageNo: 1, pageSize: 10, total: 0 }
+      pagination: { pageNo: 1, pageSize: 10, total: 0 },
+      // 关联角色
+      roleDialogVisible: false,
+      roleLoading: false,
+      roleSaving: false,
+      roleOptions: [],
+      checkedRoleIds: [],
+      currentRow: null
     };
   },
   created() {
@@ -182,6 +223,30 @@ export default {
     },
     goAddress(uId) {
       this.$router.push(`/user/${uId}/address`);
+    },
+    openRole(row) {
+      this.currentRow = row;
+      this.checkedRoleIds = [];
+      this.roleDialogVisible = true;
+      this.roleLoading = true;
+      Promise.all([
+        this.roleOptions.length ? Promise.resolve({ dataList: this.roleOptions }) : getRoleList(),
+        getUserRoleIds(row.uId)
+      ])
+        .then(([roleRes, idsRes]) => {
+          this.roleOptions = roleRes.dataList || [];
+          this.checkedRoleIds = idsRes.daoResult || [];
+        })
+        .finally(() => { this.roleLoading = false; });
+    },
+    handleSaveRoles() {
+      this.roleSaving = true;
+      assignUserRoles(this.currentRow.uId, this.checkedRoleIds)
+        .then(() => {
+          this.$message.success('关联成功');
+          this.roleDialogVisible = false;
+        })
+        .finally(() => { this.roleSaving = false; });
     },
     handleExport() {
       const params = {
