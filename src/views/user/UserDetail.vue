@@ -41,6 +41,9 @@
           <el-form-item label="手机号" prop="phone">
             <el-input v-model="form.phone" placeholder="请输入手机号" maxlength="11" clearable />
           </el-form-item>
+          <el-form-item label="邮箱">
+            <el-input :value="form.email" placeholder="暂无邮箱" disabled />
+          </el-form-item>
           <el-form-item label="生日" prop="birthday">
             <el-date-picker
               v-model="form.birthday"
@@ -87,6 +90,7 @@ export default {
         realName: '',
         gender: 0,
         phone: '',
+        email: '',
         birthday: ''
       },
       rules: {
@@ -125,6 +129,7 @@ export default {
             realName: u.realName || '',
             gender: typeof u.gender === 'number' ? u.gender : 0,
             phone: u.phone || '',
+            email: u.email || '',
             birthday: u.birthday || ''
           };
           this.original = { ...this.form };
@@ -150,6 +155,7 @@ export default {
               realName: u.realName || '',
               gender: typeof u.gender === 'number' ? u.gender : 0,
               phone: u.phone || '',
+              email: u.email || this.form.email,
               birthday: u.birthday || ''
             };
             this.original = { ...this.form };

@@ -99,6 +99,12 @@ const routes = [
         name: 'ModuleList',
         component: () => import('../views/system/ModuleList.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'logs',
+        name: 'LogList',
+        component: () => import('../views/system/LogList.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   }

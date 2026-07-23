@@ -73,6 +73,12 @@
             <span class="cell-text">{{ scope.row.phone || '-' }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="email" label="邮箱" min-width="180" align="center">
+          <template slot-scope="scope">
+            <i class="el-icon-message cell-icon"></i>
+            <span class="cell-text">{{ scope.row.email || '-' }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="birthday" label="生日" width="130" align="center">
           <template slot-scope="scope">
             <span class="cell-text">{{ scope.row.birthday || '-' }}</span>

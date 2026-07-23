@@ -45,6 +45,7 @@
           <el-menu-item index="/system/users"><i class="el-icon-user" />用户管理</el-menu-item>
           <el-menu-item index="/system/roles"><i class="el-icon-s-check" />角色管理</el-menu-item>
           <el-menu-item index="/system/modules"><i class="el-icon-set-up" />权限管理</el-menu-item>
+          <el-menu-item index="/system/logs"><i class="el-icon-document" />日志管理</el-menu-item>
         </el-menu>
       </el-aside>
       <el-main class="layout-main">
