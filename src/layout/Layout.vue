@@ -12,6 +12,7 @@
           router
           class="nav-menu"
         >
+          <el-menu-item index="/home"><i class="el-icon-s-home" />首页</el-menu-item>
           <el-menu-item index="/products"><i class="el-icon-goods" />商品管理</el-menu-item>
           <el-menu-item index="/orders"><i class="el-icon-s-order" />订单管理</el-menu-item>
           <el-menu-item index="/system/users"><i class="el-icon-s-tools" />系统管理</el-menu-item>
@@ -59,7 +60,7 @@ export default {
   },
   methods: {
     goHome() {
-      this.$router.push('/products').catch(() => {});
+      this.$router.push('/home').catch(() => {});
     },
     goProfile() {
       this.$router.push('/profile').catch(() => {});

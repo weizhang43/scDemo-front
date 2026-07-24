@@ -35,6 +35,12 @@ const routes = [
     component: () => import('../layout/Layout.vue'),
     children: [
       {
+        path: 'home',
+        name: 'Home',
+        component: () => import('../views/home/Home.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
         path: 'products',
         name: 'ProductList',
         component: () => import('../views/product/ProductList.vue'),
@@ -105,6 +111,12 @@ const routes = [
         name: 'LogList',
         component: () => import('../views/system/LogList.vue'),
         meta: { requiresAuth: true }
+      },
+      {
+        path: 'notices',
+        name: 'NoticeList',
+        component: () => import('../views/system/NoticeList.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   }
@@ -120,7 +132,7 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !hasToken) {
     next('/login');
   } else if ((to.path === '/login' || to.path === '/register') && hasToken) {
-    next('/products');
+    next('/home');
   } else {
     next();
   }

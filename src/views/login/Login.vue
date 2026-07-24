@@ -88,7 +88,7 @@ export default {
             this.$store.commit('SET_TOKEN', token);
             this.$store.commit('SET_USER', user);
             this.$message.success('登录成功');
-            this.$router.push('/products');
+            this.$router.push('/home');
           })
           .catch(() => {})
           .finally(() => {

@@ -1232,12 +1232,16 @@ export default {
   border: none;
   border-radius: 14px;
   box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
 }
 .product-list .el-card__header {
   padding: 18px 24px;
   background: #fff;
   border-bottom: 1px solid #eef0f4;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 .product-list .el-card__body {
   padding: 20px 24px 12px;
