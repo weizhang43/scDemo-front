@@ -35,6 +35,15 @@
         </el-form-item>
       </el-form>
 
+      <el-tabs v-model="activeStatus" class="status-tabs" @tab-click="handleTabChange">
+        <el-tab-pane v-for="tab in statusTabs" :key="tab.name" :name="tab.name">
+          <span slot="label" class="tab-label">
+            {{ tab.label }}
+            <el-badge :value="statusCounts[tab.name] || 0" :max="999" class="tab-badge" />
+          </span>
+        </el-tab-pane>
+      </el-tabs>
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -85,10 +94,9 @@
         <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-<!--            <el-button type="text" icon="el-icon-edit" @click="openStatusDialog(scope.row)">更新状态</el-button>-->
-<!--            <el-button type="text" icon="el-icon-delete"  @click="handleDelete(scope.row)">删除</el-button>-->
-            <el-button :disabled="scope.row.orderStatus != 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
-            <el-button :disabled="scope.row.orderStatus != 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,0)">取消订单</el-button>
+            <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,1)">付款</el-button>
+            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
+            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -137,14 +145,22 @@
 </template>
 
 <script>
-import { queryOrder, updateOrderStatus, deleteOrder, exportOrder } from '../../api/order';
+import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount } from '../../api/order';
 import { downloadBlob } from '../../utils/export';
 
 const STATUS_MAP = {
-  0: { label: '订单取消', type: 'info' },
-  1: { label: '已下单', type: 'warning' },
-  2: { label: '已完成', type: 'success' }
+  '-1': { label: '取消', type: 'info' },
+  '0': { label: '待付款', type: 'warning' },
+  '1': { label: '待签收', type: 'primary' },
+  '2': { label: '已完成', type: 'success' }
 };
+
+const STATUS_TABS = [
+  { name: '0', label: '待付款' },
+  { name: '1', label: '待签收' },
+  { name: '2', label: '已完成' },
+  { name: '-1', label: '已取消' }
+];
 
 export default {
   name: 'OrderList',
@@ -155,6 +171,9 @@ export default {
         orderNo: '',
         dateRange: []
       },
+      activeStatus: '0',
+      statusTabs: STATUS_TABS,
+      statusCounts: {},
       tableData: [],
       loading: false,
       pagination: {
@@ -183,15 +202,22 @@ export default {
   },
   created() {
     this.fetchData();
+    this.fetchStatusCount();
   },
   methods: {
-    fetchData() {
-      this.loading = true;
-      const params = {
+    buildFilterParams() {
+      return {
         key: this.searchForm.key || '',
         orderNo: this.searchForm.orderNo || '',
         createTimeStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
-        createTimeEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || '',
+        createTimeEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || ''
+      };
+    },
+    fetchData() {
+      this.loading = true;
+      const params = {
+        ...this.buildFilterParams(),
+        orderStatus: Number(this.activeStatus),
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize
       };
@@ -206,9 +232,21 @@ export default {
           this.loading = false;
         });
     },
+    fetchStatusCount() {
+      orderStatusCount(this.buildFilterParams())
+        .then(res => {
+          this.statusCounts = res.daoResult || {};
+        })
+        .catch(() => {});
+    },
+    handleTabChange() {
+      this.pagination.pageNo = 1;
+      this.fetchData();
+    },
     handleSearch() {
       this.pagination.pageNo = 1;
       this.fetchData();
+      this.fetchStatusCount();
     },
     handleReset() {
       this.searchForm.key = '';
@@ -216,6 +254,7 @@ export default {
       this.searchForm.dateRange = [];
       this.pagination.pageNo = 1;
       this.fetchData();
+      this.fetchStatusCount();
     },
     handlePageChange(pageNo) {
       this.pagination.pageNo = pageNo;
@@ -230,7 +269,7 @@ export default {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
     },
     updateOrderStatus(id,status){
-      let msg = status===0 ? "是否确认取消订单？":"是否确认完成订单？";
+      let msg = status===-1 ? "是否确认取消订单？":"是否确认完成订单？";
       this.$confirm(msg, '操作确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -240,6 +279,7 @@ export default {
               updateOrderStatus(id, status).then(() => {
                 this.$message.success('操作成功');
                 this.fetchData();
+                this.fetchStatusCount();
               })
               .catch(() => {}))
           .catch(() => {});
@@ -298,6 +338,7 @@ export default {
             this.pagination.pageNo -= 1;
           }
           this.fetchData();
+          this.fetchStatusCount();
         })
         .catch(() => {});
     },
@@ -389,6 +430,27 @@ export default {
 }
 .search-actions >>> .el-form-item__content {
   margin-left: 0 !important;
+}
+.status-tabs {
+  margin-bottom: 18px;
+}
+.tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.tab-label >>> .el-badge__content {
+  border: none;
+  background: #e6e9f0;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 0 6px;
+  height: 17px;
+  line-height: 17px;
+  border-radius: 9px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 .search-form .el-button {
   border-radius: 8px;
@@ -511,4 +573,45 @@ export default {
 .order-list .el-table .el-button--text:hover {
   color: #667eea;
 }
+.order-list .status-tabs .el-tabs__header {
+  margin: 0;
+}
+.order-list .status-tabs .el-tabs__content {
+  display: none;
+}
+.order-list .status-tabs .el-tabs__nav-wrap::after {
+  display: none;
+}
+.order-list .status-tabs .el-tabs__active-bar {
+  display: none;
+}
+.order-list .status-tabs .el-tabs__nav {
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px;
+  background: #f3f5fa;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+}
+.order-list .status-tabs .el-tabs__item {
+  height: 34px;
+  line-height: 34px;
+  padding: 0 18px !important;
+  color: #6b7280;
+  border-radius: 9px;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.order-list .status-tabs .el-tabs__item:hover {
+  color: #667eea;
+}
+.order-list .status-tabs .el-tabs__item.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
+}
+.order-list .status-tabs .el-tabs__item.is-active .el-badge__content {
+  background: rgba(255, 255, 255, 0.28);
+  color: #fff;
+}
 </style>
+

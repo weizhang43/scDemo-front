@@ -264,7 +264,8 @@
       <div class="order-total">合计：<span class="price-text">¥ {{ totalAmount }}</span></div>
       <div slot="footer">
         <el-button @click="orderVisible = false">取消</el-button>
-        <el-button type="primary" :loading="orderSubmitting" @click="submitOrder">确认下单</el-button>
+        <el-button type="primary" :loading="submittingStatus === 0" :disabled="submittingStatus === 1" @click="submitOrder(0)">生成订单</el-button>
+        <el-button type="primary" :loading="submittingStatus === 1" :disabled="submittingStatus === 0" @click="submitOrder(1)">提交订单</el-button>
       </div>
     </el-dialog>
 
@@ -375,7 +376,7 @@ export default {
       addForm: this.defaultAddForm(),
       uploadingImage: false,
       orderVisible: false,
-      orderSubmitting: false,
+      submittingStatus: null,
       orderItems: [],
       addressList: [],
       orderAddressId: null,
@@ -775,7 +776,7 @@ export default {
       const max = row.stock == null ? 0 : Number(row.stock);
       return max < 0 ? 0 : max;
     },
-    submitOrder() {
+    submitOrder(orderStatus) {
       if (!this.orderAddressId) {
         this.$message.warning('请选择收货地址');
         return;
@@ -795,13 +796,14 @@ export default {
         uId: user.uId,
         addPerson: user.uName || (user.realName || 'anonymous'),
         addressId: this.orderAddressId,
+        orderStatus: orderStatus,
         items: this.orderItems.map(it => ({
           pId: it.pId,
           quantity: it.quantity,
           price: it.price
         }))
       };
-      this.orderSubmitting = true;
+      this.submittingStatus = orderStatus;
       placeOrderV2(payload)
         .then(() => {
           this.$message.success('下单成功');
@@ -810,7 +812,7 @@ export default {
         })
         .catch(() => {})
         .finally(() => {
-          this.orderSubmitting = false;
+          this.submittingStatus = null;
         });
     },
     formatDate(d) {

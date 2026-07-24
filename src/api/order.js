@@ -8,6 +8,14 @@ export function queryOrder(params) {
   });
 }
 
+export function orderStatusCount(params) {
+  return request({
+    url: '/order/statusCount',
+    method: 'get',
+    params
+  });
+}
+
 export function placeOrder(products, addPerson) {
   return request({
     url: '/order/placeOrder',
