@@ -61,54 +61,68 @@
 
     <div class="warning-row">
       <!-- 2. 商品过期预警 -->
-      <el-card class="warn-card border-e" shadow="never">
+      <el-card class="warn-card theme-e" shadow="never">
         <div slot="header" class="card-header">
-          <span class="card-title"><i class="el-icon-warning-outline accent-e" /> 商品过期预警</span>
-          <span class="header-meta">三个月内 · {{ expiring.length }}</span>
+          <span class="card-title"><i class="el-icon-warning-outline" /> 商品过期预警</span>
+          <span class="count-badge" :class="{ zero: !expiring.length }">{{ expiring.length }}</span>
         </div>
-        <el-table v-loading="loadingExpiring" :data="expiring" height="300" size="mini" empty-text="暂无即将过期商品">
+        <div class="card-sub">三个月内到期商品</div>
+        <el-table v-loading="loadingExpiring" :data="expiring" height="278" size="mini"
+                  :row-class-name="expireRowClass" class="warn-table">
+          <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无即将过期商品</div></template>
           <el-table-column prop="pName" label="商品" min-width="90" show-overflow-tooltip />
           <el-table-column label="到期日" width="110" align="center">
             <template slot-scope="s">{{ expireDate(s.row) }}</template>
           </el-table-column>
           <el-table-column label="剩余" width="80" align="center">
             <template slot-scope="s">
-              <el-tag size="mini" :type="daysLeft(s.row) <= 30 ? 'danger' : 'warning'">{{ daysLeft(s.row) }}天</el-tag>
+              <el-tag size="mini" effect="dark" :type="daysLeft(s.row) <= 30 ? 'danger' : 'warning'">{{ daysLeft(s.row) }}天</el-tag>
             </template>
           </el-table-column>
         </el-table>
       </el-card>
 
       <!-- 3. 商品库存预警 -->
-      <el-card class="warn-card border-s" shadow="never">
+      <el-card class="warn-card theme-s" shadow="never">
         <div slot="header" class="card-header">
-          <span class="card-title"><i class="el-icon-goods accent-s" /> 商品库存预警</span>
-          <span class="header-meta">库存 &lt; 100 · {{ lowStock.length }}</span>
+          <span class="card-title"><i class="el-icon-goods" /> 商品库存预警</span>
+          <span class="count-badge" :class="{ zero: !lowStock.length }">{{ lowStock.length }}</span>
         </div>
-        <el-table v-loading="loadingStock" :data="lowStock" height="300" size="mini" empty-text="库存充足">
-          <el-table-column prop="pName" label="商品" min-width="110" show-overflow-tooltip />
-          <el-table-column label="库存" width="90" align="center">
+        <div class="card-sub">库存低于 100 的商品</div>
+        <el-table v-loading="loadingStock" :data="lowStock" height="278" size="mini"
+                  :row-class-name="stockRowClass" class="warn-table">
+          <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 库存充足</div></template>
+          <el-table-column prop="pName" label="商品" min-width="100" show-overflow-tooltip />
+          <el-table-column label="库存" min-width="120" align="center">
             <template slot-scope="s">
-              <el-tag size="mini" :type="s.row.stock <= 20 ? 'danger' : 'warning'">{{ s.row.stock }}</el-tag>
+              <div class="stock-cell">
+                <div class="stock-bar"><span :style="{ width: stockPct(s.row.stock) + '%' }" :class="s.row.stock <= 20 ? 'danger' : 'warn'"></span></div>
+                <span class="stock-num" :class="s.row.stock <= 20 ? 'danger' : 'warn'">{{ s.row.stock }}</span>
+              </div>
             </template>
           </el-table-column>
         </el-table>
       </el-card>
 
       <!-- 4. 订单超时预警 -->
-      <el-card class="warn-card border-o" shadow="never">
+      <el-card class="warn-card theme-o" shadow="never">
         <div slot="header" class="card-header">
-          <span class="card-title"><i class="el-icon-time accent-o" /> 订单超时预警</span>
-          <span class="header-meta">状态为0 · {{ timeoutOrders.length }}</span>
+          <span class="card-title"><i class="el-icon-time" /> 订单超时预警</span>
+          <span class="count-badge" :class="{ zero: !timeoutOrders.length }">{{ timeoutOrders.length }}</span>
         </div>
-        <el-table v-loading="loadingOrders" :data="timeoutOrders" height="300" size="mini" empty-text="暂无超时订单">
+        <div class="card-sub">待处理的超时订单</div>
+        <el-table v-loading="loadingOrders" :data="timeoutOrders" height="278" size="mini"
+                  :row-class-name="orderRowClass" class="warn-table">
+          <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无超时订单</div></template>
           <el-table-column prop="orderNo" label="订单号" min-width="120" show-overflow-tooltip />
           <el-table-column label="金额" width="80" align="center">
             <template slot-scope="s">￥{{ s.row.orderAmount }}</template>
           </el-table-column>
-          <el-table-column label="倒计时" width="100" align="center">
+          <el-table-column label="倒计时" width="104" align="center">
             <template slot-scope="s">
-              <span :class="['countdown', { expired: remain(s.row) <= 0 }]">{{ countdownText(s.row) }}</span>
+              <span :class="['countdown', { expired: remain(s.row) <= 0 }]">
+                <i :class="remain(s.row) <= 0 ? 'el-icon-warning' : 'el-icon-alarm-clock'" />{{ countdownText(s.row) }}
+              </span>
             </template>
           </el-table-column>
         </el-table>
@@ -209,6 +223,18 @@ export default {
       if (!ts) return 0;
       return Math.max(0, Math.ceil((ts - this.now) / 86400000));
     },
+    expireRowClass({ row }) {
+      return this.daysLeft(row) <= 30 ? 'row-danger' : '';
+    },
+    stockRowClass({ row }) {
+      return row.stock <= 20 ? 'row-danger' : '';
+    },
+    orderRowClass({ row }) {
+      return this.remain(row) <= 0 ? 'row-danger' : '';
+    },
+    stockPct(stock) {
+      return Math.max(6, Math.min(100, (Number(stock) || 0)));
+    },
     remain(row) {
       if (!row.expireTime) return 0;
       const ts = new Date(String(row.expireTime).replace(/-/g, '/')).getTime();
@@ -303,9 +329,6 @@ export default {
 .card-title { font-size: 15px; font-weight: 600; color: #2d3748; display: flex; align-items: center; gap: 6px; }
 .header-meta { font-size: 12px; color: #909399; }
 .accent-blue { color: #2a5298; }
-.accent-e { color: #e6a23c; }
-.accent-s { color: #409eff; }
-.accent-o { color: #f56c6c; }
 
 .notice-card {
   margin-bottom: 20px;
@@ -343,18 +366,78 @@ export default {
   gap: 18px;
 }
 .warn-card {
-  border-radius: 12px;
+  position: relative;
+  border-radius: 14px;
   border: none;
+  overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.warn-card:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1); }
-.warn-card >>> .el-card__header { border-bottom: 1px solid #f0f2f5; }
-.border-e { border-top: 3px solid #e6a23c; }
-.border-s { border-top: 3px solid #409eff; }
-.border-o { border-top: 3px solid #f56c6c; }
+.warn-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12); }
+.warn-card >>> .el-card__header { border-bottom: none; padding: 14px 18px 6px; }
+.warn-card >>> .el-card__body { padding: 0 18px 16px; }
 
-.countdown { font-family: 'Courier New', monospace; color: #e6a23c; font-weight: 700; letter-spacing: 0.5px; }
+/* 顶部主题条 + 标题图标底色 */
+.warn-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+}
+.theme-e::before { background: linear-gradient(90deg, #f5b76b, #e6a23c); }
+.theme-s::before { background: linear-gradient(90deg, #79bbff, #409eff); }
+.theme-o::before { background: linear-gradient(90deg, #ff9a9e, #f56c6c); }
+.theme-e .card-title i { color: #e6a23c; }
+.theme-s .card-title i { color: #409eff; }
+.theme-o .card-title i { color: #f56c6c; }
+
+.card-sub { font-size: 12px; color: #a0a4ac; margin: 0 0 10px 24px; }
+
+/* 数量徽标 */
+.count-badge {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 8px;
+  line-height: 22px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 11px;
+}
+.theme-e .count-badge { background: #e6a23c; }
+.theme-s .count-badge { background: #409eff; }
+.theme-o .count-badge { background: #f56c6c; }
+.count-badge.zero { background: #c8ccd4; }
+
+/* 表格 */
+.warn-table >>> th.el-table__cell { background: #fafbfc; color: #606266; font-weight: 600; }
+.warn-table >>> .el-table__row { transition: background-color 0.15s ease; }
+.warn-table >>> .row-danger td.el-table__cell { background: #fff5f5 !important; }
+.warn-table >>> .el-table__row:hover > td.el-table__cell { background: #f2f6fc !important; }
+
+.empty-box { color: #b3b8c2; font-size: 13px; padding: 18px 0; }
+.empty-box i { color: #67c23a; margin-right: 4px; }
+
+/* 库存进度条 */
+.stock-cell { display: flex; align-items: center; gap: 8px; justify-content: center; }
+.stock-bar { flex: 1; max-width: 70px; height: 6px; border-radius: 3px; background: #eef0f3; overflow: hidden; }
+.stock-bar span { display: block; height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+.stock-bar span.warn { background: linear-gradient(90deg, #f5b76b, #e6a23c); }
+.stock-bar span.danger { background: linear-gradient(90deg, #ff9a9e, #f56c6c); }
+.stock-num { font-weight: 700; font-size: 13px; min-width: 28px; text-align: left; }
+.stock-num.warn { color: #e6a23c; }
+.stock-num.danger { color: #f56c6c; }
+
+.countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Courier New', monospace;
+  color: #e6a23c;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
 .countdown.expired { color: #f56c6c; }
 
 .notice-detail { max-height: 62vh; overflow: auto; line-height: 1.75; color: #303133; }
