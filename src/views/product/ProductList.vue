@@ -658,7 +658,12 @@ export default {
               this.$message.info('订单处理中，请稍后在订单列表查看');
             }
           })
-          .catch(() => {});
+          .catch(err => {
+            if (err && err.response && err.response.status === 401) {
+              this.stopSeckillPolling();
+              this.seckillingId = null;
+            }
+          });
       }, 1500);
     },
     stopSeckillPolling() {
@@ -949,7 +954,12 @@ export default {
               this.$message.info('导出已取消');
             }
           })
-          .catch(() => {});
+          .catch(err => {
+            if (err && err.response && err.response.status === 401) {
+              this.stopPolling();
+              this.exporting = false;
+            }
+          });
       }, 2000);
     },
     stopPolling() {

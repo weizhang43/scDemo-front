@@ -31,6 +31,17 @@ export function sendSmsCode(phone) {
   });
 }
 
+export function sendEmailCode(email) {
+  const params = new URLSearchParams();
+  params.append('email', email);
+  return request({
+    url: '/user/sendEmailCode',
+    method: 'post',
+    data: params,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
+}
+
 export function resetPassword(data) {
   const params = new URLSearchParams();
   params.append('phone', data.phone);

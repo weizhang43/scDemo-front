@@ -40,6 +40,12 @@
             prefix-icon="el-icon-lock"
           />
         </el-form-item>
+        <el-form-item label="账户类型" prop="uType" class="field">
+          <el-radio-group v-model="registerForm.uType">
+            <el-radio-button :label="2">顾客</el-radio-button>
+            <el-radio-button :label="1">商家</el-radio-button>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="用户姓名" prop="realName" class="field">
           <el-input v-model="registerForm.realName" placeholder="请输入真实姓名" prefix-icon="el-icon-postcard" />
         </el-form-item>
@@ -63,6 +69,17 @@
             prefix-icon="el-icon-date"
           />
         </el-form-item>
+        <el-form-item label="邮箱" prop="email" class="field">
+          <el-input v-model="registerForm.email" placeholder="请输入邮箱" prefix-icon="el-icon-message" />
+        </el-form-item>
+        <el-form-item label="邮箱验证码" prop="emailCode" class="field">
+          <div class="code-row">
+            <el-input v-model="registerForm.emailCode" placeholder="请输入邮箱验证码" prefix-icon="el-icon-key" maxlength="6" />
+            <el-button :disabled="countdown > 0" :loading="sendingCode" class="code-btn" @click="handleSendCode">
+              {{ countdown > 0 ? `${countdown}s 后重发` : '获取验证码' }}
+            </el-button>
+          </div>
+        </el-form-item>
         <el-form-item class="action">
           <el-button
             type="primary"
@@ -81,7 +98,7 @@
 </template>
 
 <script>
-import { register } from '../../api/user';
+import { register, sendEmailCode } from '../../api/user';
 
 export default {
   name: 'Register',
@@ -104,15 +121,27 @@ export default {
         callback();
       }
     };
+    const validateEmail = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入邮箱'));
+      } else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)) {
+        callback(new Error('请输入正确的邮箱'));
+      } else {
+        callback();
+      }
+    };
     return {
       registerForm: {
         uName: '',
         password: '',
         confirmPassword: '',
+        uType: 2,
         realName: '',
         gender: 1,
         phone: '',
-        birthday: ''
+        birthday: '',
+        email: '',
+        emailCode: ''
       },
       registerRules: {
         uName: [
@@ -136,12 +165,47 @@ export default {
         ],
         birthday: [
           { required: true, message: '请选择出生日期', trigger: 'change' }
+        ],
+        email: [
+          { required: true, validator: validateEmail, trigger: 'blur' }
+        ],
+        emailCode: [
+          { required: true, message: '请输入邮箱验证码', trigger: 'blur' },
+          { min: 6, max: 6, message: '验证码为 6 位数字', trigger: 'blur' }
         ]
       },
-      loading: false
+      loading: false,
+      sendingCode: false,
+      countdown: 0,
+      timer: null
     };
   },
+  beforeDestroy() {
+    if (this.timer) clearInterval(this.timer);
+  },
   methods: {
+    handleSendCode() {
+      this.$refs.registerForm.validateField('email', errMsg => {
+        if (errMsg) return;
+        this.sendingCode = true;
+        sendEmailCode(this.registerForm.email)
+          .then(() => {
+            this.$message.success('验证码已发送至邮箱，3 分钟内有效');
+            this.countdown = 60;
+            this.timer = setInterval(() => {
+              this.countdown -= 1;
+              if (this.countdown <= 0) {
+                clearInterval(this.timer);
+                this.timer = null;
+              }
+            }, 1000);
+          })
+          .catch(() => {})
+          .finally(() => {
+            this.sendingCode = false;
+          });
+      });
+    },
     handleRegister() {
       this.$refs.registerForm.validate(valid => {
         if (!valid) return;
@@ -149,10 +213,13 @@ export default {
         register({
           uName: this.registerForm.uName,
           password: this.registerForm.password,
+          uType: this.registerForm.uType,
           realName: this.registerForm.realName,
           gender: this.registerForm.gender,
           phone: this.registerForm.phone,
-          birthday: this.registerForm.birthday
+          birthday: this.registerForm.birthday,
+          email: this.registerForm.email,
+          emailCode: this.registerForm.emailCode
         })
           .then(() => {
             this.$message.success('注册成功，请登录');
@@ -285,6 +352,29 @@ export default {
 }
 .register-form .field >>> .el-input__prefix {
   left: 10px;
+  color: #a0aec0;
+}
+.code-row {
+  display: flex;
+  gap: 10px;
+}
+.code-row .el-input {
+  flex: 1;
+}
+.code-btn {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e0;
+  background: #fff;
+  color: #4a5568;
+  white-space: nowrap;
+}
+.code-btn:not(:disabled):hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+.code-btn.is-disabled {
+  background: #f1f5f9;
   color: #a0aec0;
 }
 .action {

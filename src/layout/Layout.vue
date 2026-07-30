@@ -12,10 +12,7 @@
           router
           class="nav-menu"
         >
-          <el-menu-item index="/home"><i class="el-icon-s-home" />首页</el-menu-item>
-          <el-menu-item index="/products"><i class="el-icon-goods" />商品管理</el-menu-item>
-          <el-menu-item index="/orders"><i class="el-icon-s-order" />订单管理</el-menu-item>
-          <el-menu-item index="/system/users"><i class="el-icon-s-tools" />系统管理</el-menu-item>
+          <el-menu-item v-for="m in menus" :key="m.path" :index="m.path"><i :class="m.icon" />{{ m.label }}</el-menu-item>
         </el-menu>
         <div class="header-right">
           <el-dropdown trigger="hover" @command="handleCommand">
@@ -45,6 +42,9 @@
 export default {
   name: 'Layout',
   computed: {
+    menus() {
+      return this.$store.getters.menus;
+    },
     username() {
       const user = this.$store.state.userInfo || {};
       return user.realName || user.uName || '未登录';

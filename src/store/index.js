@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { getToken, setToken, removeToken, getUser, setUser, removeUser } from '../utils/auth';
+import { menusForType, normalizeType } from '../router/menuConfig';
 
 Vue.use(Vuex);
 
@@ -8,6 +9,14 @@ export default new Vuex.Store({
   state: {
     token: getToken() || '',
     userInfo: getUser() || {}
+  },
+  getters: {
+    userType(state) {
+      return normalizeType((state.userInfo || {}).uType);
+    },
+    menus(state, getters) {
+      return menusForType(getters.userType);
+    }
   },
   mutations: {
     SET_TOKEN(state, token) {

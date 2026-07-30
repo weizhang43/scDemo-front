@@ -59,6 +59,7 @@
 
 <script>
 import { login } from '../../api/user';
+import { landingFor } from '../../router/menuConfig';
 
 export default {
   name: 'Login',
@@ -88,7 +89,7 @@ export default {
             this.$store.commit('SET_TOKEN', token);
             this.$store.commit('SET_USER', user);
             this.$message.success('登录成功');
-            this.$router.push('/home');
+            this.$router.push(landingFor(user.uType));
           })
           .catch(() => {})
           .finally(() => {

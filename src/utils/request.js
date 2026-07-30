@@ -8,10 +8,15 @@ const service = axios.create({
   timeout: 30000
 });
 
+// 401 只处理一次：token 过期时页面上并发的请求会同时返回 401，
+// 若不加标志位会重复弹提示并重复跳转登录页
+let authExpiredHandled = false;
+
 service.interceptors.request.use(
   config => {
     const token = getToken();
     if (token) {
+      authExpiredHandled = false;
       config.headers['Authorization'] = 'Bearer ' + token;
     }
     return config;
@@ -46,9 +51,16 @@ service.interceptors.response.use(
     const status = error.response && error.response.status;
     const msg = error.response && error.response.data && error.response.data.msg;
     if (status === 401) {
+      if (authExpiredHandled) {
+        return Promise.reject(error);
+      }
+      authExpiredHandled = true;
       clearAll();
+      Message.closeAll();
       Message.error(msg || '登录已过期，请重新登录');
-      router.push('/login');
+      if (router.currentRoute.path !== '/login') {
+        router.push('/login');
+      }
     } else {
       Message.error(msg || error.message || '网络错误');
     }
