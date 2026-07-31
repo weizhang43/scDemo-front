@@ -40,6 +40,22 @@
                 <i class="el-icon-picture-outline" />
               </div>
               <div v-if="isSoldOut(item)" class="sold-out-mask">已售罄</div>
+              <div v-else class="hover-actions">
+                <el-button
+                  size="mini"
+                  icon="el-icon-wallet"
+                  class="hover-btn hover-btn--buy"
+                  :loading="buyingId === item.pId"
+                  @click.stop="handleQuickBuy(item)"
+                >立即下单</el-button>
+                <el-button
+                  size="mini"
+                  icon="el-icon-shopping-cart-1"
+                  class="hover-btn hover-btn--cart"
+                  :loading="addingId === item.pId"
+                  @click.stop="handleQuickAddCart(item)"
+                >加入购物车</el-button>
+              </div>
             </div>
             <div class="goods-body">
               <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
@@ -77,6 +93,9 @@
 
 <script>
 import { pageQuery } from '../../api/product';
+import { getMyAddressList } from '../../api/address';
+import { placeOrderV2 } from '../../api/order';
+import { addToCart } from '../../api/cart';
 
 export default {
   name: 'ProductGallery',
@@ -84,6 +103,9 @@ export default {
     return {
       list: [],
       loading: false,
+      defaultAddress: null,
+      buyingId: null,
+      addingId: null,
       searchForm: {
         pName: ''
       },
@@ -96,6 +118,7 @@ export default {
   },
   created() {
     this.fetchData();
+    this.loadDefaultAddress();
   },
   methods: {
     fetchData() {
@@ -134,6 +157,106 @@ export default {
         return;
       }
       this.$router.push('/product-buy/' + item.pId);
+    },
+    loadDefaultAddress() {
+      getMyAddressList()
+        .then(res => {
+          const list = res.dataList || [];
+          const arr = Array.isArray(list) ? list : [];
+          this.defaultAddress = arr.find(a => a.isDefault === 1) || arr[0] || null;
+        })
+        .catch(() => {
+          this.defaultAddress = null;
+        });
+    },
+    shortAddress(addr) {
+      if (!addr) return '';
+      const region = [addr.province, addr.city, addr.district].filter(v => v).join('');
+      return `${addr.consignee} ${region}${addr.detail || ''}`;
+    },
+    /**
+     * 悬浮层快速下单：默认地址 + 1 件，落单后进支付页（订单仍是待支付）。
+     * 悬浮按钮容易误触，且下单会即时扣库存，所以先 $confirm 把商品/金额/收货地址摊开给用户看。
+     */
+    handleQuickBuy(item) {
+      if (this.isSoldOut(item)) {
+        this.$message.warning('该商品已售罄');
+        return;
+      }
+      if (!this.defaultAddress) {
+        this.$confirm('还没有收货地址，是否现在去添加？', '提示', {
+          confirmButtonText: '去添加',
+          cancelButtonText: '取消',
+          type: 'warning'
+        })
+          .then(() => {
+            const user = this.$store.state.userInfo || {};
+            this.$router.push(`/user/${user.uId}/address`);
+          })
+          .catch(() => {});
+        return;
+      }
+      const addr = this.defaultAddress;
+      const price = Number(this.effectivePriceOf(item)) || 0;
+      // 商品名来自商家录入，走纯文本 message（不开 dangerouslyUseHTMLString）
+      this.$confirm(
+        `确认下单「${item.pName}」1 件，应付 ¥ ${price.toFixed(2)}，寄往 ${this.shortAddress(addr)}？`,
+        '快速下单',
+        { confirmButtonText: '确认下单', cancelButtonText: '取消', type: 'info' }
+      )
+        .then(() => {
+          const user = this.$store.state.userInfo || {};
+          this.buyingId = item.pId;
+          return placeOrderV2({
+            uId: user.uId,
+            addPerson: user.uName || user.realName || 'anonymous',
+            addressId: addr.aId,
+            orderStatus: 0,
+            items: [{ pId: item.pId, quantity: 1, expectedPrice: price }]
+          })
+            .then(res => {
+              const oid = (res && res.daoResult && res.daoResult.oid) || null;
+              if (oid) {
+                this.$router.push('/pay/' + oid);
+                return;
+              }
+              // 拿不到主键就退回提示，绝不把已成立的订单报成失败
+              this.$message.success('下单成功，请到我的订单完成支付');
+              this.fetchData();
+            })
+            // 价格/库存类失败：回源让用户直接看到新价与新库存
+            .catch(() => {
+              this.fetchData();
+            })
+            .finally(() => {
+              this.buyingId = null;
+            });
+        })
+        .catch(() => {});
+    },
+    /** 加购固定 1 件，服务端按 (uId, pId) 累加并按实时库存截断 */
+    handleQuickAddCart(item) {
+      if (this.isSoldOut(item)) {
+        this.$message.warning('该商品已售罄');
+        return;
+      }
+      this.addingId = item.pId;
+      addToCart({ pId: item.pId, quantity: 1 })
+        .then(res => {
+          const r = res.daoResult || {};
+          if (r.capped) {
+            this.$message.warning(`已达该商品可购上限 ${r.quantity} 件`);
+          } else {
+            this.$message.success('已加入购物车');
+          }
+          if (r.cartCount != null) {
+            this.$store.commit('SET_CART_COUNT', r.cartCount);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.addingId = null;
+        });
     },
     handleSearch() {
       this.pagination.pageNo = 1;
@@ -279,6 +402,52 @@ export default {
   font-weight: 600;
   letter-spacing: 2px;
 }
+.hover-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(31, 41, 59, 0.42);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.goods-card:hover .hover-actions {
+  opacity: 1;
+}
+.hover-btn {
+  width: 116px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+}
+/* Element 给相邻按钮的 10px 左边距在竖排里会把第二个按钮顶偏 */
+.hover-btn + .hover-btn {
+  margin-left: 0;
+}
+.hover-btn--buy {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+.hover-btn--buy:hover,
+.hover-btn--buy:focus {
+  background: linear-gradient(135deg, #7b8ff0 0%, #8a5bb8 100%);
+  color: #fff;
+}
+.hover-btn--cart {
+  background: rgba(255, 255, 255, 0.94);
+  color: #4a5568;
+}
+.hover-btn--cart:hover,
+.hover-btn--cart:focus {
+  background: #fff;
+  color: #667eea;
+}
 .goods-body {
   padding: 12px 14px 14px;
 }
@@ -331,6 +500,21 @@ export default {
   }
   .search-input {
     width: 100%;
+  }
+  /* 触屏没有 hover，改成常驻的底部动作条，不整块压暗商品图 */
+  .hover-actions {
+    top: auto;
+    flex-direction: row;
+    gap: 6px;
+    padding: 8px;
+    opacity: 1;
+    background: linear-gradient(180deg, rgba(31, 41, 59, 0) 0%, rgba(31, 41, 59, 0.55) 100%);
+  }
+  .hover-btn {
+    width: auto;
+    flex: 1;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 </style>

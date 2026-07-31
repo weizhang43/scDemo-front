@@ -103,11 +103,11 @@
               >加入购物车</el-button>
               <el-button
                 type="primary"
-                icon="el-icon-shopping-cart-2"
+                icon="el-icon-wallet"
                 :loading="submitting"
                 :disabled="!canBuy"
                 @click="handleSubmit"
-              >提交订单</el-button>
+              >下单支付</el-button>
               <span v-if="!canBuy" class="form-tip">{{ disabledReason }}</span>
             </el-form-item>
           </el-form>
@@ -238,8 +238,15 @@ export default {
         orderStatus: 0,
         items: [{ pId: this.product.pId, quantity: this.quantity, expectedPrice: this.unitPrice }]
       })
-        .then(() => {
-          this.$message.success('下单成功');
+        // 订单落在待支付态，主键从 daoResult.oid 取（Jackson 把 getOId() 序列化成 oid）
+        .then(res => {
+          const oid = (res && res.daoResult && res.daoResult.oid) || null;
+          if (oid) {
+            this.$router.push('/pay/' + oid);
+            return;
+          }
+          // 拿不到主键就退回原行为，绝不把已成立的订单报成失败
+          this.$message.success('下单成功，请到我的订单完成支付');
           this.quantity = 1;
           this.fetchProduct();
         })

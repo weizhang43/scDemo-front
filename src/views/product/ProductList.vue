@@ -41,19 +41,16 @@
               <el-option v-for="o in originOptions" :key="o" :label="o" :value="o" />
             </el-select>
           </el-form-item>
-          <el-form-item label="状态" class="search-item">
-            <el-radio-group v-model="searchForm.isExpired" size="small" class="status-radio">
-              <el-radio-button label="">全部</el-radio-button>
-              <el-radio-button :label="0">正常</el-radio-button>
-              <el-radio-button :label="1">过期</el-radio-button>
-            </el-radio-group>
-          </el-form-item>
           <div class="search-actions">
             <el-button type="primary" size='small' icon="el-icon-search" @click="handleSearch">搜索</el-button>
             <el-button size='small' icon="el-icon-refresh-right" @click="handleReset">重置</el-button>
           </div>
         </div>
       </el-form>
+
+      <el-tabs v-model="activeTab" class="status-tabs" @tab-click="handleTabChange">
+        <el-tab-pane v-for="tab in productTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
+      </el-tabs>
 
       <el-table
         v-loading="loading"
@@ -144,7 +141,8 @@
         <el-table-column label="操作" width="150" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-view" @click="goDetail(scope.row.pId)">详情</el-button>
-            <el-dropdown trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
+            <!-- 过期商品只留详情：编辑/补货/上架/折扣/秒杀对已过期的货都没有意义 -->
+            <el-dropdown v-if="scope.row.isExpired !== 1" trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
               <el-button type="text" icon="el-icon-more">更多</el-button>
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="edit" icon="el-icon-edit">编辑</el-dropdown-item>
@@ -153,7 +151,11 @@
                   {{ scope.row.status === 0 ? '上架' : '下架' }}
                 </el-dropdown-item>
                 <el-dropdown-item command="promotion" icon="el-icon-price-tag">设折扣</el-dropdown-item>
-                <el-dropdown-item command="seckill" icon="el-icon-alarm-clock">发布秒杀</el-dropdown-item>
+                <el-dropdown-item
+                  command="seckill"
+                  icon="el-icon-alarm-clock"
+                  :disabled="!canSeckill(scope.row)"
+                >发布秒杀</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -389,9 +391,16 @@ import {
   promotionPageQuery, createPromotion, cancelPromotion,
   exportProductAsync, getExportStatus, cancelExport, downloadExportFile
 } from '../../api/product';
-import { createSeckill } from '../../api/seckill';
+import { createSeckill, seckillPageQuery } from '../../api/seckill';
 import { downloadBlob } from '../../utils/export';
 import { getToken } from '../../utils/auth';
+
+// 三个 tab 就是三组固定的查询条件：在售 / 下架 都只看未过期的货，过期单独一档（不分上下架）
+const PRODUCT_TABS = [
+  { name: 'onSale', label: '在售', isExpired: 0, status: 1 },
+  { name: 'offShelf', label: '下架', isExpired: 0, status: 0 },
+  { name: 'expired', label: '过期', isExpired: 1, status: '' }
+];
 
 export default {
   name: 'ProductList',
@@ -401,9 +410,10 @@ export default {
         pName: '',
         proDesc: '',
         dateRange: [],
-        origin: '',
-        isExpired: ''
+        origin: ''
       },
+      productTabs: PRODUCT_TABS,
+      activeTab: 'onSale',
       originOptions: ['北京', '上海', '广东', '浙江', '江苏', '四川'],
       // 与当前表格数据对应的搜索关键词快照，避免输入框边打字边变高亮
       activeKeyword: { pName: '', proDesc: '' },
@@ -479,6 +489,10 @@ export default {
     };
   },
   computed: {
+    /** 当前 tab 对应的过期 / 上下架过滤条件，列表与导出共用 */
+    tabQuery() {
+      return PRODUCT_TABS.find(t => t.name === this.activeTab) || PRODUCT_TABS[0];
+    },
     restockAfter() {
       const current = Number(this.restockRow && this.restockRow.stock) || 0;
       const add = Number(this.restockForm.quantity) || 0;
@@ -522,7 +536,8 @@ export default {
         productionDateStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
         productionDateEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || '',
         origin: this.searchForm.origin || '',
-        isExpired: this.searchForm.isExpired === '' ? '' : this.searchForm.isExpired,
+        isExpired: this.tabQuery.isExpired,
+        status: this.tabQuery.status,
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize
       };
@@ -541,6 +556,10 @@ export default {
           this.loading = false;
         });
     },
+    handleTabChange() {
+      this.pagination.pageNo = 1;
+      this.fetchData();
+    },
     handleSearch() {
       this.pagination.pageNo = 1;
       this.fetchData();
@@ -550,7 +569,6 @@ export default {
       this.searchForm.proDesc = '';
       this.searchForm.dateRange = [];
       this.searchForm.origin = '';
-      this.searchForm.isExpired = '';
       this.pagination.pageNo = 1;
       this.fetchData();
     },
@@ -639,15 +657,35 @@ export default {
     },
     handleShelf(row) {
       const off = row.status === 0;
-      const next = off ? 1 : 0;
-      this.$confirm(off ? '上架后顾客即可看到并购买该商品，是否继续？' : '下架后顾客将查不到该商品，是否继续？',
-        off ? '确认上架' : '确认下架', { type: 'warning' })
-        .then(() => setShelfStatus(row.pId, next))
-        .then(() => {
-          this.$message.success(off ? '已上架' : '已下架');
-          this.fetchData();
+      if (off) {
+        this.$confirm('上架后顾客即可看到并购买该商品，是否继续？', '确认上架', { type: 'warning' })
+          .then(() => this.doShelf(row, 1))
+          .catch(() => {});
+        return;
+      }
+      // 下架会连带结束未完结的秒杀（后端 setShelfStatus 做的），确认框里得把这个后果说出来
+      seckillPageQuery({ pId: row.pId, pageNo: 1, pageSize: 50 })
+        .then(res => {
+          const page = res.daoResult || {};
+          return (page.records || []).filter(a => a.status === 1 && this.phaseOf(a).text !== '已结束').length;
         })
+        // 活动查不出来不该挡住下架，按「没有活动」继续
+        .catch(() => 0)
+        .then(count => this.$confirm(
+          count > 0
+            ? `该商品有 ${count} 场未结束的秒杀活动，下架后这些活动会一并结束且无法恢复，是否继续？`
+            : '下架后顾客将查不到该商品，是否继续？',
+          '确认下架',
+          { type: 'warning' }
+        ))
+        .then(() => this.doShelf(row, 0))
         .catch(() => {});
+    },
+    doShelf(row, next) {
+      return setShelfStatus(row.pId, next).then(() => {
+        this.$message.success(next === 0 ? '已下架' : '已上架');
+        this.fetchData();
+      });
     },
     openPromotion(row) {
       this.activityRow = row;
@@ -705,6 +743,14 @@ export default {
           this.fetchData();
         })
         .catch(() => {});
+    },
+    /**
+     * 秒杀名额是从商品库存里划出来的，零库存划不出；过期品也不该再上活动。
+     * 下架商品同样不行 —— 后端 create 会以「商品已下架，请先上架再发布秒杀」拒绝，这里提前置灰。
+     * status 为 null 是存量数据，列表按「在售」显示，这里也放行。
+     */
+    canSeckill(row) {
+      return !!row && row.isExpired !== 1 && row.stock !== 0 && row.status !== 0;
     },
     openSeckill(row) {
       this.activityRow = row;
@@ -884,7 +930,8 @@ export default {
         productionDateStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
         productionDateEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || '',
         origin: this.searchForm.origin || '',
-        isExpired: this.searchForm.isExpired === '' ? '' : this.searchForm.isExpired
+        // 导出接口只认 isExpired，不带上下架：在售 / 下架 两个 tab 导出的都是全部未过期商品
+        isExpired: this.tabQuery.isExpired
       };
       this.exporting = true;
       this.exportProgress = 0;
@@ -1064,9 +1111,9 @@ export default {
   flex: 1 1 0;
   min-width: 0;
 }
-/* 第二行按钮区占位与条件等宽，内部右对齐，保证产地宽度与第一行字段一致 */
+/* 第二行只剩产地一个条件，按钮区占两格，保证产地宽度与第一行字段一致 */
 .search-actions {
-  flex: 1 1 0;
+  flex: 2 1 0;
   min-width: 0;
   display: flex;
   gap: 8px;
@@ -1074,24 +1121,8 @@ export default {
   justify-content: flex-end;
   padding-bottom: 2px;
 }
-.status-radio {
-  width: 100%;
-  display: flex;
-}
-.status-radio >>> .el-radio-button {
-  flex: 1;
-}
-.status-radio >>> .el-radio-button__inner {
-  width: 100%;
-  padding-left: 0;
-  padding-right: 0;
-  text-align: center;
-}
-.status-radio >>> .el-radio-button__orig-radio:checked + .el-radio-button__inner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-color: #667eea;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.25);
-  color: #fff;
+.status-tabs {
+  margin: 16px 0 4px;
 }
 .search-actions .el-button {
   border-radius: 8px;
@@ -1273,17 +1304,41 @@ export default {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
-.product-list .search-form .status-radio .el-radio-button__inner {
-  border-radius: 0;
-  transition: all 0.2s ease;
+.product-list .status-tabs .el-tabs__header {
+  margin: 0;
 }
-.product-list .search-form .status-radio .el-radio-button:first-child .el-radio-button__inner {
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
+.product-list .status-tabs .el-tabs__content {
+  display: none;
 }
-.product-list .search-form .status-radio .el-radio-button:last-child .el-radio-button__inner {
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
+.product-list .status-tabs .el-tabs__nav-wrap::after {
+  display: none;
+}
+.product-list .status-tabs .el-tabs__active-bar {
+  display: none;
+}
+.product-list .status-tabs .el-tabs__nav {
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px;
+  background: #f3f5fa;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+}
+.product-list .status-tabs .el-tabs__item {
+  height: 34px;
+  line-height: 34px;
+  padding: 0 22px !important;
+  color: #6b7280;
+  border-radius: 9px;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.product-list .status-tabs .el-tabs__item:hover {
+  color: #667eea;
+}
+.product-list .status-tabs .el-tabs__item.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 .product-list .el-table {
   border-radius: 10px;

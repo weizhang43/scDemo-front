@@ -85,7 +85,7 @@
         <el-table-column label="操作" width="230" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-            <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="changeStatus(scope.row, 1)">支付</el-button>
+            <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="btn-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
             <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="btn-danger" @click="handleDelete(scope.row)">删除</el-button>
@@ -114,13 +114,13 @@ import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount } from '..
 
 const STATUS_MAP = {
   '-1': { label: '已取消', type: 'info' },
-  '0': { label: '待付款', type: 'warning' },
+  '0': { label: '待支付', type: 'warning' },
   '1': { label: '待签收', type: 'primary' },
   '2': { label: '已完成', type: 'success' }
 };
 
 const STATUS_TABS = [
-  { name: '0', label: '待付款' },
+  { name: '0', label: '待支付' },
   { name: '1', label: '待签收' },
   { name: '2', label: '已完成' },
   { name: '-1', label: '已取消' }
@@ -128,7 +128,6 @@ const STATUS_TABS = [
 
 const ACTION_TEXT = {
   '-1': '取消订单',
-  '1': '支付订单',
   '2': '确认收货'
 };
 
@@ -254,6 +253,9 @@ export default {
     },
     goDetail(id) {
       this.$router.push(`/order/${id}`);
+    },
+    goPay(id) {
+      this.$router.push(`/pay/${id}`);
     },
     goGallery() {
       this.$router.push('/gallery');

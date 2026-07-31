@@ -36,7 +36,7 @@
         </div>
       </div>
     </el-header>
-    <el-main class="layout-main">
+    <el-main ref="main" class="layout-main">
       <router-view />
     </el-main>
   </el-container>
@@ -63,6 +63,20 @@ export default {
     },
     activeMenu() {
       return this.$route.path;
+    }
+  },
+  watch: {
+    /**
+     * 切页面时回到顶部。
+     * 滚动的是 el-main（它自带 overflow: auto），不是 window，
+     * 所以 router 的 scrollBehavior 够不着，只能自己把容器的 scrollTop 归零。
+     */
+    $route() {
+      const main = this.$refs.main;
+      const el = main && main.$el;
+      if (el) {
+        el.scrollTop = 0;
+      }
     }
   },
   created() {

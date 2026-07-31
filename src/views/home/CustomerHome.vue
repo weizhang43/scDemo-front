@@ -25,7 +25,7 @@
         <div class="stat warn-o" :class="{ 'has-warn': myTimeoutOrders.length }">
           <i class="el-icon-time stat-ico" />
           <div class="stat-num">{{ display.order }}</div>
-          <div class="stat-label">待付款</div>
+          <div class="stat-label">待支付</div>
         </div>
       </div>
     </div>
@@ -176,7 +176,7 @@
         <span class="card-title"><i class="el-icon-time" /> 我的即将超期订单</span>
         <span class="count-badge" :class="{ zero: !myTimeoutOrders.length }">{{ myTimeoutOrders.length }}</span>
       </div>
-      <div class="card-sub">待付款订单，超时后将自动取消</div>
+      <div class="card-sub">待支付订单，超时后将自动取消</div>
       <el-table
         v-loading="loadingOrders"
         :data="myTimeoutOrders"

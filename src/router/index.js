@@ -102,6 +102,12 @@ const routes = [
         meta: { requiresAuth: true, types: [1, 2] }
       },
       {
+        path: 'pay/:id',
+        name: 'OrderPay',
+        component: () => import('../views/order/OrderPay.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
         path: 'jobs',
         name: 'JobScheduler',
         component: () => import('../views/system/JobScheduler.vue'),

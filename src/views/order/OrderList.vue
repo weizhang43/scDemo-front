@@ -149,13 +149,13 @@ import { downloadBlob } from '../../utils/export';
 
 const STATUS_MAP = {
   '-1': { label: '取消', type: 'info' },
-  '0': { label: '待付款', type: 'warning' },
+  '0': { label: '待支付', type: 'warning' },
   '1': { label: '待签收', type: 'primary' },
   '2': { label: '已完成', type: 'success' }
 };
 
 const STATUS_TABS = [
-  { name: '0', label: '待付款' },
+  { name: '0', label: '待支付' },
   { name: '1', label: '待签收' },
   { name: '2', label: '已完成' },
   { name: '-1', label: '已取消' }

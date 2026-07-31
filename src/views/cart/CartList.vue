@@ -254,7 +254,7 @@ export default {
         .catch(() => {});
     },
     /**
-     * 结算：把勾选行拼成一次 placeOrderV2（多商品落进同一张订单），成功后再清车。
+     * 结算：把勾选行拼成一次 placeOrderV2（多商品落进同一张订单），成功后清车并跳支付页。
      * expectedPrice 取列表接口回传的实时有效价，不是本地快照。
      */
     handleCheckout() {
@@ -287,14 +287,23 @@ export default {
           expectedPrice: Number(r.effectivePrice)
         }))
       })
-        .then(() => {
+        .then(res => {
+          const oid = (res && res.daoResult && res.daoResult.oid) || null;
           this.$message.success('下单成功');
           // 订单已成立，购物车清理失败不能表现为下单失败
-          return batchDeleteCart(pIds).catch(() => {
-            this.$message.warning('订单已提交，但购物车清理失败，请手动删除已购商品');
-          });
+          return batchDeleteCart(pIds)
+            .catch(() => {
+              this.$message.warning('订单已提交，但购物车清理失败，请手动删除已购商品');
+            })
+            .then(() => oid);
         })
-        .then(() => {
+        .then(oid => {
+          if (oid) {
+            // 要跳去支付页了，fetchList 不会再执行，角标得单独校准
+            this.$store.dispatch('refreshCartCount');
+            this.$router.push('/pay/' + oid);
+            return;
+          }
           this.fetchList();
         })
         // 价格/库存类失败：回源让用户直接看到新价与新库存
