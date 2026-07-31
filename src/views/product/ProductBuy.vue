@@ -29,7 +29,11 @@
           <div class="hero-info">
             <div class="hero-name">{{ product.pName }}</div>
             <div class="hero-sub">
-              <span class="hero-price">¥ {{ product.price }}</span>
+              <span class="hero-price">¥ {{ unitPrice }}</span>
+              <template v-if="product.discount">
+                <span class="hero-price-origin">¥ {{ product.price }}</span>
+                <el-tag type="danger" size="mini" effect="dark">{{ discountText }}</el-tag>
+              </template>
               <el-tag :type="product.isExpired === 1 ? 'danger' : 'success'" size="mini" effect="light">
                 {{ product.isExpired === 1 ? '已过期' : '正常' }}
               </el-tag>
@@ -92,6 +96,12 @@
             </el-form-item>
             <el-form-item>
               <el-button
+                icon="el-icon-shopping-cart-1"
+                :loading="addingCart"
+                :disabled="!canBuy"
+                @click="handleAddToCart"
+              >加入购物车</el-button>
+              <el-button
                 type="primary"
                 icon="el-icon-shopping-cart-2"
                 :loading="submitting"
@@ -113,6 +123,7 @@
 import { getProductById } from '../../api/product';
 import { getAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
+import { addToCart } from '../../api/cart';
 
 export default {
   name: 'ProductBuy',
@@ -123,7 +134,8 @@ export default {
       addressId: null,
       quantity: 1,
       loading: false,
-      submitting: false
+      submitting: false,
+      addingCart: false
     };
   },
   computed: {
@@ -144,9 +156,18 @@ export default {
       return '';
     },
     totalAmount() {
-      const price = Number(this.product && this.product.price) || 0;
-      const qty = Number(this.quantity) || 0;
-      return (price * qty).toFixed(2);
+      return (this.unitPrice * (Number(this.quantity) || 0)).toFixed(2);
+    },
+    /** 服务端权威单价：有折扣即折后价。下单金额由服务端重算，这里只负责展示与比对 */
+    unitPrice() {
+      if (!this.product) return 0;
+      const p = this.product.effectivePrice != null ? this.product.effectivePrice : this.product.price;
+      return Number(p) || 0;
+    },
+    discountText() {
+      const d = this.product && this.product.discount;
+      if (!d) return '';
+      return `${(d / 10).toFixed(1).replace(/\.0$/, '')} 折`;
     }
   },
   created() {
@@ -215,7 +236,7 @@ export default {
         addPerson: user.uName || (user.realName || 'anonymous'),
         addressId: this.addressId,
         orderStatus: 0,
-        items: [{ pId: this.product.pId, quantity: this.quantity, price: this.product.price }]
+        items: [{ pId: this.product.pId, quantity: this.quantity, expectedPrice: this.unitPrice }]
       })
         .then(() => {
           this.$message.success('下单成功');
@@ -225,6 +246,32 @@ export default {
         .catch(() => {})
         .finally(() => {
           this.submitting = false;
+        });
+    },
+    /** 加购不需要收货地址，服务端按 (uId, pId) 累加数量并按实时库存截断 */
+    handleAddToCart() {
+      if (!this.canBuy) return;
+      if (this.quantity > this.maxQuantity) {
+        this.$message.warning(`加购数量不能大于库存（${this.maxQuantity}）`);
+        return;
+      }
+      this.addingCart = true;
+      addToCart({ pId: this.product.pId, quantity: this.quantity })
+        .then(res => {
+          const r = res.daoResult || {};
+          if (r.capped) {
+            this.$message.warning(`已达该商品可购上限 ${r.quantity} 件`);
+          } else {
+            this.$message.success('已加入购物车');
+          }
+          // 直接用返回体里的条目数刷角标，不再多发一次 /count
+          if (r.cartCount != null) {
+            this.$store.commit('SET_CART_COUNT', r.cartCount);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.addingCart = false;
         });
     },
     goBack() {
@@ -370,6 +417,12 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: #d97706;
+  font-variant-numeric: tabular-nums;
+}
+.hero-price-origin {
+  font-size: 14px;
+  color: #9aa3b2;
+  text-decoration: line-through;
   font-variant-numeric: tabular-nums;
 }
 .detail-desc >>> .el-descriptions__label {

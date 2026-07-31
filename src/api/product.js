@@ -1,13 +1,5 @@
 import request from '../utils/request';
 
-export function queryProduct(params) {
-  return request({
-    url: '/product/queryProduct',
-    method: 'get',
-    params
-  });
-}
-
 export function pageQuery(params) {
   return request({
     url: '/product/pageQuery',
@@ -54,10 +46,38 @@ export function updateProduct(id, data) {
   });
 }
 
-export function getProductList() {
+/** 上架 / 下架商品，status 1-上架 0-下架 */
+export function setShelfStatus(id, status) {
   return request({
-    url: '/product/list',
-    method: 'get'
+    url: `/product/shelf/${id}`,
+    method: 'put',
+    params: { status }
+  });
+}
+
+/** 折扣活动分页列表，pId 非空时只看某个商品 */
+export function promotionPageQuery(params) {
+  return request({
+    url: '/product/promotion/pageQuery',
+    method: 'get',
+    params
+  });
+}
+
+/** 创建折扣活动：{ pId, discount, startTime, endTime } */
+export function createPromotion(data) {
+  return request({
+    url: '/product/promotion',
+    method: 'post',
+    data
+  });
+}
+
+/** 取消折扣活动 */
+export function cancelPromotion(id) {
+  return request({
+    url: `/product/promotion/${id}`,
+    method: 'delete'
   });
 }
 

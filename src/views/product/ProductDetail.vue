@@ -29,7 +29,12 @@
           <div class="hero-info">
             <div class="hero-name">{{ product.pName }}</div>
             <div class="hero-sub">
-              <span class="hero-price">¥ {{ product.price }}</span>
+              <span class="hero-price">¥ {{ effectivePrice }}</span>
+              <template v-if="product.discount">
+                <span class="hero-price-origin">¥ {{ product.price }}</span>
+                <el-tag type="danger" size="mini" effect="dark">{{ discountText }}</el-tag>
+              </template>
+              <el-tag v-if="product.status === 0" type="info" size="mini" effect="plain">已下架</el-tag>
               <el-tag
                 :type="product.isExpired === 1 ? 'danger' : 'success'"
                 size="mini"
@@ -83,6 +88,17 @@ export default {
       product: null,
       loading: false
     };
+  },
+  computed: {
+    effectivePrice() {
+      if (!this.product) return 0;
+      return this.product.effectivePrice != null ? this.product.effectivePrice : this.product.price;
+    },
+    discountText() {
+      const d = this.product && this.product.discount;
+      if (!d) return '';
+      return `${(d / 10).toFixed(1).replace(/\.0$/, '')} 折`;
+    }
   },
   created() {
     this.fetchData();
@@ -251,6 +267,12 @@ export default {
   font-size: 18px;
   font-weight: 600;
   color: #d97706;
+  font-variant-numeric: tabular-nums;
+}
+.hero-price-origin {
+  font-size: 14px;
+  color: #9aa3b2;
+  text-decoration: line-through;
   font-variant-numeric: tabular-nums;
 }
 .detail-desc >>> .el-descriptions__label {

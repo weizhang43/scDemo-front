@@ -5,8 +5,13 @@ export const U_TYPE_ADMIN = 3;
 export const MENUS = [
   { path: '/home', label: '首页', icon: 'el-icon-s-home', types: [1, 2, 3] },
   { path: '/products', label: '商品管理', icon: 'el-icon-goods', types: [1] },
+  { path: '/seckills', label: '秒杀活动', icon: 'el-icon-alarm-clock', types: [1] },
   { path: '/orders', label: '订单管理', icon: 'el-icon-s-order', types: [1] },
   { path: '/gallery', label: '商品列表', icon: 'el-icon-picture-outline', types: [2] },
+  { path: '/seckill', label: '限时秒杀', icon: 'el-icon-alarm-clock', types: [2] },
+  { path: '/cart', label: '购物车', icon: 'el-icon-shopping-cart-2', types: [2] },
+  { path: '/my-orders', label: '我的订单', icon: 'el-icon-s-order', types: [2] },
+  { path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [2] },
   { path: '/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] },
   { path: '/system/users', label: '系统管理', icon: 'el-icon-s-tools', types: [3] }

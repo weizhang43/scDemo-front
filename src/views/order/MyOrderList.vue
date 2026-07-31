@@ -1,21 +1,18 @@
 <template>
-  <div class="order-list">
+  <div class="my-order-list">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
-          <span class="card-title">订单列表</span>
+          <span class="card-title">我的订单</span>
           <span class="header-meta">共 {{ pagination.total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="info" size="small" icon="el-icon-download" :loading="exporting" @click="handleExport">导出</el-button>
+          <el-button type="primary" size="small" icon="el-icon-shopping-cart-2" @click="goGallery">去逛逛</el-button>
         </div>
       </div>
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="订单编号">
           <el-input v-model="searchForm.orderNo" placeholder="请输入订单编号" prefix-icon="el-icon-document" clearable @keyup.enter.native="handleSearch" />
-        </el-form-item>
-        <el-form-item label="下单人">
-          <el-input v-model="searchForm.key" placeholder="请输入下单人关键字" prefix-icon="el-icon-user" clearable @keyup.enter.native="handleSearch" />
         </el-form-item>
         <el-form-item label="下单日期">
           <el-date-picker
@@ -61,19 +58,13 @@
             <span class="order-no">{{ scope.row.orderNo || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="addPerson" label="下单人" min-width="160" align="center">
-          <template slot-scope="scope">
-            <i class="el-icon-user-solid cell-icon"></i>
-            <span class="cell-strong">{{ scope.row.addPerson || '-' }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="createTime" label="下单时间" min-width="200" align="center">
           <template slot-scope="scope">
             <i class="el-icon-time cell-icon"></i>
             <span class="cell-time">{{ formatTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="orderAddress" label="下单地址" min-width="220" align="center" show-overflow-tooltip>
+        <el-table-column prop="orderAddress" label="收货地址" min-width="220" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <i class="el-icon-location-outline cell-icon"></i>
             <span class="cell-text">{{ scope.row.orderAddress || '-' }}</span>
@@ -91,11 +82,13 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300" align="center" fixed="right">
+        <el-table-column label="操作" width="230" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
-            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
+            <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="changeStatus(scope.row, 1)">支付</el-button>
+            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
+            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="btn-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
+            <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="btn-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -112,43 +105,15 @@
           @size-change="handleSizeChange"
         />
       </div>
-
-      <el-dialog title="更新订单状态" :visible.sync="statusDialogVisible" width="420px" :close-on-click-modal="false">
-        <el-form :model="statusForm" label-width="90px">
-          <el-form-item label="订单编号">
-            <span class="order-no">{{ statusForm.orderNo || '-' }}</span>
-          </el-form-item>
-          <el-form-item label="当前状态">
-            <el-tag :type="statusTagType(statusForm.currentStatus)" size="small" effect="light">
-              {{ statusText(statusForm.currentStatus) }}
-            </el-tag>
-          </el-form-item>
-          <el-form-item label="新状态">
-            <el-select v-model="statusForm.newStatus" placeholder="请选择订单状态" style="width: 100%;">
-              <el-option
-                v-for="item in statusOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-        <div slot="footer">
-          <el-button @click="statusDialogVisible = false">取 消</el-button>
-          <el-button type="primary" :loading="statusSubmitting" @click="confirmUpdateStatus">确 定</el-button>
-        </div>
-      </el-dialog>
     </el-card>
   </div>
 </template>
 
 <script>
-import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount } from '../../api/order';
-import { downloadBlob } from '../../utils/export';
+import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount } from '../../api/order';
 
 const STATUS_MAP = {
-  '-1': { label: '取消', type: 'info' },
+  '-1': { label: '已取消', type: 'info' },
   '0': { label: '待付款', type: 'warning' },
   '1': { label: '待签收', type: 'primary' },
   '2': { label: '已完成', type: 'success' }
@@ -161,12 +126,17 @@ const STATUS_TABS = [
   { name: '-1', label: '已取消' }
 ];
 
+const ACTION_TEXT = {
+  '-1': '取消订单',
+  '1': '支付订单',
+  '2': '确认收货'
+};
+
 export default {
-  name: 'OrderList',
+  name: 'MyOrderList',
   data() {
     return {
       searchForm: {
-        key: '',
         orderNo: '',
         dateRange: []
       },
@@ -179,25 +149,8 @@ export default {
         pageNo: 1,
         pageSize: 10,
         total: 0
-      },
-      statusDialogVisible: false,
-      statusSubmitting: false,
-      exporting: false,
-      statusForm: {
-        id: null,
-        orderNo: '',
-        currentStatus: null,
-        newStatus: null
       }
     };
-  },
-  computed: {
-    statusOptions() {
-      return Object.keys(STATUS_MAP).map(k => ({
-        value: Number(k),
-        label: STATUS_MAP[k].label
-      }));
-    }
   },
   created() {
     this.fetchData();
@@ -206,7 +159,6 @@ export default {
   methods: {
     buildFilterParams() {
       return {
-        key: this.searchForm.key || '',
         orderNo: this.searchForm.orderNo || '',
         createTimeStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
         createTimeEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || ''
@@ -238,22 +190,23 @@ export default {
         })
         .catch(() => {});
     },
+    refresh() {
+      this.fetchData();
+      this.fetchStatusCount();
+    },
     handleTabChange() {
       this.pagination.pageNo = 1;
       this.fetchData();
     },
     handleSearch() {
       this.pagination.pageNo = 1;
-      this.fetchData();
-      this.fetchStatusCount();
+      this.refresh();
     },
     handleReset() {
-      this.searchForm.key = '';
       this.searchForm.orderNo = '';
       this.searchForm.dateRange = [];
       this.pagination.pageNo = 1;
-      this.fetchData();
-      this.fetchStatusCount();
+      this.refresh();
     },
     handlePageChange(pageNo) {
       this.pagination.pageNo = pageNo;
@@ -267,62 +220,21 @@ export default {
     indexMethod(index) {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
     },
-    updateOrderStatus(id,status){
-      let msg = status===-1 ? "是否确认取消订单？":"是否确认完成订单？";
-      this.$confirm(msg, '操作确认', {
+    changeStatus(row, status) {
+      const action = ACTION_TEXT[String(status)];
+      this.$confirm(`是否确认${action}？`, '操作确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
-          .then(() =>
-              updateOrderStatus(id, status).then(() => {
-                this.$message.success('操作成功');
-                this.fetchData();
-                this.fetchStatusCount();
-              })
-              .catch(() => {}))
-          .catch(() => {});
-    },
-    goDetail(id) {
-      this.$router.push(`/order/${id}`);
-    },
-    statusText(status) {
-      return (STATUS_MAP[status] || {}).label || '未知';
-    },
-    statusTagType(status) {
-      return (STATUS_MAP[status] || {}).type || 'info';
-    },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
-    openStatusDialog(row) {
-      this.statusForm = {
-        id: row.oid,
-        orderNo: row.orderNo,
-        currentStatus: row.orderStatus,
-        newStatus: row.orderStatus
-      };
-      this.statusDialogVisible = true;
-    },
-    confirmUpdateStatus() {
-      if (this.statusForm.newStatus === null || this.statusForm.newStatus === undefined) {
-        this.$message.warning('请选择订单状态');
-        return;
-      }
-      this.statusSubmitting = true;
-      updateOrderStatus(this.statusForm.id, this.statusForm.newStatus)
-        .then(() => {
-          this.$message.success('状态更新成功');
-          this.statusDialogVisible = false;
-          this.fetchData();
-        })
-        .catch(() => {})
-        .finally(() => {
-          this.statusSubmitting = false;
-        });
+        .then(() =>
+          updateOrderStatus(row.oid, status)
+            .then(() => {
+              this.$message.success(`${action}成功`);
+              this.refresh();
+            })
+            .catch(() => {}))
+        .catch(() => {});
     },
     handleDelete(row) {
       this.$confirm(`确认删除订单 ${row.orderNo || '#' + row.oid} 吗？此操作不可恢复。`, '删除确认', {
@@ -336,10 +248,27 @@ export default {
           if (this.tableData.length === 1 && this.pagination.pageNo > 1) {
             this.pagination.pageNo -= 1;
           }
-          this.fetchData();
-          this.fetchStatusCount();
+          this.refresh();
         })
         .catch(() => {});
+    },
+    goDetail(id) {
+      this.$router.push(`/order/${id}`);
+    },
+    goGallery() {
+      this.$router.push('/gallery');
+    },
+    statusText(status) {
+      return (STATUS_MAP[status] || {}).label || '未知';
+    },
+    statusTagType(status) {
+      return (STATUS_MAP[status] || {}).type || 'info';
+    },
+    formatAmount(amount) {
+      if (amount === null || amount === undefined || amount === '') return '0.00';
+      const num = Number(amount);
+      if (isNaN(num)) return '0.00';
+      return num.toFixed(2);
     },
     formatTime(time) {
       if (!time) return '-';
@@ -347,26 +276,13 @@ export default {
       if (isNaN(d.getTime())) return String(time);
       const pad = n => (n < 10 ? '0' + n : n);
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    },
-    handleExport() {
-      const params = {
-        key: this.searchForm.key || '',
-        orderNo: this.searchForm.orderNo || '',
-        createTimeStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
-        createTimeEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || ''
-      };
-      this.exporting = true;
-      exportOrder(params)
-        .then(res => downloadBlob(res, '订单列表.xlsx'))
-        .catch(() => {})
-        .finally(() => { this.exporting = false; });
     }
   }
 };
 </script>
 
 <style scoped>
-.order-list {
+.my-order-list {
   min-height: 100vh;
   padding: 20px;
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
@@ -465,21 +381,12 @@ export default {
   text-align: right;
   border-top: 1px dashed #e8ebf2;
 }
-.order-id {
-  font-family: 'Menlo', 'Consolas', monospace;
-  color: #4c5163;
-  font-size: 13px;
-}
 .order-no {
   font-family: 'Menlo', 'Consolas', monospace;
   color: #3b4a6b;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.3px;
-}
-.cell-strong {
-  font-weight: 600;
-  color: #1f2733;
 }
 .cell-icon {
   color: #9aa3b2;
@@ -500,91 +407,91 @@ export default {
   font-variant-numeric: tabular-nums;
   font-family: 'Menlo', 'Consolas', monospace;
 }
+.btn-success {
+  color: #67c23a !important;
+}
+.btn-success:hover {
+  color: #529b2e !important;
+}
 .btn-danger {
   color: #f56c6c !important;
 }
 .btn-danger:hover {
   color: #d9363e !important;
 }
-.btn-danger.is-disabled,
-.btn-danger.is-disabled:hover,
-.btn-danger.is-disabled:focus {
-  color: #c0c4cc !important;
-  cursor: not-allowed;
-}
 </style>
 
 <style>
-.order-list .el-card {
+.my-order-list .el-card {
   border: none;
   border-radius: 14px;
   box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
   overflow: hidden;
 }
-.order-list .el-card__header {
+.my-order-list .el-card__header {
   padding: 18px 24px;
   background: #fff;
   border-bottom: 1px solid #eef0f4;
 }
-.order-list .el-card__body {
+.my-order-list .el-card__body {
   padding: 20px 24px 12px;
 }
-.order-list .search-form .el-form-item__label {
+.my-order-list .search-form .el-form-item__label {
   color: #4a5568;
   font-weight: 500;
 }
-.order-list .search-form .el-input__inner {
+.my-order-list .search-form .el-input__inner {
   border-radius: 8px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.order-list .search-form .el-input__inner:focus {
+.my-order-list .search-form .el-input__inner:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
-.order-list .el-table {
+.my-order-list .el-table {
   border-radius: 10px;
   overflow: hidden;
 }
-.order-list .el-table th.el-table__cell {
+.my-order-list .el-table th.el-table__cell {
   background: #f3f5fa !important;
   color: #2d3748;
   font-weight: 600;
   padding: 12px 0;
 }
-.order-list .el-table td.el-table__cell {
+.my-order-list .el-table td.el-table__cell {
   border-bottom: 1px solid #eef0f4;
   padding: 12px 0;
 }
-.order-list .el-table--border,
-.order-list .el-table--group {
+.my-order-list .el-table--border,
+.my-order-list .el-table--group {
   border: 1px solid #eef0f4;
 }
-.order-list .el-table--border th.el-table__cell,
-.order-list .el-table--border td.el-table__cell {
+.my-order-list .el-table--border th.el-table__cell,
+.my-order-list .el-table--border td.el-table__cell {
   border-right: 1px solid #eef0f4;
 }
-.order-list .el-table__row:hover > td.el-table__cell {
+.my-order-list .el-table__row:hover > td.el-table__cell {
   background-color: #f0f4ff !important;
 }
-.order-list .el-table .el-button--text {
+.my-order-list .el-table .el-button--text {
   padding: 4px 6px;
 }
-.order-list .el-table .el-button--text:hover {
+.my-order-list .el-table .el-button--text:hover {
   color: #667eea;
 }
-.order-list .status-tabs .el-tabs__header {
+.my-order-list .status-tabs .el-tabs__header {
   margin: 0;
 }
-.order-list .status-tabs .el-tabs__content {
+.my-order-list .status-tabs .el-tabs__content {
   display: none;
 }
-.order-list .status-tabs .el-tabs__nav-wrap::after {
+.my-order-list .status-tabs .el-tabs__nav-wrap::after {
   display: none;
 }
-.order-list .status-tabs .el-tabs__active-bar {
+.my-order-list .status-tabs .el-tabs__active-bar {
   display: none;
 }
-.order-list .status-tabs .el-tabs__nav {
+.my-order-list .status-tabs .el-tabs__nav {
   display: inline-flex;
   gap: 8px;
   padding: 5px;
@@ -592,7 +499,7 @@ export default {
   border: 1px solid #eef0f4;
   border-radius: 12px;
 }
-.order-list .status-tabs .el-tabs__item {
+.my-order-list .status-tabs .el-tabs__item {
   height: 34px;
   line-height: 34px;
   padding: 0 18px !important;
@@ -600,17 +507,16 @@ export default {
   border-radius: 9px;
   transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
-.order-list .status-tabs .el-tabs__item:hover {
+.my-order-list .status-tabs .el-tabs__item:hover {
   color: #667eea;
 }
-.order-list .status-tabs .el-tabs__item.is-active {
+.my-order-list .status-tabs .el-tabs__item.is-active {
   color: #fff;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
-.order-list .status-tabs .el-tabs__item.is-active .el-badge__content {
+.my-order-list .status-tabs .el-tabs__item.is-active .el-badge__content {
   background: rgba(255, 255, 255, 0.28);
   color: #fff;
 }
 </style>
-

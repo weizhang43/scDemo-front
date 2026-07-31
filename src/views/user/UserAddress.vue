@@ -1,14 +1,16 @@
 <template>
-  <div class="user-address">
+  <div class="user-address" :class="{ 'is-embedded': self }">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
           <span class="card-title">收货地址管理</span>
-          <span class="header-meta">用户ID #{{ uId }} · 共 {{ tableData.length }} 条</span>
+          <span class="header-meta">
+            <template v-if="!self">用户ID #{{ uId }} · </template>共 {{ tableData.length }} 条
+          </span>
         </div>
         <div>
           <el-button type="primary" icon="el-icon-plus" @click="openAdd">新增地址</el-button>
-          <el-button type="text" icon="el-icon-back" @click="goBack">返回</el-button>
+          <el-button v-if="!self" type="text" icon="el-icon-back" @click="goBack">返回</el-button>
         </div>
       </div>
 
@@ -107,10 +109,25 @@
 </template>
 
 <script>
-import { getAddressList, addAddress, updateAddress, deleteAddress, setDefaultAddress } from '../../api/address';
+import {
+  getAddressList,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+  setDefaultAddress,
+  getMyAddressList,
+  addMyAddress,
+  updateMyAddress,
+  deleteMyAddress,
+  setMyDefaultAddress
+} from '../../api/address';
 
 export default {
   name: 'UserAddress',
+  props: {
+    // 嵌在个人主页里时为 true：走 /user/me/address/*，uId 由后端从 X-User-Id 取
+    self: { type: Boolean, default: false }
+  },
   data() {
     const phoneValidator = (rule, value, callback) => {
       if (!value) {
@@ -142,13 +159,15 @@ export default {
     }
   },
   created() {
-    const id = this.$route.params.id;
-    if (!id) {
-      this.$message.error('缺少用户ID');
-      this.goBack();
-      return;
+    if (!this.self) {
+      const id = this.$route.params.id;
+      if (!id) {
+        this.$message.error('缺少用户ID');
+        this.goBack();
+        return;
+      }
+      this.uId = Number(id);
     }
-    this.uId = Number(id);
     this.fetchData();
   },
   methods: {
@@ -167,7 +186,8 @@ export default {
     },
     fetchData() {
       this.loading = true;
-      getAddressList(this.uId)
+      const req = this.self ? getMyAddressList() : getAddressList(this.uId);
+      req
         .then(res => {
           this.tableData = res.dataList || [];
         })
@@ -195,7 +215,12 @@ export default {
       this.$refs.addrForm.validate(valid => {
         if (!valid) return;
         this.submitting = true;
-        const action = this.isEdit ? updateAddress(this.form) : addAddress(this.form);
+        let action;
+        if (this.self) {
+          action = this.isEdit ? updateMyAddress(this.form) : addMyAddress(this.form);
+        } else {
+          action = this.isEdit ? updateAddress(this.form) : addAddress(this.form);
+        }
         action
           .then(() => {
             this.$message.success(this.isEdit ? '修改成功' : '新增成功');
@@ -209,7 +234,8 @@ export default {
       });
     },
     handleSetDefault(row) {
-      setDefaultAddress(row.aId, this.uId)
+      const req = this.self ? setMyDefaultAddress(row.aId) : setDefaultAddress(row.aId, this.uId);
+      req
         .then(() => {
           this.$message.success('已设为默认');
           this.fetchData();
@@ -222,7 +248,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       })
-        .then(() => deleteAddress(row.aId))
+        .then(() => (this.self ? deleteMyAddress(row.aId) : deleteAddress(row.aId)))
         .then(() => {
           this.$message.success('删除成功');
           this.fetchData();
@@ -242,6 +268,12 @@ export default {
   padding: 20px;
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
+}
+/* 嵌入个人主页时，整页背景与内边距由外层容器接管 */
+.user-address.is-embedded {
+  min-height: 0;
+  padding: 0;
+  background: none;
 }
 .card-header {
   display: flex;

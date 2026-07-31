@@ -38,7 +38,7 @@ const routes = [
       {
         path: 'home',
         name: 'Home',
-        component: () => import('../views/home/Home.vue'),
+        component: () => import('../views/home/HomeEntry.vue'),
         meta: { requiresAuth: true, types: [1, 2, 3] }
       },
       {
@@ -54,9 +54,21 @@ const routes = [
         meta: { requiresAuth: true, types: [1] }
       },
       {
+        path: 'seckills',
+        name: 'SeckillActivityList',
+        component: () => import('../views/product/SeckillActivityList.vue'),
+        meta: { requiresAuth: true, types: [1] }
+      },
+      {
         path: 'gallery',
         name: 'ProductGallery',
         component: () => import('../views/product/ProductGallery.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'seckill',
+        name: 'SeckillZone',
+        component: () => import('../views/product/SeckillZone.vue'),
         meta: { requiresAuth: true, types: [2] }
       },
       {
@@ -72,10 +84,22 @@ const routes = [
         meta: { requiresAuth: true, types: [1] }
       },
       {
+        path: 'cart',
+        name: 'CartList',
+        component: () => import('../views/cart/CartList.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'my-orders',
+        name: 'MyOrderList',
+        component: () => import('../views/order/MyOrderList.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
         path: 'order/:id',
         name: 'OrderDetail',
         component: () => import('../views/order/OrderDetail.vue'),
-        meta: { requiresAuth: true, types: [1] }
+        meta: { requiresAuth: true, types: [1, 2] }
       },
       {
         path: 'jobs',
@@ -88,6 +112,12 @@ const routes = [
         name: 'CustomerService',
         component: () => import('../views/customer/CustomerServiceEmbed.vue'),
         meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'my-profile',
+        name: 'UserProfile',
+        component: () => import('../views/user/UserProfile.vue'),
+        meta: { requiresAuth: true, types: [1, 2, 3] }
       },
       {
         path: 'profile',

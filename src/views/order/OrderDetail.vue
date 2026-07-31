@@ -37,6 +37,11 @@
           <el-descriptions-item label="下单人">
             <i class="el-icon-user-solid desc-icon"></i>{{ order.addPerson || '-' }}
           </el-descriptions-item>
+          <el-descriptions-item label="订单状态">
+            <el-tag :type="statusTagType(order.orderStatus)" size="small" effect="light">
+              {{ statusText(order.orderStatus) }}
+            </el-tag>
+          </el-descriptions-item>
           <el-descriptions-item label="下单时间" :span="2">
             <i class="el-icon-time desc-icon"></i>{{ formatTime(order.createTime) }}
           </el-descriptions-item>
@@ -99,6 +104,13 @@
 <script>
 import { getOrderById } from '../../api/order';
 
+const STATUS_MAP = {
+  '-1': { label: '取消', type: 'info' },
+  '0': { label: '待付款', type: 'warning' },
+  '1': { label: '待签收', type: 'primary' },
+  '2': { label: '已完成', type: 'success' }
+};
+
 export default {
   name: 'OrderDetail',
   data() {
@@ -145,7 +157,13 @@ export default {
         });
     },
     goBack() {
-      this.$router.push('/orders');
+      this.$router.push(this.$store.getters.userType === 2 ? '/my-orders' : '/orders');
+    },
+    statusText(status) {
+      return (STATUS_MAP[status] || {}).label || '未知';
+    },
+    statusTagType(status) {
+      return (STATUS_MAP[status] || {}).type || 'info';
     },
     formatTime(time) {
       if (!time) return '-';

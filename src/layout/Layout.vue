@@ -12,7 +12,11 @@
           router
           class="nav-menu"
         >
-          <el-menu-item v-for="m in menus" :key="m.path" :index="m.path"><i :class="m.icon" />{{ m.label }}</el-menu-item>
+          <el-menu-item v-for="m in menus" :key="m.path" :index="m.path">
+            <i :class="m.icon" />
+            <el-badge v-if="m.path === '/cart' && cartCount > 0" :value="cartCount" :max="99" class="nav-badge">{{ m.label }}</el-badge>
+            <template v-else>{{ m.label }}</template>
+          </el-menu-item>
         </el-menu>
         <div class="header-right">
           <el-dropdown trigger="hover" @command="handleCommand">
@@ -54,16 +58,22 @@ export default {
       if (!name || name === '未登录') return 'U';
       return name.charAt(0).toUpperCase();
     },
+    cartCount() {
+      return this.$store.state.cartCount;
+    },
     activeMenu() {
       return this.$route.path;
     }
+  },
+  created() {
+    this.$store.dispatch('refreshCartCount');
   },
   methods: {
     goHome() {
       this.$router.push('/home').catch(() => {});
     },
     goProfile() {
-      this.$router.push('/profile').catch(() => {});
+      this.$router.push('/my-profile').catch(() => {});
     },
     handleCommand(cmd) {
       if (cmd === 'profile') {
@@ -165,6 +175,17 @@ export default {
   background-color: rgba(255, 255, 255, 0.16) !important;
   color: #fff !important;
   border-bottom-color: #ffd166;
+}
+/* 顶栏是深蓝紫渐变，Element 默认的红角标在这里会被读成报错，改用顶栏已有的琥珀强调色 */
+.nav-badge >>> .el-badge__content {
+  background-color: #ffd166;
+  color: #1f2733;
+  border: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+.nav-badge >>> .el-badge__content.is-fixed {
+  top: 10px;
+  right: 2px;
 }
 .header-right {
   display: flex;

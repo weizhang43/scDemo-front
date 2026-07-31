@@ -46,37 +46,44 @@
     </main>
 
     <footer class="chat-input">
-      <input
-        ref="imageInput"
-        type="file"
-        accept="image/*"
-        class="hidden-file"
-        @change="handleImageChange"
-      />
-      <el-button
-        class="upload-btn"
-        icon="el-icon-picture-outline"
-        :loading="parsing"
-        :disabled="loading"
-        title="上传图片，自动识别文字"
-        @click="triggerUpload"
-      />
-      <el-input
-        v-model="input"
-        type="textarea"
-        :rows="2"
-        resize="none"
-        placeholder="请输入你的问题，回车发送"
-        :disabled="loading"
-        @keydown.enter.native.prevent="handleSend"
-      />
-      <el-button
-        type="primary"
-        class="send-btn"
-        :loading="loading"
-        :disabled="!input.trim()"
-        @click="handleSend"
-      >发送</el-button>
+      <div class="input-inner">
+        <input
+          ref="imageInput"
+          type="file"
+          accept="image/*"
+          class="hidden-file"
+          @change="handleImageChange"
+        />
+        <div class="input-shell" :class="{ 'is-focus': focused, 'is-disabled': loading }">
+          <el-button
+            class="upload-btn"
+            icon="el-icon-picture-outline"
+            :loading="parsing"
+            :disabled="loading"
+            title="上传图片，自动识别文字"
+            @click="triggerUpload"
+          />
+          <el-input
+            v-model="input"
+            class="msg-input"
+            type="textarea"
+            :autosize="{ minRows: 1, maxRows: 5 }"
+            resize="none"
+            placeholder="请输入你的问题，回车发送"
+            :disabled="loading"
+            @focus="focused = true"
+            @blur="focused = false"
+            @keydown.enter.native.prevent="handleSend"
+          />
+          <el-button
+            type="primary"
+            class="send-btn"
+            :loading="loading"
+            :disabled="!input.trim()"
+            @click="handleSend"
+          >发送</el-button>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -93,7 +100,8 @@ export default {
       loading: false,
       source: null,
       clientType: 'qianwen',
-      parsing: false
+      parsing: false,
+      focused: false
     };
   },
   computed: {
@@ -364,43 +372,94 @@ export default {
   background: #f0f2f7;
 }
 .chat-input {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
-  padding: 16px 24px;
   background: #fff;
   border-top: 1px solid #eaeef5;
+  box-shadow: 0 -2px 12px rgba(31, 45, 77, 0.04);
+}
+.input-inner {
+  display: flex;
+  padding: 14px 24px 18px;
   max-width: 900px;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
 }
-.chat-input >>> .el-textarea__inner {
-  border-radius: 10px;
+.input-shell {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 1;
+  padding: 8px;
+  background: #f7f8fc;
+  border: 1px solid #e4e8f2;
+  border-radius: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+.input-shell.is-focus {
+  background: #fff;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+.input-shell.is-disabled {
+  opacity: 0.75;
+}
+.msg-input {
+  flex: 1;
+}
+.msg-input >>> .el-textarea__inner {
+  padding: 8px 4px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #2f3846;
+}
+.msg-input >>> .el-textarea__inner::placeholder {
+  color: #a8b0c0;
 }
 .hidden-file {
   display: none;
 }
 .upload-btn {
-  height: 44px;
-  width: 44px;
+  height: 36px;
+  width: 36px;
   padding: 0;
-  border-radius: 10px;
-  font-size: 18px;
-  color: #667eea;
-  border: 1px solid #dfe4f0;
-}
-.upload-btn:hover {
-  color: #764ba2;
-  border-color: #764ba2;
-  background: #f5f3fb;
-}
-.send-btn {
-  height: 44px;
   border: none;
   border-radius: 10px;
-  padding: 0 24px;
+  font-size: 18px;
+  color: #8a93a5;
+  background: transparent;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+.upload-btn:hover,
+.upload-btn:focus {
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+.upload-btn.is-disabled,
+.upload-btn.is-disabled:hover {
+  color: #c3c9d6;
+  background: transparent;
+}
+.send-btn {
+  height: 36px;
+  border: none;
+  border-radius: 12px;
+  padding: 0 20px;
   font-weight: 600;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
+}
+.send-btn:hover:not(.is-disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(102, 126, 234, 0.35);
+}
+.send-btn.is-disabled,
+.send-btn.is-disabled:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  opacity: 0.45;
+  transform: none;
+  box-shadow: none;
 }
 </style>

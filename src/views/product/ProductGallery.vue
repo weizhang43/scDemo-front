@@ -44,9 +44,15 @@
             <div class="goods-body">
               <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
               <div class="goods-foot">
-                <span class="price-text">¥ {{ item.price }}</span>
+                <div class="goods-price">
+                  <span class="price-text">¥ {{ effectivePriceOf(item) }}</span>
+                  <span v-if="item.discount" class="price-origin">¥ {{ item.price }}</span>
+                </div>
                 <span class="goods-stock">库存 {{ item.stock == null ? '-' : item.stock }}</span>
               </div>
+              <el-tag v-if="item.discount" type="danger" size="mini" effect="dark" class="discount-tag">
+                {{ discountText(item.discount) }}
+              </el-tag>
             </div>
           </div>
         </el-col>
@@ -94,7 +100,7 @@ export default {
   methods: {
     fetchData() {
       this.loading = true;
-      // 商品没有上架字段，isExpired=0 是最接近“可售”的现成语义
+      // 下架商品由服务端按角色过滤，这里只额外排除过期商品
       pageQuery({
         pName: this.searchForm.pName || '',
         isExpired: 0,
@@ -110,6 +116,14 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    effectivePriceOf(item) {
+      return item.effectivePrice != null ? item.effectivePrice : item.price;
+    },
+    discountText(discount) {
+      const d = Number(discount) || 0;
+      if (!d) return '';
+      return `${(d / 10).toFixed(1).replace(/\.0$/, '')} 折`;
     },
     isSoldOut(item) {
       return item.stock === 0;
@@ -281,6 +295,20 @@ export default {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+}
+.goods-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.price-origin {
+  font-size: 12px;
+  color: #9aa3b2;
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+.discount-tag {
+  margin-top: 8px;
 }
 .price-text {
   font-size: 17px;

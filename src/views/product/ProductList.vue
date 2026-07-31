@@ -5,15 +5,9 @@
         <div class="header-left">
           <span class="card-title">商品列表</span>
           <span class="header-meta">共 {{ pagination.total }} 条</span>
-          <span v-if="selectedRows.length" class="header-meta header-meta--active">
-            已选 {{ selectedRows.length }} 件
-          </span>
         </div>
         <div class="header-actions">
           <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd">新增商品</el-button>
-          <el-button type="warning" size="small" icon="el-icon-shopping-cart-2" :disabled="!selectedRows.length" @click="handlePlaceOrder">
-            批量下单 ({{ selectedRows.length }})
-          </el-button>
           <el-button type="info" size="small" icon="el-icon-download" :disabled="exporting" @click="handleExport">
             {{ exporting ? `导出中 ${exportProgress}%` : '导出' }}
           </el-button>
@@ -69,9 +63,7 @@
         style="width: 100%;"
         :row-class-name="rowClassName"
         :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
-        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="46" align="center" :selectable="canSelect" />
         <el-table-column type="index" label="序号" width="60" align="center"
                          :index="indexMethod" />
         <el-table-column label="图片" width="80" align="center">
@@ -114,7 +106,23 @@
             <span class="price-text">¥ {{ scope.row.price }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="90" align="center">
+        <el-table-column label="折扣" width="120" align="center">
+          <template slot-scope="scope">
+            <div v-if="scope.row.discount" class="discount-cell">
+              <el-tag type="danger" size="mini" effect="dark">{{ discountText(scope.row.discount) }}</el-tag>
+              <span class="discount-price">¥ {{ scope.row.effectivePrice }}</span>
+            </div>
+            <span v-else class="cell-muted">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="上架" width="80" align="center">
+          <template slot-scope="scope">
+            <el-tag :type="scope.row.status === 0 ? 'info' : 'success'" size="mini" effect="plain">
+              {{ scope.row.status === 0 ? '已下架' : '在售' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="保质" width="90" align="center">
           <template slot-scope="scope">
             <el-tag :type="scope.row.isExpired === 1 ? 'danger' : 'success'" size="mini" effect="light">
               {{ scope.row.isExpired === 1 ? '已过期' : '正常' }}
@@ -133,23 +141,21 @@
             </el-button>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="240" align="center" fixed="right">
+        <el-table-column label="操作" width="150" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-view" @click="goDetail(scope.row.pId)">详情</el-button>
-            <el-button v-if="scope.row.stock !== 0" type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
-            <el-button v-if="scope.row.stock === 0" type="text" icon="el-icon-plus" @click="openRestock(scope.row)">补货</el-button>
-            <el-tooltip :disabled="canSeckill(scope.row)" :content="seckillReason(scope.row)" placement="top">
-              <span>
-                <el-button
-                  type="text"
-                  icon="el-icon-alarm-clock"
-                  class="seckill-btn"
-                  :disabled="!canSeckill(scope.row)"
-                  :loading="seckillingId === scope.row.pId"
-                  @click="handleSeckill(scope.row)"
-                >秒杀</el-button>
-              </span>
-            </el-tooltip>
+            <el-dropdown trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
+              <el-button type="text" icon="el-icon-more">更多</el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="edit" icon="el-icon-edit">编辑</el-dropdown-item>
+                <el-dropdown-item command="restock" icon="el-icon-plus">补货</el-dropdown-item>
+                <el-dropdown-item command="shelf" divided :icon="scope.row.status === 0 ? 'el-icon-top' : 'el-icon-bottom'">
+                  {{ scope.row.status === 0 ? '上架' : '下架' }}
+                </el-dropdown-item>
+                <el-dropdown-item command="promotion" icon="el-icon-price-tag">设折扣</el-dropdown-item>
+                <el-dropdown-item command="seckill" icon="el-icon-alarm-clock">发布秒杀</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -214,58 +220,6 @@
       <div slot="footer">
         <el-button @click="addVisible = false">取消</el-button>
         <el-button type="primary" :loading="submitting" @click="submitAdd">保存</el-button>
-      </div>
-    </el-dialog>
-
-    <!-- 批量下单弹窗 -->
-    <el-dialog title="批量下单" :visible.sync="orderVisible" width="760px" :close-on-click-modal="false">
-      <el-form label-width="90px" class="order-addr-form">
-        <el-form-item label="收货地址">
-          <el-select
-            v-model="orderAddressId"
-            placeholder="请选择收货地址"
-            style="width: 100%;"
-            size="small"
-          >
-            <el-option
-              v-for="addr in addressList"
-              :key="addr.aId"
-              :label="formatAddressLabel(addr)"
-              :value="addr.aId"
-            />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <el-table :data="orderItems" border size="small" style="width:100%;">
-        <el-table-column type="index" label="序号" width="55" align="center" />
-        <el-table-column prop="pName" label="商品名称" min-width="150" align="center" show-overflow-tooltip />
-        <el-table-column prop="stock" label="库存" width="80" align="center" />
-        <el-table-column prop="price" label="单价" width="100" align="right">
-          <template slot-scope="scope">¥ {{ scope.row.price }}</template>
-        </el-table-column>
-        <el-table-column label="下单数量" width="170" align="center">
-          <template slot-scope="scope">
-            <el-input-number
-              v-model="scope.row.quantity"
-              :min="1"
-              :max="orderMax(scope.row)"
-              size="small"
-              controls-position="right"
-              style="width:130px;"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="小计" width="110" align="right">
-          <template slot-scope="scope">
-            <span class="price-text">¥ {{ subtotal(scope.row) }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="order-total">合计：<span class="price-text">¥ {{ totalAmount }}</span></div>
-      <div slot="footer">
-        <el-button @click="orderVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submittingStatus === 0" :disabled="submittingStatus === 1" @click="submitOrder(0)">生成订单</el-button>
-        <el-button type="primary" :loading="submittingStatus === 1" :disabled="submittingStatus === 0" @click="submitOrder(1)">提交订单</el-button>
       </div>
     </el-dialog>
 
@@ -339,13 +293,103 @@
         <el-button type="primary" :loading="restockSubmitting" @click="submitRestock">确认补货</el-button>
       </div>
     </el-dialog>
+
+    <!-- 设折扣弹窗 -->
+    <el-dialog title="商品折扣" :visible.sync="promotionVisible" width="680px" :close-on-click-modal="false">
+      <el-form ref="promotionForm" :model="promotionForm" :rules="promotionRules" label-width="100px">
+        <el-form-item label="商品">
+          <span class="dialog-name">{{ activityRow && activityRow.pName }}</span>
+          <span class="dialog-hint">原价 ¥ {{ activityRow && activityRow.price }}</span>
+        </el-form-item>
+        <el-form-item label="折扣率" prop="discount">
+          <el-input-number v-model="promotionForm.discount" :min="1" :max="99" :precision="0" controls-position="right" style="width:150px;" />
+          <span class="dialog-hint">
+            {{ discountText(promotionForm.discount) }}，折后 <b class="dialog-strong">¥ {{ promotionPreview }}</b>
+          </span>
+        </el-form-item>
+        <el-form-item label="活动时间" prop="range">
+          <el-date-picker
+            v-model="promotionForm.range"
+            type="datetimerange"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            style="width:100%;"
+          />
+        </el-form-item>
+      </el-form>
+
+      <div class="sub-title">该商品已有折扣</div>
+      <el-table v-loading="promotionLoading" :data="promotionList" size="mini" border empty-text="暂无折扣活动">
+        <el-table-column label="折扣" width="80" align="center">
+          <template slot-scope="scope">{{ discountText(scope.row.discount) }}</template>
+        </el-table-column>
+        <el-table-column label="折后价" width="90" align="center">
+          <template slot-scope="scope"><span class="price-text">¥ {{ scope.row.effectivePrice }}</span></template>
+        </el-table-column>
+        <el-table-column prop="startTime" label="开始时间" min-width="140" align="center" />
+        <el-table-column prop="endTime" label="结束时间" min-width="140" align="center" />
+        <el-table-column label="状态" width="80" align="center">
+          <template slot-scope="scope">
+            <el-tag :type="phaseOf(scope.row).type" size="mini" effect="plain">{{ phaseOf(scope.row).text }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="70" align="center">
+          <template slot-scope="scope">
+            <el-button type="text" class="text-danger" @click="handleCancelPromotion(scope.row)">取消</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div slot="footer">
+        <el-button @click="promotionVisible = false">关闭</el-button>
+        <el-button type="primary" :loading="promotionSubmitting" @click="submitPromotion">创建折扣</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 发布秒杀弹窗 -->
+    <el-dialog title="发布秒杀活动" :visible.sync="seckillVisible" width="560px" :close-on-click-modal="false">
+      <el-form ref="seckillForm" :model="seckillForm" :rules="seckillRules" label-width="100px">
+        <el-form-item label="商品">
+          <span class="dialog-name">{{ activityRow && activityRow.pName }}</span>
+          <span class="dialog-hint">原价 ¥ {{ activityRow && activityRow.price }} · 库存 {{ activityRow && activityRow.stock }}</span>
+        </el-form-item>
+        <el-form-item label="秒杀价" prop="seckillPrice">
+          <el-input-number v-model="seckillForm.seckillPrice" :min="0.01" :precision="2" :step="1" controls-position="right" style="width:150px;" />
+          <span class="dialog-hint">必须低于原价</span>
+        </el-form-item>
+        <el-form-item label="秒杀名额" prop="seckillStock">
+          <el-input-number v-model="seckillForm.seckillStock" :min="1" :precision="0" controls-position="right" style="width:150px;" />
+          <span class="dialog-hint">从商品库存中划出的上限，不预扣库存</span>
+        </el-form-item>
+        <el-form-item label="活动时间" prop="range">
+          <el-date-picker
+            v-model="seckillForm.range"
+            type="datetimerange"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            style="width:100%;"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="seckillVisible = false">取消</el-button>
+        <el-button type="primary" :loading="seckillSubmitting" @click="submitSeckill">发布</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { pageQuery, addProduct, updateProduct, likeProduct, exportProductAsync, getExportStatus, cancelExport, downloadExportFile } from '../../api/product';
-import { placeOrderV2, seckill, getSeckillResult } from '../../api/order';
-import { getAddressList } from '../../api/address';
+import {
+  pageQuery, addProduct, updateProduct, likeProduct, setShelfStatus,
+  promotionPageQuery, createPromotion, cancelPromotion,
+  exportProductAsync, getExportStatus, cancelExport, downloadExportFile
+} from '../../api/product';
+import { createSeckill } from '../../api/seckill';
 import { downloadBlob } from '../../utils/export';
 import { getToken } from '../../utils/auth';
 
@@ -365,7 +409,6 @@ export default {
       activeKeyword: { pName: '', proDesc: '' },
       tableData: [],
       loading: false,
-      selectedRows: [],
       pagination: {
         pageNo: 1,
         pageSize: 10,
@@ -375,11 +418,6 @@ export default {
       submitting: false,
       addForm: this.defaultAddForm(),
       uploadingImage: false,
-      orderVisible: false,
-      submittingStatus: null,
-      orderItems: [],
-      addressList: [],
-      orderAddressId: null,
       editVisible: false,
       editSubmitting: false,
       editForm: {
@@ -402,10 +440,16 @@ export default {
       restockRow: null,
       restockForm: { quantity: 1 },
       likingId: null,
-      hasDefaultAddress: false,
-      defaultAddressId: null,
-      seckillingId: null,
-      seckillTimer: null,
+      // 设折扣 / 发布秒杀 共用同一个商品行
+      activityRow: null,
+      promotionVisible: false,
+      promotionSubmitting: false,
+      promotionLoading: false,
+      promotionList: [],
+      promotionForm: { discount: 90, range: [] },
+      seckillVisible: false,
+      seckillSubmitting: false,
+      seckillForm: { seckillPrice: 1, seckillStock: 10, range: [] },
       addRules: {
         pName: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
         productionDate: [{ required: true, message: '请选择生产日期', trigger: 'change' }],
@@ -422,6 +466,15 @@ export default {
       },
       restockRules: {
         quantity: [{ required: true, message: '请输入补货数量', trigger: 'blur' }]
+      },
+      promotionRules: {
+        discount: [{ required: true, message: '请输入折扣率', trigger: 'blur' }],
+        range: [{ required: true, message: '请选择活动时间', trigger: 'change' }]
+      },
+      seckillRules: {
+        seckillPrice: [{ required: true, message: '请输入秒杀价', trigger: 'blur' }],
+        seckillStock: [{ required: true, message: '请输入秒杀名额', trigger: 'blur' }],
+        range: [{ required: true, message: '请选择活动时间', trigger: 'change' }]
       }
     };
   },
@@ -431,8 +484,11 @@ export default {
       const add = Number(this.restockForm.quantity) || 0;
       return current + add;
     },
-    totalAmount() {
-      return this.orderItems.reduce((sum, it) => sum + Number(this.subtotal(it) || 0), 0).toFixed(2);
+    /** 折后价预览。price 是整数元，85 折可能除不尽，保留两位与后端 HALF_UP 一致 */
+    promotionPreview() {
+      const price = Number(this.activityRow && this.activityRow.price) || 0;
+      const discount = Number(this.promotionForm.discount) || 0;
+      return (price * discount / 100).toFixed(2);
     },
     uploadHeaders() {
       const token = getToken();
@@ -441,11 +497,9 @@ export default {
   },
   created() {
     this.fetchData();
-    this.loadDefaultAddress();
   },
   beforeDestroy() {
     this.stopPolling();
-    this.stopSeckillPolling();
   },
   methods: {
     defaultAddForm() {
@@ -509,16 +563,10 @@ export default {
       this.pagination.pageNo = 1;
       this.fetchData();
     },
-    handleSelectionChange(rows) {
-      this.selectedRows = rows || [];
-    },
     rowClassName({ row }) {
       if (row && row.stock === 0) return 'row-out-of-stock';
       if (row && row.isExpired === 1) return 'row-expired';
       return '';
-    },
-    canSelect(row) {
-      return row && row.stock !== 0 && row.isExpired !== 1;
     },
     indexMethod(index) {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
@@ -567,110 +615,134 @@ export default {
           this.likingId = null;
         });
     },
-    loadDefaultAddress() {
-      const user = this.$store.state.userInfo || {};
-      if (!user.uId) {
-        this.hasDefaultAddress = false;
-        this.defaultAddressId = null;
-        return;
-      }
-      getAddressList(user.uId)
-        .then(res => {
-          const list = res.dataList || [];
-          const def = Array.isArray(list) ? list.find(a => a.isDefault === 1) : null;
-          this.hasDefaultAddress = !!def;
-          this.defaultAddressId = def ? def.aId : null;
+    /** 折扣率转中文：85 → 8.5 折，90 → 9 折 */
+    discountText(discount) {
+      const d = Number(discount) || 0;
+      if (!d) return '';
+      return `${(d / 10).toFixed(1).replace(/\.0$/, '')} 折`;
+    },
+    /** 活动所处阶段。后端返回 'yyyy-MM-dd HH:mm:ss'，替换成 '/' 兼容 Safari 解析 */
+    phaseOf(row) {
+      const now = Date.now();
+      const start = new Date(String(row.startTime || '').replace(/-/g, '/')).getTime();
+      const end = new Date(String(row.endTime || '').replace(/-/g, '/')).getTime();
+      if (now < start) return { text: '未开始', type: 'info' };
+      if (now > end) return { text: '已结束', type: '' };
+      return { text: '进行中', type: 'success' };
+    },
+    handleCommand(command, row) {
+      if (command === 'edit') this.openEdit(row);
+      else if (command === 'restock') this.openRestock(row);
+      else if (command === 'shelf') this.handleShelf(row);
+      else if (command === 'promotion') this.openPromotion(row);
+      else if (command === 'seckill') this.openSeckill(row);
+    },
+    handleShelf(row) {
+      const off = row.status === 0;
+      const next = off ? 1 : 0;
+      this.$confirm(off ? '上架后顾客即可看到并购买该商品，是否继续？' : '下架后顾客将查不到该商品，是否继续？',
+        off ? '确认上架' : '确认下架', { type: 'warning' })
+        .then(() => setShelfStatus(row.pId, next))
+        .then(() => {
+          this.$message.success(off ? '已上架' : '已下架');
+          this.fetchData();
         })
-        .catch(() => {
-          this.hasDefaultAddress = false;
-          this.defaultAddressId = null;
-        });
+        .catch(() => {});
     },
-    canSeckill(row) {
-      return !!row
-        && row.stock != null && row.stock >= 1
-        && row.isExpired !== 1
-        && this.hasDefaultAddress;
+    openPromotion(row) {
+      this.activityRow = row;
+      this.promotionForm = { discount: 90, range: [] };
+      this.promotionList = [];
+      this.promotionVisible = true;
+      this.$nextTick(() => {
+        this.$refs.promotionForm && this.$refs.promotionForm.clearValidate();
+      });
+      this.fetchPromotions();
     },
-    seckillReason(row) {
-      if (!this.hasDefaultAddress) return '请先维护默认收货地址';
-      if (row && row.isExpired === 1) return '商品已过期';
-      if (!row || row.stock == null || row.stock < 1) return '库存不足';
-      return '';
-    },
-    handleSeckill(row) {
-      if (this.seckillingId) return;
-      const user = this.$store.state.userInfo || {};
-      if (!user.uId) {
-        this.$message.warning('请先登录');
-        return;
-      }
-      if (!this.defaultAddressId) {
-        this.$message.warning('请先维护默认收货地址');
-        return;
-      }
-      this.seckillingId = row.pId;
-      const payload = {
-        uId: user.uId,
-        pId: row.pId,
-        addressId: this.defaultAddressId,
-        addPerson: user.uName || user.realName || 'anonymous'
-      };
-      seckill(payload)
+    fetchPromotions() {
+      if (!this.activityRow) return;
+      this.promotionLoading = true;
+      promotionPageQuery({ pId: this.activityRow.pId, pageNo: 1, pageSize: 50 })
         .then(res => {
-          const vo = res.daoResult || {};
-          if (vo.status === 'PENDING') {
-            this.pollSeckillResult(user.uId, row.pId);
-          } else if (vo.status === 'SUCCESS') {
-            this.$message.success(vo.msg || '下单成功');
-            this.seckillingId = null;
+          const page = res.daoResult || {};
+          this.promotionList = page.records || [];
+        })
+        .catch(() => {})
+        .finally(() => { this.promotionLoading = false; });
+    },
+    submitPromotion() {
+      this.$refs.promotionForm.validate(valid => {
+        if (!valid) return;
+        const range = this.promotionForm.range || [];
+        if (range.length !== 2) {
+          this.$message.warning('请选择完整的活动起止时间');
+          return;
+        }
+        this.promotionSubmitting = true;
+        createPromotion({
+          pId: this.activityRow.pId,
+          discount: this.promotionForm.discount,
+          startTime: range[0],
+          endTime: range[1]
+        })
+          .then(() => {
+            this.$message.success('折扣活动已创建');
+            this.promotionForm.range = [];
+            this.fetchPromotions();
+            // 折扣可能立即生效，刷新列表让折扣列同步
             this.fetchData();
-          } else {
-            this.$message.warning(vo.msg || '秒杀失败');
-            this.seckillingId = null;
-          }
-        })
-        .catch(() => {
-          this.seckillingId = null;
-        });
-    },
-    pollSeckillResult(uId, pId) {
-      this.stopSeckillPolling();
-      let elapsed = 0;
-      this.seckillTimer = setInterval(() => {
-        elapsed += 1500;
-        getSeckillResult(uId, pId)
-          .then(res => {
-            const vo = res.daoResult || {};
-            if (vo.status === 'SUCCESS') {
-              this.stopSeckillPolling();
-              this.seckillingId = null;
-              this.$message.success(`秒杀成功，订单号 ${vo.orderNo || ''}`);
-              this.fetchData();
-            } else if (vo.status === 'FAILED') {
-              this.stopSeckillPolling();
-              this.seckillingId = null;
-              this.$message.warning(vo.msg || '秒杀失败');
-            } else if (elapsed >= 15000) {
-              // PENDING/NONE 超时兜底：不阻塞用户，提示去订单列表查看
-              this.stopSeckillPolling();
-              this.seckillingId = null;
-              this.$message.info('订单处理中，请稍后在订单列表查看');
-            }
           })
-          .catch(err => {
-            if (err && err.response && err.response.status === 401) {
-              this.stopSeckillPolling();
-              this.seckillingId = null;
-            }
-          });
-      }, 1500);
+          .catch(() => {})
+          .finally(() => { this.promotionSubmitting = false; });
+      });
     },
-    stopSeckillPolling() {
-      if (this.seckillTimer) {
-        clearInterval(this.seckillTimer);
-        this.seckillTimer = null;
-      }
+    handleCancelPromotion(row) {
+      this.$confirm('取消后该折扣立即失效，是否继续？', '确认取消折扣', { type: 'warning' })
+        .then(() => cancelPromotion(row.id))
+        .then(() => {
+          this.$message.success('已取消');
+          this.fetchPromotions();
+          this.fetchData();
+        })
+        .catch(() => {});
+    },
+    openSeckill(row) {
+      this.activityRow = row;
+      const price = Number(row.price) || 1;
+      this.seckillForm = {
+        // 默认给一个必然低于原价的建议值，避免商家一提交就撞「秒杀价必须低于原价」
+        seckillPrice: Number(Math.max(price * 0.5, 0.01).toFixed(2)),
+        seckillStock: Math.min(10, Number(row.stock) || 1),
+        range: []
+      };
+      this.seckillVisible = true;
+      this.$nextTick(() => {
+        this.$refs.seckillForm && this.$refs.seckillForm.clearValidate();
+      });
+    },
+    submitSeckill() {
+      this.$refs.seckillForm.validate(valid => {
+        if (!valid) return;
+        const range = this.seckillForm.range || [];
+        if (range.length !== 2) {
+          this.$message.warning('请选择完整的活动起止时间');
+          return;
+        }
+        this.seckillSubmitting = true;
+        createSeckill({
+          pId: this.activityRow.pId,
+          seckillPrice: this.seckillForm.seckillPrice,
+          seckillStock: this.seckillForm.seckillStock,
+          startTime: range[0],
+          endTime: range[1]
+        })
+          .then(() => {
+            this.$message.success('秒杀活动已发布');
+            this.seckillVisible = false;
+          })
+          .catch(() => {})
+          .finally(() => { this.seckillSubmitting = false; });
+      });
     },
     openAdd() {
       this.addForm = this.defaultAddForm();
@@ -729,96 +801,6 @@ export default {
             this.submitting = false;
           });
       });
-    },
-    handlePlaceOrder() {
-      if (!this.selectedRows.length) {
-        this.$message.warning('请先勾选要下单的商品');
-        return;
-      }
-      this.orderItems = this.selectedRows.map(r => ({
-        pId: r.pId,
-        pName: r.pName,
-        stock: r.stock,
-        price: r.price,
-        max: r.stock || 0,
-        quantity: 1
-      }));
-      this.loadAddresses().finally(() => {
-        this.orderVisible = true;
-      });
-    },
-    loadAddresses() {
-      const user = this.$store.state.userInfo || {};
-      const uId = user.uId;
-      if (!uId) {
-        this.addressList = [];
-        this.orderAddressId = null;
-        return Promise.resolve();
-      }
-      return getAddressList(uId)
-        .then(res => {
-          const list = res.dataList || [];
-          this.addressList = Array.isArray(list) ? list : [];
-          const def = this.addressList.find(a => a.isDefault === 1);
-          this.orderAddressId = def ? def.aId : (this.addressList[0] && this.addressList[0].aId) || null;
-        })
-        .catch(() => {
-          this.addressList = [];
-          this.orderAddressId = null;
-        });
-    },
-    formatAddressLabel(addr) {
-      if (!addr) return '';
-      const region = [addr.province, addr.city, addr.district].filter(v => v).join('');
-      return `${addr.consignee} ${addr.phone} ${region}${addr.detail || ''}${addr.isDefault === 1 ? '（默认）' : ''}`;
-    },
-    subtotal(row) {
-      const price = Number(row && row.price) || 0;
-      const qty = Number(row && row.quantity) || 0;
-      return (price * qty).toFixed(2);
-    },
-    orderMax(row) {
-      const max = row.stock == null ? 0 : Number(row.stock);
-      return max < 0 ? 0 : max;
-    },
-    submitOrder(orderStatus) {
-      if (!this.orderAddressId) {
-        this.$message.warning('请选择收货地址');
-        return;
-      }
-      const invalid = this.orderItems.find(it => !it.quantity || it.quantity < 1);
-      if (invalid) {
-        this.$message.warning(`请填写「${invalid.pName}」的下单数量`);
-        return;
-      }
-      const over = this.orderItems.find(it => it.quantity > this.orderMax(it));
-      if (over) {
-        this.$message.warning(`「${over.pName}」下单数量不能大于库存（${this.orderMax(over)}）`);
-        return;
-      }
-      const user = this.$store.state.userInfo || {};
-      const payload = {
-        uId: user.uId,
-        addPerson: user.uName || (user.realName || 'anonymous'),
-        addressId: this.orderAddressId,
-        orderStatus: orderStatus,
-        items: this.orderItems.map(it => ({
-          pId: it.pId,
-          quantity: it.quantity,
-          price: it.price
-        }))
-      };
-      this.submittingStatus = orderStatus;
-      placeOrderV2(payload)
-        .then(() => {
-          this.$message.success('下单成功');
-          this.orderVisible = false;
-          this.fetchData();
-        })
-        .catch(() => {})
-        .finally(() => {
-          this.submittingStatus = null;
-        });
     },
     formatDate(d) {
       if (!d) return '';
@@ -1034,10 +1016,6 @@ export default {
   border-radius: 10px;
   line-height: 1.4;
 }
-.header-meta--active {
-  color: #fff;
-  background: linear-gradient(135deg, #f6ad36 0%, #e8850e 100%);
-}
 .header-actions {
   display: flex;
   gap: 8px;
@@ -1157,9 +1135,43 @@ export default {
   color: #e6a23c;
   font-weight: 600;
 }
-.seckill-btn:not(.is-disabled) {
-  color: #f56c6c;
+.cell-muted {
+  color: #c0c4cc;
+}
+.discount-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.discount-price {
+  color: #cf1322;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dialog-name {
+  font-weight: 600;
+  color: #1f2733;
+}
+.dialog-hint {
+  margin-left: 10px;
+  font-size: 12px;
+  color: #8a93a4;
+}
+.dialog-strong {
+  color: #cf1322;
+}
+.sub-title {
+  margin: 4px 0 10px;
+  padding-left: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+  border-left: 3px solid #667eea;
+  line-height: 1.2;
+}
+.text-danger {
+  color: #f56c6c;
 }
 .restock-name {
   font-weight: 600;
@@ -1173,25 +1185,6 @@ export default {
   color: #67c23a;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-.order-addr-form {
-  margin-bottom: 8px;
-  padding: 12px 16px;
-  background: #fafbfd;
-  border: 1px solid #eef0f4;
-  border-radius: 10px;
-}
-.order-addr-form >>> .el-form-item {
-  margin-bottom: 0;
-}
-.order-total {
-  margin-top: 12px;
-  text-align: right;
-  font-size: 14px;
-  color: #4a5568;
-}
-.order-total .price-text {
-  font-size: 16px;
 }
 .product-thumb {
   width: 48px;

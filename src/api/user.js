@@ -78,6 +78,22 @@ export function updateUserProfile(data) {
   });
 }
 
+// 当前登录用户自助：身份由后端从 X-User-Id 取，不传 uId
+export function getMyProfile() {
+  return request({
+    url: '/user/me/profile',
+    method: 'get'
+  });
+}
+
+export function updateMyProfile(data) {
+  return request({
+    url: '/user/me/profile',
+    method: 'put',
+    data
+  });
+}
+
 export function exportUser(params) {
   return request({
     url: '/user/export',

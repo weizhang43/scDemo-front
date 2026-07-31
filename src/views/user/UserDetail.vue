@@ -1,12 +1,12 @@
 <template>
-  <div class="user-detail">
+  <div class="user-detail" :class="{ 'is-embedded': self }">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
           <span class="card-title">个人信息</span>
           <span v-if="form.uId" class="header-meta">用户ID #{{ form.uId }}</span>
         </div>
-        <el-button type="text" size="small" icon="el-icon-back" class="btn-back" @click="goBack">返回</el-button>
+        <el-button v-if="!self" type="text" size="small" icon="el-icon-back" class="btn-back" @click="goBack">返回</el-button>
       </div>
 
       <div class="detail-body">
@@ -64,10 +64,14 @@
 </template>
 
 <script>
-import { getUserDetail, updateUserProfile } from '../../api/user';
+import { getUserDetail, updateUserProfile, getMyProfile, updateMyProfile } from '../../api/user';
 
 export default {
   name: 'UserDetail',
+  props: {
+    // 嵌在个人主页里时为 true：身份由后端从 X-User-Id 取，不读路由参数
+    self: { type: Boolean, default: false }
+  },
   data() {
     const phoneValidator = (rule, value, callback) => {
       if (!value) {
@@ -111,16 +115,22 @@ export default {
   },
   methods: {
     fetchData() {
-      const queryId = this.$route.query.id;
-      const storeUser = this.$store.state.userInfo || {};
-      const id = queryId ? Number(queryId) : storeUser.uId;
-      if (!id) {
-        this.$message.error('未获取到用户信息，请重新登录');
-        this.$router.push('/login');
-        return;
+      let req;
+      if (this.self) {
+        req = getMyProfile();
+      } else {
+        const queryId = this.$route.query.id;
+        const storeUser = this.$store.state.userInfo || {};
+        const id = queryId ? Number(queryId) : storeUser.uId;
+        if (!id) {
+          this.$message.error('未获取到用户信息，请重新登录');
+          this.$router.push('/login');
+          return;
+        }
+        req = getUserDetail(id);
       }
       this.loading = true;
-      getUserDetail(id)
+      req
         .then(res => {
           const u = res.daoResult || {};
           this.form = {
@@ -143,7 +153,8 @@ export default {
       this.$refs.profileForm.validate(valid => {
         if (!valid) return;
         this.submitting = true;
-        updateUserProfile(this.form)
+        const req = this.self ? updateMyProfile(this.form) : updateUserProfile(this.form);
+        req
           .then(res => {
             const u = res.daoResult || {};
             // 同步更新本地 store，保留 uName
@@ -191,6 +202,15 @@ export default {
 .user-detail > .el-card {
   width: 100%;
   max-width: 920px;
+}
+/* 嵌入个人主页时，整页背景与内边距由外层容器接管 */
+.user-detail.is-embedded {
+  min-height: 0;
+  padding: 0;
+  background: none;
+}
+.user-detail.is-embedded > .el-card {
+  max-width: none;
 }
 .card-header {
   display: flex;

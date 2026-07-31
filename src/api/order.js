@@ -16,15 +16,6 @@ export function orderStatusCount(params) {
   });
 }
 
-export function placeOrder(products, addPerson) {
-  return request({
-    url: '/order/placeOrder',
-    method: 'post',
-    params: { addPerson },
-    data: products
-  });
-}
-
 export function placeOrderV2(payload) {
   return request({
     url: '/order/placeOrderV2',
@@ -33,6 +24,7 @@ export function placeOrderV2(payload) {
   });
 }
 
+/** 秒杀下单：立即返回 PENDING，需轮询 seckillResult 拿终态 */
 export function seckill(payload) {
   return request({
     url: '/order/seckill',
@@ -41,24 +33,18 @@ export function seckill(payload) {
   });
 }
 
-export function getSeckillResult(uId, pId) {
+/** 轮询秒杀结果：PENDING / SUCCESS / FAILED / NONE */
+export function seckillResult(uId, activityId) {
   return request({
     url: '/order/seckill/result',
     method: 'get',
-    params: { uId, pId }
+    params: { uId, activityId }
   });
 }
 
 export function getOrderById(id) {
   return request({
     url: `/order/${id}`,
-    method: 'get'
-  });
-}
-
-export function getOrderList() {
-  return request({
-    url: '/order/list',
     method: 'get'
   });
 }

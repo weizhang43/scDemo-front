@@ -1,14 +1,16 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { getToken, setToken, removeToken, getUser, setUser, removeUser } from '../utils/auth';
-import { menusForType, normalizeType } from '../router/menuConfig';
+import { menusForType, normalizeType, U_TYPE_CUSTOMER } from '../router/menuConfig';
+import { getCartCount } from '../api/cart';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     token: getToken() || '',
-    userInfo: getUser() || {}
+    userInfo: getUser() || {},
+    cartCount: 0
   },
   getters: {
     userType(state) {
@@ -35,9 +37,14 @@ export default new Vuex.Store({
         removeUser();
       }
     },
+    SET_CART_COUNT(state, n) {
+      state.cartCount = Number(n) || 0;
+    },
     LOGOUT(state) {
       state.token = '';
       state.userInfo = {};
+      // 不归零的话，同一标签页里顾客登出后商家登入会继承一个陈旧角标
+      state.cartCount = 0;
       removeToken();
       removeUser();
     }
@@ -45,6 +52,16 @@ export default new Vuex.Store({
   actions: {
     logout({ commit }) {
       commit('LOGOUT');
+    },
+    /** 身份守卫放在 action 里：调用方不必判身份，非顾客也不会发出 /count 请求 */
+    refreshCartCount({ commit, getters }) {
+      if (getters.userType !== U_TYPE_CUSTOMER) {
+        commit('SET_CART_COUNT', 0);
+        return;
+      }
+      getCartCount()
+        .then(res => commit('SET_CART_COUNT', res.daoResult || 0))
+        .catch(() => commit('SET_CART_COUNT', 0));
     }
   }
 });
