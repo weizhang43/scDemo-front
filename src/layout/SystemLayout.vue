@@ -17,7 +17,10 @@
         <div class="header-right">
           <el-dropdown trigger="hover" @command="handleCommand">
             <div class="user-chip">
-              <div class="user-avatar">{{ avatarText }}</div>
+              <div class="user-avatar">
+                <img v-if="avatarUrl" :src="avatarUrl" class="user-avatar-img" alt="">
+                <template v-else>{{ avatarText }}</template>
+              </div>
               <div class="user-meta">
                 <span class="user-greeting" v-if="username !== '未登录'">欢迎你</span>
                 <span class="user-name">{{ username }}</span>
@@ -69,6 +72,9 @@ export default {
       const name = this.username;
       if (!name || name === '未登录') return 'U';
       return name.charAt(0).toUpperCase();
+    },
+    avatarUrl() {
+      return (this.$store.state.userInfo || {}).avatar || '';
     },
     activeMenu() {
       return this.$route.path;
@@ -213,6 +219,13 @@ export default {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .user-meta {
   display: flex;

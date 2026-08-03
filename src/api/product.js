@@ -38,6 +38,15 @@ export function likeProduct(id) {
   });
 }
 
+/** 批量查「我点过哪些商品」，返回 pId 列表 */
+export function getMyLikedProducts(pIds) {
+  return request({
+    url: '/product/like/mine',
+    method: 'get',
+    params: { pIds: pIds.join(',') }
+  });
+}
+
 export function updateProduct(id, data) {
   return request({
     url: '/product',

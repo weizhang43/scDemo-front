@@ -82,11 +82,12 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="230" align="center" fixed="right">
+        <el-table-column label="操作" width="280" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
             <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
+            <el-button v-if="scope.row.orderStatus == 2" type="text" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="btn-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
             <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="btn-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
@@ -106,11 +107,21 @@
         />
       </div>
     </el-card>
+
+    <order-review-dialog
+      :visible.sync="reviewVisible"
+      :o-id="reviewOId"
+      :items="reviewItems"
+      :reviewed-p-ids="reviewedPIds"
+      @submitted="refresh"
+    />
   </div>
 </template>
 
 <script>
-import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount } from '../../api/order';
+import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount, getOrderById } from '../../api/order';
+import { getOrderReviewedPIds } from '../../api/review';
+import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
 
 const STATUS_MAP = {
   '-1': { label: '已取消', type: 'info' },
@@ -133,6 +144,7 @@ const ACTION_TEXT = {
 
 export default {
   name: 'MyOrderList',
+  components: { OrderReviewDialog },
   data() {
     return {
       searchForm: {
@@ -144,6 +156,11 @@ export default {
       statusCounts: {},
       tableData: [],
       loading: false,
+      reviewVisible: false,
+      reviewLoadingId: null,
+      reviewOId: null,
+      reviewItems: [],
+      reviewedPIds: [],
       pagination: {
         pageNo: 1,
         pageSize: 10,
@@ -253,6 +270,30 @@ export default {
     },
     goDetail(id) {
       this.$router.push(`/order/${id}`);
+    },
+    /** 整单评价：明细与已评列表都拿到手再开弹窗，避免弹窗先空后跳 */
+    openReview(row) {
+      if (this.reviewLoadingId) return;
+      this.reviewLoadingId = row.oid;
+      Promise.all([
+        getOrderById(row.oid),
+        getOrderReviewedPIds(row.oid).catch(() => ({ dataList: [] }))
+      ])
+        .then(([order, reviewed]) => {
+          const items = (order && order.orderItems) || [];
+          if (!items.length) {
+            this.$message.warning('该订单没有可评价的商品');
+            return;
+          }
+          this.reviewOId = row.oid;
+          this.reviewItems = items.map(it => ({ pId: it.pId, pName: it.pName }));
+          this.reviewedPIds = (reviewed.dataList || []).map(Number);
+          this.reviewVisible = true;
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.reviewLoadingId = null;
+        });
     },
     goPay(id) {
       this.$router.push(`/pay/${id}`);

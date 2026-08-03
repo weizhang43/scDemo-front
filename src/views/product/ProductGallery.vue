@@ -23,6 +23,10 @@
         </div>
       </div>
 
+      <el-tabs v-model="sortBy" class="sort-tabs" @tab-click="handleSortChange">
+        <el-tab-pane v-for="tab in sortTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
+      </el-tabs>
+
       <el-row v-if="list.length" :gutter="16" class="goods-row">
         <el-col v-for="item in list" :key="item.pId" :xs="12" :sm="8" :md="4">
           <div
@@ -38,6 +42,9 @@
               </el-image>
               <div v-else class="goods-image-fallback">
                 <i class="el-icon-picture-outline" />
+              </div>
+              <div class="like-badge">
+                <i class="el-icon-thumb" />{{ item.likeCount == null ? 0 : item.likeCount }}
               </div>
               <div v-if="isSoldOut(item)" class="sold-out-mask">已售罄</div>
               <div v-else class="hover-actions">
@@ -59,6 +66,11 @@
             </div>
             <div class="goods-body">
               <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
+              <div class="goods-meta">
+                <span>成交 {{ item.saleCount || 0 }}</span>
+                <span class="goods-meta-dot">·</span>
+                <span>评价 {{ item.reviewCount || 0 }}</span>
+              </div>
               <div class="goods-foot">
                 <div class="goods-price">
                   <span class="price-text">¥ {{ effectivePriceOf(item) }}</span>
@@ -97,6 +109,14 @@ import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
 
+// 空 name 即后端的默认排序（p_id 倒序），不往请求里塞 sortBy
+const SORT_TABS = [
+  { name: '', label: '综合' },
+  { name: 'sales', label: '成交数' },
+  { name: 'reviews', label: '评价数' },
+  { name: 'likes', label: '点赞数' }
+];
+
 export default {
   name: 'ProductGallery',
   data() {
@@ -106,6 +126,8 @@ export default {
       defaultAddress: null,
       buyingId: null,
       addingId: null,
+      sortTabs: SORT_TABS,
+      sortBy: '',
       searchForm: {
         pName: ''
       },
@@ -127,6 +149,7 @@ export default {
       pageQuery({
         pName: this.searchForm.pName || '',
         isExpired: 0,
+        sortBy: this.sortBy || undefined,
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize
       })
@@ -262,8 +285,13 @@ export default {
       this.pagination.pageNo = 1;
       this.fetchData();
     },
+    handleSortChange() {
+      this.pagination.pageNo = 1;
+      this.fetchData();
+    },
     handleReset() {
       this.searchForm.pName = '';
+      this.sortBy = '';
       this.pagination.pageNo = 1;
       this.fetchData();
     },
@@ -343,6 +371,9 @@ export default {
 .search-input {
   width: 240px;
 }
+.sort-tabs {
+  margin-bottom: 14px;
+}
 .goods-row {
   margin-bottom: 4px;
 }
@@ -387,6 +418,23 @@ export default {
   color: #c3c9d4;
   font-size: 34px;
 }
+.like-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(31, 41, 59, 0.55);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
 .sold-out-mask {
   position: absolute;
   top: 0;
@@ -401,6 +449,8 @@ export default {
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 2px;
+  /* 压住点赞角标：售罄遮罩是全屏蒙层，角标透出来会显得脏 */
+  z-index: 3;
 }
 .hover-actions {
   position: absolute;
@@ -416,6 +466,7 @@ export default {
   background: rgba(31, 41, 59, 0.42);
   opacity: 0;
   transition: opacity 0.2s ease;
+  z-index: 3;
 }
 .goods-card:hover .hover-actions {
   opacity: 1;
@@ -459,6 +510,18 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 8px;
+}
+.goods-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #8a93a4;
+  font-variant-numeric: tabular-nums;
+}
+.goods-meta-dot {
+  color: #d5d9e2;
 }
 .goods-foot {
   display: flex;
@@ -536,5 +599,41 @@ export default {
 }
 .product-gallery .goods-image .el-image__inner {
   object-fit: cover;
+}
+.product-gallery .sort-tabs .el-tabs__header {
+  margin: 0;
+}
+.product-gallery .sort-tabs .el-tabs__content {
+  display: none;
+}
+.product-gallery .sort-tabs .el-tabs__nav-wrap::after {
+  display: none;
+}
+.product-gallery .sort-tabs .el-tabs__active-bar {
+  display: none;
+}
+.product-gallery .sort-tabs .el-tabs__nav {
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px;
+  background: #f3f5fa;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+}
+.product-gallery .sort-tabs .el-tabs__item {
+  height: 34px;
+  line-height: 34px;
+  padding: 0 22px !important;
+  color: #6b7280;
+  border-radius: 9px;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.product-gallery .sort-tabs .el-tabs__item:hover {
+  color: #667eea;
+}
+.product-gallery .sort-tabs .el-tabs__item.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 </style>

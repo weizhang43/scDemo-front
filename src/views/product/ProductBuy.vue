@@ -112,6 +112,8 @@
             </el-form-item>
           </el-form>
         </div>
+
+        <product-review-list :p-id="product.pId" />
       </div>
 
       <el-empty v-else-if="!loading" description="未找到商品信息" />
@@ -124,9 +126,11 @@ import { getProductById } from '../../api/product';
 import { getAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
+import ProductReviewList from '../../components/ProductReviewList.vue';
 
 export default {
   name: 'ProductBuy',
+  components: { ProductReviewList },
   data() {
     return {
       product: null,

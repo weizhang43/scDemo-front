@@ -91,6 +91,28 @@
                 <span class="cell-amount">¥{{ formatAmount(subtotal(scope.row)) }}</span>
               </template>
             </el-table-column>
+            <!-- 点赞与评价是顾客专属动作，本路由商家也能进，故整列门控 -->
+            <el-table-column v-if="isCustomer" label="操作" width="170" align="center">
+              <template slot-scope="scope">
+                <el-button
+                  v-if="liked(scope.row.pId)"
+                  type="text"
+                  icon="el-icon-thumb"
+                  disabled
+                >已赞</el-button>
+                <el-button
+                  v-else
+                  type="text"
+                  icon="el-icon-thumb"
+                  :loading="likingId === scope.row.pId"
+                  @click="handleLike(scope.row)"
+                >点赞</el-button>
+                <template v-if="canReview">
+                  <el-button v-if="reviewed(scope.row.pId)" type="text" icon="el-icon-star-on" disabled>已评价</el-button>
+                  <el-button v-else type="text" icon="el-icon-star-off" @click="openReview(scope.row)">评价</el-button>
+                </template>
+              </template>
+            </el-table-column>
           </el-table>
           <el-empty v-else description="该订单暂无商品明细" :image-size="80" />
         </div>
@@ -98,11 +120,22 @@
 
       <el-empty v-else description="未找到订单信息" />
     </el-card>
+
+    <order-review-dialog
+      :visible.sync="reviewVisible"
+      :o-id="order && order.oid"
+      :items="reviewItems"
+      :reviewed-p-ids="reviewedPIds"
+      @submitted="loadReviewedPIds"
+    />
   </div>
 </template>
 
 <script>
 import { getOrderById } from '../../api/order';
+import { likeProduct, getMyLikedProducts } from '../../api/product';
+import { getOrderReviewedPIds } from '../../api/review';
+import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
 
 const STATUS_MAP = {
   '-1': { label: '取消', type: 'info' },
@@ -113,10 +146,16 @@ const STATUS_MAP = {
 
 export default {
   name: 'OrderDetail',
+  components: { OrderReviewDialog },
   data() {
     return {
       order: null,
-      loading: false
+      loading: false,
+      likedPIds: [],
+      reviewedPIds: [],
+      likingId: null,
+      reviewVisible: false,
+      reviewItems: []
     };
   },
   computed: {
@@ -124,12 +163,60 @@ export default {
       const o = this.order || {};
       const list = o.items || o.orderItems || o.productList || o.goodsList || o.details || [];
       return Array.isArray(list) ? list : [];
+    },
+    isCustomer() {
+      return this.$store.getters.userType === 2;
+    },
+    canReview() {
+      return this.isCustomer && Number((this.order || {}).orderStatus) === 2;
     }
   },
   created() {
     this.fetchData();
   },
   methods: {
+    liked(pId) {
+      return this.likedPIds.indexOf(Number(pId)) > -1;
+    },
+    reviewed(pId) {
+      return this.reviewedPIds.indexOf(Number(pId)) > -1;
+    },
+    /** 按钮态接口失败只影响按钮显示，不该拖垮详情页主体，故一律静默 */
+    loadLikedPIds() {
+      const pIds = this.orderItems.map(it => Number(it.pId)).filter(id => id);
+      if (!pIds.length) return;
+      getMyLikedProducts(pIds)
+        .then(res => {
+          this.likedPIds = (res.dataList || []).map(Number);
+        })
+        .catch(() => {});
+    },
+    loadReviewedPIds() {
+      const oid = (this.order || {}).oid;
+      if (!oid) return;
+      getOrderReviewedPIds(oid)
+        .then(res => {
+          this.reviewedPIds = (res.dataList || []).map(Number);
+        })
+        .catch(() => {});
+    },
+    handleLike(row) {
+      if (this.likingId) return;
+      this.likingId = row.pId;
+      likeProduct(row.pId)
+        .then(() => {
+          this.$message.success('点赞成功');
+          this.likedPIds = this.likedPIds.concat(Number(row.pId));
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.likingId = null;
+        });
+    },
+    openReview(row) {
+      this.reviewItems = [{ pId: row.pId, pName: row.pName }];
+      this.reviewVisible = true;
+    },
     subtotal(row) {
       const price = Number(row && row.price) || 0;
       const qty = Number(row && (row.quantity != null ? row.quantity : row.qty)) || 0;
@@ -148,6 +235,10 @@ export default {
       getOrderById(id)
         .then(res => {
           this.order = res;
+          if (this.isCustomer) {
+            this.loadLikedPIds();
+            this.loadReviewedPIds();
+          }
         })
         .catch(() => {
           this.order = null;

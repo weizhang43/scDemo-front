@@ -11,7 +11,29 @@
 
       <div class="detail-body">
         <div class="avatar-box">
-          <div class="avatar">{{ avatarText }}</div>
+          <el-upload
+            class="avatar-uploader"
+            action="/user/image/upload"
+            :show-file-list="false"
+            :headers="uploadHeaders"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            :before-upload="beforeAvatarUpload"
+            :on-success="handleAvatarSuccess"
+            :on-error="handleAvatarError"
+          >
+            <div v-loading="avatarUploading" class="avatar">
+              <img v-if="form.avatar" :src="form.avatar" class="avatar-img" alt="头像">
+              <span v-else>{{ avatarText }}</span>
+              <div class="avatar-mask"><i class="el-icon-camera-solid" /></div>
+            </div>
+          </el-upload>
+          <el-button
+            v-if="form.avatar"
+            type="text"
+            icon="el-icon-delete"
+            class="btn-remove-avatar"
+            @click="handleRemoveAvatar"
+          >移除头像</el-button>
           <div class="avatar-info">
             <div class="avatar-name">{{ form.realName || form.uName || '-' }}</div>
             <div class="avatar-sub">{{ form.uName }}</div>
@@ -65,6 +87,7 @@
 
 <script>
 import { getUserDetail, updateUserProfile, getMyProfile, updateMyProfile } from '../../api/user';
+import { getToken } from '../../utils/auth';
 
 export default {
   name: 'UserDetail',
@@ -87,6 +110,7 @@ export default {
     return {
       loading: false,
       submitting: false,
+      avatarUploading: false,
       original: {},
       form: {
         uId: null,
@@ -95,7 +119,8 @@ export default {
         gender: 0,
         phone: '',
         email: '',
-        birthday: ''
+        birthday: '',
+        avatar: ''
       },
       rules: {
         realName: [{ required: true, message: '请输入真实姓名', trigger: 'blur' }],
@@ -108,6 +133,11 @@ export default {
       const name = this.form.realName || this.form.uName || '';
       if (!name) return '?';
       return name.charAt(0).toUpperCase();
+    },
+    // el-upload 不走 axios，拦截器里的 Authorization 到不了它，得自己塞
+    uploadHeaders() {
+      const token = getToken();
+      return token ? { Authorization: 'Bearer ' + token } : {};
     }
   },
   created() {
@@ -140,7 +170,8 @@ export default {
             gender: typeof u.gender === 'number' ? u.gender : 0,
             phone: u.phone || '',
             email: u.email || '',
-            birthday: u.birthday || ''
+            birthday: u.birthday || '',
+            avatar: u.avatar || ''
           };
           this.original = { ...this.form };
         })
@@ -167,7 +198,8 @@ export default {
               gender: typeof u.gender === 'number' ? u.gender : 0,
               phone: u.phone || '',
               email: u.email || this.form.email,
-              birthday: u.birthday || ''
+              birthday: u.birthday || '',
+              avatar: u.avatar || ''
             };
             this.original = { ...this.form };
             this.$message.success('保存成功');
@@ -181,6 +213,57 @@ export default {
     handleReset() {
       this.form = { ...this.original };
       this.$refs.profileForm && this.$refs.profileForm.clearValidate();
+    },
+    beforeAvatarUpload(file) {
+      const ok = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'].includes(file.type);
+      if (!ok) this.$message.error('仅支持 png/jpg/gif/webp 格式');
+      const lt5 = file.size / 1024 / 1024 < 5;
+      if (!lt5) this.$message.error('头像不能超过 5MB');
+      if (ok && lt5) this.avatarUploading = true;
+      return ok && lt5;
+    },
+    // el-upload 绕过了响应拦截器，这里拿到的是原始信封
+    handleAvatarSuccess(res) {
+      this.avatarUploading = false;
+      if (res && res.code === 200 && res.daoResult) {
+        this.persistAvatar(res.daoResult, '头像已更新');
+      } else {
+        this.$message.error((res && res.msg) || '上传失败');
+      }
+    },
+    handleAvatarError() {
+      this.avatarUploading = false;
+      this.$message.error('头像上传失败');
+    },
+    handleRemoveAvatar() {
+      // MyBatis-Plus updateById 忽略 null，清空必须传空串
+      this.persistAvatar('', '已移除头像');
+    },
+    /**
+     * 头像上传即生效，不等「保存修改」。
+     * 提交的是 original 而非 form —— 否则会把用户正在编辑、还没点保存的姓名手机号一起提交上去。
+     */
+    persistAvatar(url, tip) {
+      const payload = { ...this.original, avatar: url };
+      const req = this.self ? updateMyProfile(payload) : updateUserProfile(payload);
+      this.avatarUploading = true;
+      req
+        .then(res => {
+          const u = res.daoResult || {};
+          const saved = u.avatar || '';
+          this.form.avatar = saved;
+          this.original.avatar = saved;
+          const me = this.$store.state.userInfo || {};
+          // 管理员代改他人资料时不能覆盖自己的 store
+          if (me.uId && u.uId === me.uId) {
+            this.$store.commit('SET_USER', { ...me, avatar: saved });
+          }
+          this.$message.success(tip);
+        })
+        .catch(() => {})
+        .finally(() => {
+          this.avatarUploading = false;
+        });
     },
     goBack() {
       this.$router.back();
@@ -281,6 +364,8 @@ export default {
   border: 1px solid #edeaf7;
 }
 .avatar {
+  position: relative;
+  overflow: hidden;
   width: 96px;
   height: 96px;
   border-radius: 50%;
@@ -293,6 +378,41 @@ export default {
   justify-content: center;
   box-shadow: 0 8px 20px rgba(118, 75, 162, 0.3);
   border: 3px solid #fff;
+  cursor: pointer;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.avatar-mask {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(31, 41, 59, 0.5);
+  color: #fff;
+  font-size: 24px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.avatar:hover .avatar-mask {
+  opacity: 1;
+}
+.btn-remove-avatar {
+  margin-top: 10px;
+  padding: 0;
+  color: #8a93a4;
+  font-size: 13px;
+}
+.btn-remove-avatar:hover,
+.btn-remove-avatar:focus {
+  color: #f56c6c;
 }
 .avatar-info {
   margin-top: 16px;

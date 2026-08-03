@@ -58,6 +58,9 @@
               <i class="el-icon-warning"></i> 库存不足
             </span>
           </el-descriptions-item>
+          <el-descriptions-item label="点赞数">
+            <i class="el-icon-thumb desc-icon"></i>{{ product.likeCount == null ? 0 : product.likeCount }}
+          </el-descriptions-item>
           <el-descriptions-item label="生产日期">
             <i class="el-icon-date desc-icon"></i>{{ formatDate(product.productionDate) }}
           </el-descriptions-item>
@@ -67,10 +70,12 @@
           <el-descriptions-item label="产地">
             <i class="el-icon-location-outline desc-icon"></i>{{ product.origin || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="厂家名称">
+          <el-descriptions-item label="厂家名称" :span="2">
             {{ product.manufacturer || '-' }}
           </el-descriptions-item>
         </el-descriptions>
+
+        <product-review-list :p-id="product.pId" />
       </div>
 
       <el-empty v-else description="未找到商品信息" />
@@ -80,9 +85,11 @@
 
 <script>
 import { getProductById } from '../../api/product';
+import ProductReviewList from '../../components/ProductReviewList.vue';
 
 export default {
   name: 'ProductDetail',
+  components: { ProductReviewList },
   data() {
     return {
       product: null,

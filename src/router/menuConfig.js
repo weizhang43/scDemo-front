@@ -11,6 +11,7 @@ export const MENUS = [
   { path: '/seckill', label: '限时秒杀', icon: 'el-icon-alarm-clock', types: [2] },
   { path: '/cart', label: '购物车', icon: 'el-icon-shopping-cart-2', types: [2] },
   { path: '/my-orders', label: '我的订单', icon: 'el-icon-s-order', types: [2] },
+  { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
   { path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [2] },
   { path: '/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] },

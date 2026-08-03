@@ -96,6 +96,12 @@ const routes = [
         meta: { requiresAuth: true, types: [2] }
       },
       {
+        path: 'my-reviews',
+        name: 'MyReviewList',
+        component: () => import('../views/review/MyReviewList.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
         path: 'order/:id',
         name: 'OrderDetail',
         component: () => import('../views/order/OrderDetail.vue'),

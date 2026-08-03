@@ -126,16 +126,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="点赞" width="110" align="center">
+        <el-table-column label="点赞" width="90" align="center">
           <template slot-scope="scope">
-            <el-button
-              type="text"
-              icon="el-icon-thumb"
-              :loading="likingId === scope.row.pId"
-              @click="handleLike(scope.row)"
-            >
-              {{ scope.row.likeCount == null ? 0 : scope.row.likeCount }}
-            </el-button>
+            <i class="el-icon-thumb like-icon"></i>{{ scope.row.likeCount == null ? 0 : scope.row.likeCount }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150" align="center" fixed="right">
@@ -387,7 +380,7 @@
 
 <script>
 import {
-  pageQuery, addProduct, updateProduct, likeProduct, setShelfStatus,
+  pageQuery, addProduct, updateProduct, setShelfStatus,
   promotionPageQuery, createPromotion, cancelPromotion,
   exportProductAsync, getExportStatus, cancelExport, downloadExportFile
 } from '../../api/product';
@@ -449,7 +442,6 @@ export default {
       exportTimer: null,
       restockRow: null,
       restockForm: { quantity: 1 },
-      likingId: null,
       // 设折扣 / 发布秒杀 共用同一个商品行
       activityRow: null,
       promotionVisible: false,
@@ -615,23 +607,6 @@ export default {
     },
     goDetail(id) {
       this.$router.push(`/product/${id}`);
-    },
-    handleLike(row) {
-      if (this.likingId) return;
-      this.likingId = row.pId;
-      likeProduct(row.pId)
-        .then(res => {
-          const updated = res.daoResult;
-          if (updated && updated.likeCount != null) {
-            row.likeCount = updated.likeCount;
-          } else {
-            row.likeCount = (row.likeCount || 0) + 1;
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          this.likingId = null;
-        });
     },
     /** 折扣率转中文：85 → 8.5 折，90 → 9 折 */
     discountText(discount) {
@@ -1168,6 +1143,10 @@ export default {
 }
 .cell-muted {
   color: #c0c4cc;
+}
+.like-icon {
+  color: #9aa3b2;
+  margin-right: 5px;
 }
 .discount-cell {
   display: flex;
