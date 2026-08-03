@@ -3,7 +3,7 @@
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
-          <span class="card-title">权限管理</span>
+          <span class="card-title">权限列表</span>
           <span class="header-meta">共 {{ total }} 个权限节点</span>
         </div>
         <div class="header-actions">

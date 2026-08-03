@@ -16,6 +16,10 @@ module.exports = {
       '/order': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/xxl-job-admin': {
+        target: 'http://localhost',
+        changeOrigin: true
       }
     }
   }

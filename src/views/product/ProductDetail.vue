@@ -67,10 +67,13 @@
           <el-descriptions-item label="保质期">
             {{ product.shelfLife }} 天
           </el-descriptions-item>
+          <el-descriptions-item label="商品类型">
+            {{ typeLabel(product.pType) }}
+          </el-descriptions-item>
           <el-descriptions-item label="产地">
             <i class="el-icon-location-outline desc-icon"></i>{{ product.origin || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="厂家名称" :span="2">
+          <el-descriptions-item label="厂家名称">
             {{ product.manufacturer || '-' }}
           </el-descriptions-item>
         </el-descriptions>
@@ -86,6 +89,7 @@
 <script>
 import { getProductById } from '../../api/product';
 import ProductReviewList from '../../components/ProductReviewList.vue';
+import { productTypeLabel } from '../../constants/productType';
 
 export default {
   name: 'ProductDetail',
@@ -111,6 +115,9 @@ export default {
     this.fetchData();
   },
   methods: {
+    typeLabel(code) {
+      return productTypeLabel(code);
+    },
     fetchData() {
       const id = this.$route.params.id;
       if (!id) return;

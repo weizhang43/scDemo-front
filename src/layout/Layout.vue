@@ -68,7 +68,10 @@ export default {
       return this.$store.state.cartCount;
     },
     activeMenu() {
-      return this.$route.path;
+      // 带二级目录的节点（如 /stats/*）在子页面时仍高亮顶栏父项
+      const path = this.$route.path;
+      const top = this.menus.find(m => path === m.path || path.indexOf(m.path + '/') === 0);
+      return top ? top.path : path;
     }
   },
   watch: {

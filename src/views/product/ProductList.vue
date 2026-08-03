@@ -80,6 +80,11 @@
             <span class="cell-strong" v-html="highlight(scope.row.pName, activeKeyword.pName)" />
           </template>
         </el-table-column>
+        <el-table-column label="类型" width="95" align="center">
+          <template slot-scope="scope">
+            <el-tag size="mini" effect="plain">{{ typeLabel(scope.row.pType) }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="proDesc" label="商品描述" min-width="220" align="center" show-overflow-tooltip>
           <template slot-scope="scope">
             <span class="cell-desc" v-html="highlight(scope.row.proDesc, activeKeyword.proDesc)" />
@@ -187,6 +192,11 @@
         <el-form-item label="保质期(天)" prop="shelfLife">
           <el-input-number v-model="addForm.shelfLife" :min="1" />
         </el-form-item>
+        <el-form-item label="商品类型" prop="pType">
+          <el-select v-model="addForm.pType" placeholder="请选择商品类型">
+            <el-option v-for="t in typeOptions" :key="t.value" :label="t.label" :value="t.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="产地" prop="origin">
           <el-select v-model="addForm.origin" placeholder="请选择产地">
             <el-option v-for="o in originOptions" :key="o" :label="o" :value="o" />
@@ -235,6 +245,11 @@
         </el-form-item>
         <el-form-item label="保质期(天)" prop="shelfLife">
           <el-input-number v-model="editForm.shelfLife" :min="1" />
+        </el-form-item>
+        <el-form-item label="商品类型" prop="pType">
+          <el-select v-model="editForm.pType" placeholder="请选择商品类型" style="width:100%;">
+            <el-option v-for="t in typeOptions" :key="t.value" :label="t.label" :value="t.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="产地" prop="origin">
           <el-select v-model="editForm.origin" placeholder="请选择产地" style="width:100%;">
@@ -387,6 +402,7 @@ import {
 import { createSeckill, seckillPageQuery } from '../../api/seckill';
 import { downloadBlob } from '../../utils/export';
 import { getToken } from '../../utils/auth';
+import { PRODUCT_TYPE_OPTIONS, productTypeLabel } from '../../constants/productType';
 
 // 三个 tab 就是三组固定的查询条件：在售 / 下架 都只看未过期的货，过期单独一档（不分上下架）
 const PRODUCT_TABS = [
@@ -408,6 +424,7 @@ export default {
       productTabs: PRODUCT_TABS,
       activeTab: 'onSale',
       originOptions: ['北京', '上海', '广东', '浙江', '江苏', '四川'],
+      typeOptions: PRODUCT_TYPE_OPTIONS,
       // 与当前表格数据对应的搜索关键词快照，避免输入框边打字边变高亮
       activeKeyword: { pName: '', proDesc: '' },
       tableData: [],
@@ -431,6 +448,7 @@ export default {
         productionDate: '',
         shelfLife: 365,
         origin: '北京',
+        pType: 7,
         manufacturer: '',
         imageUrl: ''
       },
@@ -516,6 +534,7 @@ export default {
         productionDate: '',
         shelfLife: 365,
         origin: '北京',
+        pType: 7,
         manufacturer: '',
         imageUrl: ''
       };
@@ -828,6 +847,9 @@ export default {
       const s = String(d);
       return s.length >= 10 ? s.substring(0, 10) : s;
     },
+    typeLabel(code) {
+      return productTypeLabel(code);
+    },
     openEdit(row) {
       this.editForm = {
         pId: row.pId,
@@ -837,6 +859,7 @@ export default {
         productionDate: this.formatDate(row.productionDate),
         shelfLife: row.shelfLife || 365,
         origin: row.origin || '北京',
+        pType: row.pType || 7,
         manufacturer: row.manufacturer || '',
         imageUrl: row.imageUrl || ''
       };

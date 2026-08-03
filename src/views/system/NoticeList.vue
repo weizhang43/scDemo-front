@@ -285,7 +285,7 @@ export default {
 </script>
 
 <style scoped>
-.notice-list { max-width: 1200px; margin: 0 auto; }
+.notice-list { width: 100%; }
 .card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 .header-left { display: flex; align-items: center; gap: 14px; }
 .card-title { font-size: 16px; font-weight: 600; color: #2d3748; }

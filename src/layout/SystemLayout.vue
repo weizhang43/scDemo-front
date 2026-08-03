@@ -37,17 +37,15 @@
     </el-header>
     <el-container class="body-container">
       <el-aside width="200px" class="side-menu">
-        <div class="side-title">系统管理</div>
+        <div class="side-title">用户管理</div>
         <el-menu
           :default-active="activeMenu"
           router
           class="side-nav"
         >
-          <el-menu-item index="/system/users"><i class="el-icon-user" />用户管理</el-menu-item>
-          <el-menu-item index="/system/roles"><i class="el-icon-s-check" />角色管理</el-menu-item>
-          <el-menu-item index="/system/modules"><i class="el-icon-set-up" />权限管理</el-menu-item>
-          <el-menu-item index="/system/notices"><i class="el-icon-bell" />通知管理</el-menu-item>
-          <el-menu-item index="/system/logs"><i class="el-icon-document" />日志管理</el-menu-item>
+          <el-menu-item index="/system/users"><i class="el-icon-user" />用户列表</el-menu-item>
+          <el-menu-item index="/system/roles"><i class="el-icon-s-check" />角色列表</el-menu-item>
+          <el-menu-item index="/system/modules"><i class="el-icon-set-up" />权限列表</el-menu-item>
         </el-menu>
       </el-aside>
       <el-main class="layout-main">

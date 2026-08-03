@@ -84,6 +84,31 @@ const routes = [
         meta: { requiresAuth: true, types: [1] }
       },
       {
+        path: 'stats',
+        component: () => import('../views/statistics/StatsLayout.vue'),
+        redirect: '/stats/product-type',
+        children: [
+          {
+            path: 'product-type',
+            name: 'ProductTypeStats',
+            component: () => import('../views/statistics/ProductTypeStats.vue'),
+            meta: { requiresAuth: true, types: [1] }
+          },
+          {
+            path: 'type-sales',
+            name: 'TypeSalesStats',
+            component: () => import('../views/statistics/TypeSalesStats.vue'),
+            meta: { requiresAuth: true, types: [1] }
+          },
+          {
+            path: 'monthly-sales',
+            name: 'MonthlySalesStats',
+            component: () => import('../views/statistics/MonthlySalesStats.vue'),
+            meta: { requiresAuth: true, types: [1] }
+          }
+        ]
+      },
+      {
         path: 'cart',
         name: 'CartList',
         component: () => import('../views/cart/CartList.vue'),
@@ -144,6 +169,18 @@ const routes = [
         meta: { requiresAuth: true, types: [3] }
       },
       {
+        path: 'notices',
+        name: 'NoticeList',
+        component: () => import('../views/system/NoticeList.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
+        path: 'logs',
+        name: 'LogList',
+        component: () => import('../views/system/LogList.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
         path: 'user/:id/address',
         name: 'UserAddress',
         component: () => import('../views/user/UserAddress.vue'),
@@ -171,18 +208,6 @@ const routes = [
         path: 'modules',
         name: 'ModuleList',
         component: () => import('../views/system/ModuleList.vue'),
-        meta: { requiresAuth: true, types: [3] }
-      },
-      {
-        path: 'logs',
-        name: 'LogList',
-        component: () => import('../views/system/LogList.vue'),
-        meta: { requiresAuth: true, types: [3] }
-      },
-      {
-        path: 'notices',
-        name: 'NoticeList',
-        component: () => import('../views/system/NoticeList.vue'),
         meta: { requiresAuth: true, types: [3] }
       }
     ]

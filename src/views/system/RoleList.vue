@@ -3,7 +3,7 @@
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
-          <span class="card-title">角色管理</span>
+          <span class="card-title">角色列表</span>
           <span class="header-meta">共 {{ tableData.length }} 个角色</span>
         </div>
         <div class="header-actions">

@@ -1,20 +1,11 @@
 <template>
   <div class="chat-page">
-    <header class="chat-header">
+    <header v-if="!isLoggedIn" class="chat-header">
       <div class="chat-brand">
         <div class="chat-mark">SC</div>
         <span class="chat-title">客服咨询</span>
       </div>
       <div class="chat-actions">
-        <el-select
-          v-model="clientType"
-          size="small"
-          class="service-select"
-          :disabled="loading"
-        >
-          <el-option label="小千" value="qianwen" />
-          <el-option label="小D" value="deepseek" />
-        </el-select>
         <span class="back-link" @click="goBack">
           <i class="el-icon-back" />{{ backLabel }}
         </span>
@@ -47,6 +38,20 @@
 
     <footer class="chat-input">
       <div class="input-inner">
+        <el-select
+          v-model="clientType"
+          size="small"
+          class="service-select"
+          popper-class="service-select-dropdown"
+          :disabled="loading"
+        >
+          <el-option label="小千" value="qianwen">
+            <span class="service-option"><i class="el-icon-chat-dot-round" />小千</span>
+          </el-option>
+          <el-option label="小D" value="deepseek">
+            <span class="service-option"><i class="el-icon-cpu" />小D</span>
+          </el-option>
+        </el-select>
         <input
           ref="imageInput"
           type="file"
@@ -90,6 +95,7 @@
 
 <script>
 import { parseImageText, generateImage } from '../../api/user';
+import { getToken } from '../../utils/auth';
 
 export default {
   name: 'CustomerChat',
@@ -105,6 +111,9 @@ export default {
     };
   },
   computed: {
+    isLoggedIn() {
+      return !!getToken();
+    },
     fromProduct() {
       return this.$route.query.from === 'product';
     },
@@ -249,9 +258,9 @@ export default {
   justify-content: space-between;
   padding: 0 24px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
   color: #fff;
-  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 12px rgba(30, 60, 114, 0.25);
 }
 .chat-brand {
   display: flex;
@@ -279,28 +288,44 @@ export default {
   gap: 16px;
 }
 .service-select {
-  width: 120px;
+  width: 104px;
+  align-self: flex-end;
+  margin-right: 10px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 .service-select >>> .el-input__inner {
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  height: 36px;
+  line-height: 36px;
+  background: #f7f8fc;
+  border: 1px solid #e4e8f2;
   border-radius: 18px;
-  color: #fff;
+  color: #5a6478;
   font-weight: 600;
-  transition: background 0.2s, border-color 0.2s;
+  font-size: 13px;
+  padding-left: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 .service-select >>> .el-input__inner:hover {
-  background: rgba(255, 255, 255, 0.28);
-  border-color: rgba(255, 255, 255, 0.6);
+  background: #fff;
+  border-color: #c7cdf0;
+  color: #2f3846;
 }
 .service-select >>> .el-input.is-focus .el-input__inner {
-  border-color: #fff;
+  background: #fff;
+  border-color: #667eea;
+  color: #2f3846;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
-.service-select >>> .el-input__inner::placeholder {
-  color: rgba(255, 255, 255, 0.7);
+.service-select >>> .el-input.is-disabled .el-input__inner {
+  opacity: 0.6;
 }
 .service-select >>> .el-input .el-select__caret {
-  color: rgba(255, 255, 255, 0.85);
+  color: #8a93a5;
+  font-size: 12px;
+}
+.service-select >>> .el-input.is-focus .el-select__caret {
+  color: #667eea;
 }
 .back-link {
   display: inline-flex;
@@ -461,5 +486,41 @@ export default {
   opacity: 0.45;
   transform: none;
   box-shadow: none;
+}
+</style>
+
+<style>
+/* 下拉弹层挂载在 body 下，scoped 样式作用不到，故单独用全局块 */
+.service-select-dropdown {
+  border-radius: 12px;
+  border: 1px solid #e4e8f2;
+  box-shadow: 0 8px 24px rgba(31, 45, 77, 0.12);
+  overflow: hidden;
+}
+.service-select-dropdown .el-select-dropdown__item {
+  height: 36px;
+  line-height: 36px;
+  font-size: 13px;
+  color: #5a6478;
+}
+.service-select-dropdown .el-select-dropdown__item.hover,
+.service-select-dropdown .el-select-dropdown__item:hover {
+  background: rgba(102, 126, 234, 0.08);
+}
+.service-select-dropdown .el-select-dropdown__item.selected {
+  color: #667eea;
+  font-weight: 600;
+}
+.service-select-dropdown .service-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.service-select-dropdown .service-option i {
+  font-size: 14px;
+  color: #8a93a5;
+}
+.service-select-dropdown .el-select-dropdown__item.selected .service-option i {
+  color: #667eea;
 }
 </style>
