@@ -108,7 +108,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="操作时间" width="170" align="center" />
+        <el-table-column prop="createTime" label="操作时间" width="170" align="center">
+          <template slot-scope="s">{{ formatTime(s.row.createTime) }}</template>
+        </el-table-column>
       </el-table>
     </el-card>
 
@@ -169,6 +171,13 @@ export default {
     this.fetchAll();
   },
   methods: {
+    formatTime(t) {
+      if (!t) return '-';
+      if (typeof t === 'string') return t.replace('T', ' ').substring(0, 19);
+      const d = new Date(t);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    },
     fetchAll() {
       getUserList({ pageNo: 1, pageSize: 1 })
         .then(res => this.countTo('user', (res.daoResult || {}).total || 0)).catch(() => {});

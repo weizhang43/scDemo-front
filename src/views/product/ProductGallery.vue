@@ -452,18 +452,17 @@ export default {
   /* 压住点赞角标：售罄遮罩是全屏蒙层，角标透出来会显得脏 */
   z-index: 3;
 }
+/* 底部动作条：不盖住图片主体，避免点图进详情时误触按钮 */
 .hover-actions {
   position: absolute;
-  top: 0;
   right: 0;
   bottom: 0;
   left: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: rgba(31, 41, 59, 0.42);
+  gap: 6px;
+  padding: 14px 8px 8px;
+  background: linear-gradient(180deg, rgba(31, 41, 59, 0) 0%, rgba(31, 41, 59, 0.6) 100%);
   opacity: 0;
   transition: opacity 0.2s ease;
   z-index: 3;
@@ -472,12 +471,14 @@ export default {
   opacity: 1;
 }
 .hover-btn {
-  width: 116px;
+  flex: 1;
+  padding-left: 0;
+  padding-right: 0;
   border: none;
   border-radius: 8px;
   font-weight: 600;
 }
-/* Element 给相邻按钮的 10px 左边距在竖排里会把第二个按钮顶偏 */
+/* Element 给相邻按钮的 10px 左边距会挤坏等分布局 */
 .hover-btn + .hover-btn {
   margin-left: 0;
 }
@@ -564,20 +565,9 @@ export default {
   .search-input {
     width: 100%;
   }
-  /* 触屏没有 hover，改成常驻的底部动作条，不整块压暗商品图 */
+  /* 触屏没有 hover，动作条常驻显示 */
   .hover-actions {
-    top: auto;
-    flex-direction: row;
-    gap: 6px;
-    padding: 8px;
     opacity: 1;
-    background: linear-gradient(180deg, rgba(31, 41, 59, 0) 0%, rgba(31, 41, 59, 0.55) 100%);
-  }
-  .hover-btn {
-    width: auto;
-    flex: 1;
-    padding-left: 0;
-    padding-right: 0;
   }
 }
 </style>

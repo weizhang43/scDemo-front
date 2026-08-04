@@ -53,7 +53,7 @@
             <span v-else class="cell-muted">-</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" align="center" fixed="right">
+        <el-table-column label="操作" width="260" align="center" class-name="op-col">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
             <el-button
@@ -350,5 +350,9 @@ export default {
 }
 .user-address .el-card__body {
   padding: 20px 24px;
+}
+/* 操作列按钮不换行，避免部分行被撑高导致行高错乱 */
+.user-address .el-table td.op-col .cell {
+  white-space: nowrap;
 }
 </style>

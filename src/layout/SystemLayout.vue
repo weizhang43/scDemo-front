@@ -4,7 +4,7 @@
       <div class="header-inner">
         <div class="logo" @click="goHome">
           <span class="logo-icon"><i class="el-icon-s-shop" /></span>
-          <span class="logo-text">订单管理系统</span>
+          <span class="logo-text">go购够</span>
         </div>
         <el-menu
           :default-active="activeMenu"

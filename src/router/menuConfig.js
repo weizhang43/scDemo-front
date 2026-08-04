@@ -21,10 +21,10 @@ export const MENUS = [
   { path: '/my-orders', label: '我的订单', icon: 'el-icon-s-order', types: [2] },
   { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
   { path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
-  { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [2] },
   { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3] },
   { path: '/notices', label: '通知管理', icon: 'el-icon-bell', types: [3] },
   { path: '/logs', label: '日志管理', icon: 'el-icon-document', types: [3] },
+  { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [1, 2, 3] },
   { path: '/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
 ];
 

@@ -148,7 +148,7 @@ const routes = [
         path: 'customer-service',
         name: 'CustomerService',
         component: () => import('../views/customer/CustomerServiceEmbed.vue'),
-        meta: { requiresAuth: true, types: [2] }
+        meta: { requiresAuth: true, types: [1, 2, 3] }
       },
       {
         path: 'my-profile',
