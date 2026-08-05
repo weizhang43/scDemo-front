@@ -23,25 +23,38 @@
         </div>
       </div>
 
-      <div v-if="categories.length" class="category-nav">
-        <span class="category-nav-label">分类</span>
-        <span
-          class="category-pill"
-          :class="{ 'is-active': categoryId === null }"
-          @click="handleCategoryChange(null)"
-        >全部</span>
-        <span
-          v-for="c in categories"
-          :key="c.id"
-          class="category-pill"
-          :class="{ 'is-active': categoryId === c.id }"
-          @click="handleCategoryChange(c.id)"
-        >{{ c.name }}</span>
+      <div class="list-toolbar">
+        <div v-if="categories.length" class="category-nav">
+          <span class="category-nav-label">分类</span>
+          <span
+            class="category-pill"
+            :class="{ 'is-active': categoryId === null }"
+            @click="handleCategoryChange(null)"
+          >全部</span>
+          <span
+            v-for="c in categories"
+            :key="c.id"
+            class="category-pill"
+            :class="{ 'is-active': categoryId === c.id }"
+            @click="handleCategoryChange(c.id)"
+          >{{ c.name }}</span>
+        </div>
+        <el-select
+          v-model="sortBy"
+          size="small"
+          class="sort-select"
+          @change="handleSortChange"
+        >
+          <el-option
+            v-for="opt in sortOptions"
+            :key="opt.value"
+            :label="opt.label"
+            :value="opt.value"
+          >
+            <i :class="opt.icon" class="sort-option-icon" />{{ opt.label }}
+          </el-option>
+        </el-select>
       </div>
-
-      <el-tabs v-model="sortBy" class="sort-tabs" @tab-click="handleSortChange">
-        <el-tab-pane v-for="tab in sortTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
-      </el-tabs>
 
       <el-row v-if="list.length" :gutter="16" class="goods-row">
         <el-col v-for="item in list" :key="item.pId" :xs="12" :sm="8" :md="4">
@@ -153,14 +166,15 @@ import { getCategoryTree } from '../../api/category';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
+import { getToken } from '../../utils/auth';
 import CouponSelect from '../../components/CouponSelect.vue';
 
-// 空 name 即后端的默认排序（p_id 倒序），不往请求里塞 sortBy
-const SORT_TABS = [
-  { name: '', label: '综合' },
-  { name: 'sales', label: '成交数' },
-  { name: 'reviews', label: '评价数' },
-  { name: 'likes', label: '点赞数' }
+// 空 value 即后端的默认排序（p_id 倒序），不往请求里塞 sortBy
+const SORT_OPTIONS = [
+  { value: '', label: '综合排序', icon: 'el-icon-s-operation' },
+  { value: 'sales', label: '成交数优先', icon: 'el-icon-sold-out' },
+  { value: 'reviews', label: '评价数优先', icon: 'el-icon-chat-line-square' },
+  { value: 'likes', label: '点赞数优先', icon: 'el-icon-thumb' }
 ];
 
 export default {
@@ -168,6 +182,7 @@ export default {
   components: { CouponSelect },
   data() {
     return {
+      isGuest: !getToken(),
       list: [],
       loading: false,
       defaultAddress: null,
@@ -178,7 +193,7 @@ export default {
         item: null,
         coupon: null
       },
-      sortTabs: SORT_TABS,
+      sortOptions: SORT_OPTIONS,
       sortBy: '',
       categories: [],
       categoryId: null,
@@ -205,9 +220,23 @@ export default {
   created() {
     this.fetchData();
     this.fetchCategories();
-    this.loadDefaultAddress();
+    if (!this.isGuest) {
+      this.loadDefaultAddress();
+    }
   },
   methods: {
+    /** 游客拦截：需要账号的动作先引导登录，返回 true 表示已拦截 */
+    guardGuest() {
+      if (!this.isGuest) return false;
+      this.$confirm('登录后即可购买，是否去登录？', '提示', {
+        confirmButtonText: '去登录',
+        cancelButtonText: '再逛逛',
+        type: 'info'
+      })
+        .then(() => this.$router.push('/login'))
+        .catch(() => {});
+      return true;
+    },
     fetchCategories() {
       getCategoryTree()
         .then(res => { this.categories = res.dataList || []; })
@@ -251,6 +280,7 @@ export default {
       return item.stock === 0;
     },
     goBuy(item) {
+      if (this.guardGuest()) return;
       if (this.isSoldOut(item)) {
         this.$message.warning('该商品已售罄');
         return;
@@ -278,6 +308,7 @@ export default {
      * 悬浮按钮容易误触，且下单会即时扣库存，所以先弹窗把商品/金额/收货地址/选券摊开给用户看。
      */
     handleQuickBuy(item) {
+      if (this.guardGuest()) return;
       if (this.isSoldOut(item)) {
         this.$message.warning('该商品已售罄');
         return;
@@ -338,6 +369,7 @@ export default {
     },
     /** 加购固定 1 件，服务端按 (uId, pId) 累加并按实时库存截断 */
     handleQuickAddCart(item) {
+      if (this.guardGuest()) return;
       if (this.isSoldOut(item)) {
         this.$message.warning('该商品已售罄');
         return;
@@ -451,15 +483,28 @@ export default {
 .search-input {
   width: 240px;
 }
-.sort-tabs {
+.list-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 14px;
+}
+.sort-select {
+  flex-shrink: 0;
+  width: 148px;
+  /* 无分类时也保持靠右 */
+  margin-left: auto;
+}
+.sort-option-icon {
+  color: #667eea;
+  margin-right: 6px;
 }
 .category-nav {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 14px;
 }
 .category-nav-label {
   font-size: 13px;
@@ -729,40 +774,18 @@ export default {
 .product-gallery .goods-image .el-image__inner {
   object-fit: cover;
 }
-.product-gallery .sort-tabs .el-tabs__header {
-  margin: 0;
+.product-gallery .sort-select .el-input__inner {
+  border-radius: 10px;
+  border-color: #e8ecf5;
+  background: #fafbff;
+  color: #4a5568;
+  font-weight: 500;
 }
-.product-gallery .sort-tabs .el-tabs__content {
-  display: none;
+.product-gallery .sort-select .el-input__inner:hover {
+  border-color: #c3cdf5;
 }
-.product-gallery .sort-tabs .el-tabs__nav-wrap::after {
-  display: none;
-}
-.product-gallery .sort-tabs .el-tabs__active-bar {
-  display: none;
-}
-.product-gallery .sort-tabs .el-tabs__nav {
-  display: inline-flex;
-  gap: 8px;
-  padding: 5px;
-  background: #f3f5fa;
-  border: 1px solid #eef0f4;
-  border-radius: 12px;
-}
-.product-gallery .sort-tabs .el-tabs__item {
-  height: 34px;
-  line-height: 34px;
-  padding: 0 22px !important;
-  color: #6b7280;
-  border-radius: 9px;
-  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-.product-gallery .sort-tabs .el-tabs__item:hover {
-  color: #667eea;
-}
-.product-gallery .sort-tabs .el-tabs__item.is-active {
-  color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
+.product-gallery .sort-select .el-input.is-focus .el-input__inner {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.18);
 }
 </style>

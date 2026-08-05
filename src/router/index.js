@@ -32,6 +32,12 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/browse',
+    name: 'GuestGallery',
+    component: () => import('../views/product/GuestGallery.vue'),
+    meta: { public: true }
+  },
+  {
     path: '/',
     component: () => import('../layout/Layout.vue'),
     children: [

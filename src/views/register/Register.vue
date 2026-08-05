@@ -7,7 +7,7 @@
     </div>
     <div class="register-card">
       <div class="brand">
-        <div class="brand-mark">SC</div>
+        <img src="../../assets/logo.png" alt="go购够" class="brand-mark" />
         <h2 class="brand-title">创建账户</h2>
         <p class="brand-subtitle">注册以开始使用商城系统</p>
       </div>
@@ -303,14 +303,9 @@ export default {
   height: 56px;
   margin: 0 auto 14px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
+  object-fit: contain;
+  background: #fff;
   box-shadow: 0 8px 20px rgba(118, 75, 162, 0.4);
 }
 .brand-title {

@@ -2,7 +2,7 @@
   <div class="chat-page">
     <header v-if="!isLoggedIn" class="chat-header">
       <div class="chat-brand">
-        <div class="chat-mark">SC</div>
+        <img src="../../assets/logo.png" alt="go购够" class="chat-mark" />
         <span class="chat-title">客服咨询</span>
       </div>
       <div class="chat-actions">
@@ -271,12 +271,8 @@ export default {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  letter-spacing: 1px;
+  background: #fff;
+  object-fit: contain;
 }
 .chat-title {
   font-size: 17px;

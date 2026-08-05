@@ -5,9 +5,9 @@ export const U_TYPE_ADMIN = 3;
 export const MENUS = [
   { path: '/home', label: '首页', icon: 'el-icon-s-home', types: [1, 2, 3] },
   { path: '/products', label: '商品管理', icon: 'el-icon-goods', types: [1] },
-  { path: '/categories', label: '分类管理', icon: 'el-icon-menu', types: [1, 3] },
+  { path: '/categories', label: '分类管理', icon: 'el-icon-menu', types: [3] },
   { path: '/seckills', label: '秒杀活动', icon: 'el-icon-alarm-clock', types: [1] },
-  { path: '/coupon-templates', label: '优惠券管理', icon: 'el-icon-s-ticket', types: [1, 3] },
+  { path: '/coupon-templates', label: '优惠券管理', icon: 'el-icon-s-ticket', types: [1] },
   { path: '/orders', label: '订单管理', icon: 'el-icon-s-order', types: [1] },
   { path: '/aftersale', label: '售后管理', icon: 'el-icon-refresh-left', types: [1] },
   {

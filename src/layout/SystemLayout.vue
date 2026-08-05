@@ -3,7 +3,7 @@
     <el-header class="layout-header">
       <div class="header-inner">
         <div class="logo" @click="goHome">
-          <span class="logo-icon"><i class="el-icon-s-shop" /></span>
+          <img src="../assets/logo.png" alt="go购够" class="logo-icon" />
           <span class="logo-text">go购够</span>
         </div>
         <el-menu
@@ -144,12 +144,8 @@ export default {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(6px);
-  font-size: 18px;
+  background: #fff;
+  object-fit: contain;
 }
 .logo-text {
   font-size: 18px;
