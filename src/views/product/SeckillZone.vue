@@ -282,44 +282,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .seckill-card {
   background: #fff;
   border: 1px solid #eef0f4;
@@ -411,7 +373,7 @@ export default {
 .seckill-price {
   font-size: 20px;
   font-weight: 700;
-  color: #cf1322;
+  color: var(--color-price);
   font-variant-numeric: tabular-nums;
 }
 .price-origin {

@@ -73,7 +73,7 @@
               :disabled="!canPay"
               @click="handlePay"
             >确认支付 ¥ {{ formatAmount(order.orderAmount) }}</el-button>
-            <el-button type="text" class="btn-danger" @click="handleCancel">取消订单</el-button>
+            <el-button type="text" class="text-danger" @click="handleCancel">取消订单</el-button>
             <span class="form-tip">{{ polling ? '正在确认支付结果…' : '将跳转到模拟收银台完成支付' }}</span>
           </div>
         </div>
@@ -342,51 +342,10 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .header-actions {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-  font-family: 'Menlo', 'Consolas', monospace;
 }
 .detail-body {
   padding: 4px 0;
@@ -434,10 +393,10 @@ export default {
 .hero-amount {
   font-size: 22px;
   font-weight: 700;
-  color: #e67700;
+  color: var(--color-price);
   margin-bottom: 8px;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .hero-sub {
   display: flex;
@@ -450,7 +409,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #d97706;
+  color: var(--color-price);
   background: #fff7e6;
   padding: 3px 10px;
   border-radius: 10px;
@@ -470,11 +429,11 @@ export default {
   color: #1f2733;
 }
 .desc-id {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #4c5163;
 }
 .desc-no {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #3b4a6b;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -484,10 +443,10 @@ export default {
   margin-right: 6px;
 }
 .desc-amount {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.3px;
 }
 .pay-block {
@@ -535,12 +494,6 @@ export default {
 .form-tip {
   font-size: 12px;
   color: #8a93a4;
-}
-.btn-danger {
-  color: #f56c6c !important;
-}
-.btn-danger:hover {
-  color: #d9363e !important;
 }
 .pay-result {
   margin-top: 22px;

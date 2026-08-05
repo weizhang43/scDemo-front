@@ -7,8 +7,8 @@
           <span class="header-meta">两级分类，初始 7 条对应原商品类型</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-refresh" @click="fetchTree">刷新</el-button>
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd(null)">新增一级分类</el-button>
+          <el-button type="text" size="small" icon="el-icon-refresh" @click="fetchTree">刷新</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd(null)">新增一级分类</el-button>
         </div>
       </div>
 
@@ -19,7 +19,7 @@
         border
         default-expand-all
         :tree-props="{ children: 'children' }"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
         empty-text="暂无分类"
       >
         <el-table-column prop="name" label="分类名称" min-width="220" />
@@ -42,13 +42,13 @@
               @click="openAdd(s.row)"
             >添加子分类</el-button>
             <el-button type="text" size="mini" @click="openEdit(s.row)">编辑</el-button>
-            <el-button type="text" size="mini" style="color:#f56c6c" @click="handleDelete(s.row)">删除</el-button>
+            <el-button type="text" size="mini" class="text-danger" @click="handleDelete(s.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="420px" :close-on-click-modal="false">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="480px" :close-on-click-modal="false">
       <el-form ref="form" :model="form" :rules="rules" label-width="90px">
         <el-form-item v-if="form.parentId !== 0" label="父级分类">
           <el-input :value="parentName" disabled />
@@ -151,9 +151,5 @@ export default {
 
 <style scoped>
 .category-manage { width: 100%; }
-.card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-.header-meta { font-size: 13px; color: #718096; }
 .tip { margin-left: 10px; color: #909399; font-size: 12px; }
 </style>

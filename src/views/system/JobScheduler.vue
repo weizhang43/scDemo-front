@@ -27,7 +27,6 @@ export default {
   async mounted() {
     const userName = process.env.VUE_APP_XXLJOB_USER;
     const password = process.env.VUE_APP_XXLJOB_PASSWORD;
-    debugger
     if (this.xxlJobUrl && userName && password) {
       this.logging = true;
       try {

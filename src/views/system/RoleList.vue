@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ tableData.length }} 个角色</span>
         </div>
         <div class="header-actions">
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd">新增角色</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增角色</el-button>
         </div>
       </div>
 
@@ -17,7 +17,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无角色数据"
       >
@@ -36,7 +36,7 @@
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
             <el-button type="text" icon="el-icon-set-up" @click="openAssign(scope.row)">授权</el-button>
-            <el-button type="text" icon="el-icon-delete" style="color:#f56c6c" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -200,8 +200,4 @@ export default {
 
 <style scoped>
 .role-list { max-width: 1200px; margin: 0 auto; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-.header-meta { font-size: 13px; color: #718096; }
 </style>

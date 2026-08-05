@@ -44,7 +44,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无用户数据"
       >
@@ -278,44 +278,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .search-form {
   margin-bottom: 18px;
   padding: 18px 20px 2px;
@@ -339,14 +301,8 @@ export default {
 .search-form .el-button {
   border-radius: 8px;
 }
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
-}
 .cell-id {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #4c5163;
   font-size: 13px;
 }

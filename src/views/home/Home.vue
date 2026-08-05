@@ -130,7 +130,7 @@
     </div>
 
     <!-- 通知详情 -->
-    <el-dialog :title="current.title" :visible.sync="detailVisible" width="680px" top="8vh" custom-class="notice-dialog">
+    <el-dialog :title="current.title" :visible.sync="detailVisible" width="560px" top="8vh" custom-class="notice-dialog">
       <div class="notice-detail" v-html="current.content"></div>
     </el-dialog>
   </div>
@@ -325,9 +325,6 @@ export default {
 }
 
 /* 卡片通用 */
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 15px; font-weight: 600; color: #2d3748; display: flex; align-items: center; gap: 6px; }
-.header-meta { font-size: 12px; color: #909399; }
 .accent-blue { color: #2a5298; }
 
 .notice-card {
@@ -433,7 +430,7 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   color: #e6a23c;
   font-weight: 700;
   letter-spacing: 0.5px;

@@ -57,7 +57,7 @@
           :model="loginForm"
           :rules="loginRules"
           label-position="top"
-          class="login-form"
+          class="login-form auth-form"
           @submit.native.prevent="handleLogin"
         >
           <el-form-item label="用户名" prop="uName" class="field">
@@ -77,15 +77,15 @@
             <el-button
               type="primary"
               :loading="loading"
-              class="submit-btn"
+              class="auth-submit-btn"
               @click="handleLogin"
             >登录</el-button>
           </el-form-item>
-          <div class="login-footer">
-            <router-link to="/forgot-password" class="link link--forgot">忘记密码？</router-link>
+          <div class="auth-footer">
+            <router-link to="/forgot-password" class="auth-link link--forgot">忘记密码？</router-link>
             <span class="footer-sep">|</span>
             还没有账号？
-            <router-link to="/register" class="link">去注册</router-link>
+            <router-link to="/register" class="auth-link">去注册</router-link>
           </div>
         </el-form>
       </div>
@@ -167,7 +167,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #4b6cb7 0%, #192841 100%);
+  background: var(--gradient-topbar);
   overflow: hidden;
 }
 .bg-decorations {
@@ -345,74 +345,14 @@ export default {
   font-size: 13px;
 }
 .login-form .field >>> .el-form-item__label {
-  color: #4a5568;
-  font-weight: 500;
   padding-bottom: 4px;
-}
-.login-form .field >>> .el-input__inner {
-  border-radius: 10px;
-  height: 44px;
-  line-height: 44px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.login-form .field >>> .el-input__inner:hover {
-  border-color: #cbd5e0;
-}
-.login-form .field >>> .el-input__inner:focus {
-  border-color: #667eea;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-.login-form .field >>> .el-input__prefix {
-  left: 10px;
-  color: #a0aec0;
-}
-.login-form .field >>> .el-input__inner {
-  padding-left: 36px;
 }
 .action {
   margin-bottom: 8px;
 }
-.submit-btn {
-  width: 100%;
-  height: 44px;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 8px 20px rgba(118, 75, 162, 0.35);
-  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
-}
-.submit-btn:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(118, 75, 162, 0.45);
-}
-.submit-btn:active {
-  transform: translateY(0);
-}
-.login-footer {
-  text-align: center;
-  font-size: 13px;
-  color: #7a8694;
-}
 .footer-sep {
   margin: 0 8px;
   color: #cbd5e0;
-}
-.link {
-  color: #667eea;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.link:hover {
-  color: #764ba2;
-  text-decoration: underline;
 }
 .link--forgot {
   color: #e8850e;

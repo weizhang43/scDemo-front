@@ -13,7 +13,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f5f6fd', color: '#3b3f63', fontWeight: 600 }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
       >
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="typeName" label="商品分类" min-width="160" align="center">
@@ -118,34 +118,6 @@ export default {
   border: none;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.1);
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.card-title {
-  position: relative;
-  padding-left: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2d3748;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 16px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #667eea, #764ba2);
 }
 .header-meta {
   font-size: 12px;

@@ -2,7 +2,7 @@
   <el-dialog
     title="申请售后"
     :visible="visible"
-    width="520px"
+    width="480px"
     :close-on-click-modal="false"
     custom-class="aftersale-dialog"
     @close="handleClose"
@@ -105,7 +105,7 @@ export default {
   font-size: 14px;
   font-weight: 600;
   color: #1f2733;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .apply-amount {
   font-size: 13px;
@@ -113,9 +113,9 @@ export default {
   margin-bottom: 12px;
 }
 .amount-num {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 700;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .form-tip {
   display: flex;

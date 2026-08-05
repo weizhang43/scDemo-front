@@ -16,7 +16,7 @@
         :model="registerForm"
         :rules="registerRules"
         label-position="top"
-        class="register-form"
+        class="register-form auth-form"
         @submit.native.prevent="handleRegister"
       >
         <el-form-item label="用户名" prop="uName" class="field">
@@ -84,13 +84,13 @@
           <el-button
             type="primary"
             :loading="loading"
-            class="submit-btn"
+            class="auth-submit-btn"
             @click="handleRegister"
           >注册</el-button>
         </el-form-item>
-        <div class="register-footer">
+        <div class="auth-footer">
           已有账号？
-          <router-link to="/login" class="link">去登录</router-link>
+          <router-link to="/login" class="auth-link">去登录</router-link>
         </div>
       </el-form>
     </div>
@@ -242,7 +242,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #4b6cb7 0%, #192841 100%);
+  background: var(--gradient-topbar);
   overflow: hidden;
   padding: 24px 16px;
 }
@@ -283,6 +283,7 @@ export default {
   position: relative;
   z-index: 1;
   width: 400px;
+  max-width: calc(100vw - 32px);
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   padding: 36px 36px 24px;
@@ -319,35 +320,8 @@ export default {
   color: #7a8694;
   font-size: 13px;
 }
-.register-form .field >>> .el-form-item__label {
-  color: #4a5568;
-  font-weight: 500;
-  padding-bottom: 4px;
-  line-height: 1.4;
-}
 .register-form .field >>> .el-form-item {
   margin-bottom: 14px;
-}
-.register-form .field >>> .el-input__inner {
-  border-radius: 10px;
-  height: 40px;
-  line-height: 40px;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  padding-left: 36px;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.register-form .field >>> .el-input__inner:hover {
-  border-color: #cbd5e0;
-}
-.register-form .field >>> .el-input__inner:focus {
-  border-color: #667eea;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-.register-form .field >>> .el-input__prefix {
-  left: 10px;
-  color: #a0aec0;
 }
 .code-row {
   display: flex;
@@ -357,7 +331,7 @@ export default {
   flex: 1;
 }
 .code-btn {
-  height: 40px;
+  height: 44px;
   border-radius: 10px;
   border: 1px solid #cbd5e0;
   background: #fff;
@@ -374,40 +348,5 @@ export default {
 }
 .action {
   margin-bottom: 8px;
-}
-.submit-btn {
-  width: 100%;
-  height: 44px;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 8px 20px rgba(118, 75, 162, 0.35);
-  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
-}
-.submit-btn:hover {
-  filter: brightness(1.05);
-  transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(118, 75, 162, 0.45);
-}
-.submit-btn:active {
-  transform: translateY(0);
-}
-.register-footer {
-  text-align: center;
-  font-size: 13px;
-  color: #7a8694;
-}
-.link {
-  color: #667eea;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-.link:hover {
-  color: #764ba2;
-  text-decoration: underline;
 }
 </style>

@@ -80,7 +80,7 @@
           </el-table-column>
           <el-table-column label="操作" width="90">
             <template slot-scope="scope">
-              <el-button type="text" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button type="text" size="mini" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -359,48 +359,10 @@ export default {
   box-sizing: border-box;
   animation: fadeInUp 0.35s ease;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .header-actions {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-.card-title {
-  position: relative;
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  padding-left: 12px;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  font-family: Menlo, Consolas, monospace;
 }
 .goods-cell {
   display: flex;
@@ -436,7 +398,7 @@ export default {
   gap: 6px;
 }
 .price-now {
-  color: #d97706;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -475,7 +437,7 @@ export default {
 .total-text {
   font-size: 17px;
   font-weight: 600;
-  color: #d97706;
+  color: var(--color-price);
   font-variant-numeric: tabular-nums;
 }
 .coupon-off {

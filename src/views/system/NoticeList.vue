@@ -12,8 +12,8 @@
             <el-option label="发布" :value="1" />
             <el-option label="草稿" :value="0" />
           </el-select>
-          <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">查询</el-button>
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd">发布通知</el-button>
+          <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">搜索</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">发布通知</el-button>
         </div>
       </div>
 
@@ -23,7 +23,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无通知"
       >
@@ -47,7 +47,7 @@
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
             <el-button type="text" @click="toggleStatus(scope.row)">{{ scope.row.status === 1 ? '下架' : '发布' }}</el-button>
-            <el-button type="text" icon="el-icon-delete" style="color:#f56c6c" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -55,7 +55,7 @@
       <el-pagination
         style="margin-top:16px;text-align:right;"
         background
-        layout="total, prev, pager, next"
+        layout="total, prev, pager, next, jumper"
         :total="total"
         :page-size="query.pageSize"
         :current-page="query.pageNum"
@@ -65,7 +65,7 @@
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="820px" top="6vh" :close-on-click-modal="false" @closed="onDialogClosed">
-      <el-form ref="noticeForm" :model="noticeForm" :rules="rules" label-width="80px">
+      <el-form ref="noticeForm" :model="noticeForm" :rules="rules" label-width="90px">
         <el-form-item label="标题" prop="title">
           <el-input v-model="noticeForm.title" placeholder="请输入通知标题" maxlength="200" show-word-limit />
         </el-form-item>
@@ -286,10 +286,6 @@ export default {
 
 <style scoped>
 .notice-list { width: 100%; }
-.card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-.header-meta { font-size: 13px; color: #718096; }
 .tip { margin-left: 10px; color: #909399; font-size: 12px; }
 .editor-wrap { border: 1px solid #e4e7ed; border-radius: 4px; z-index: 1; }
 .cover-uploader { display: inline-block; }

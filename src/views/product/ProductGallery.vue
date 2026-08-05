@@ -130,7 +130,7 @@
       </div>
     </el-card>
 
-    <el-dialog title="快速下单" :visible.sync="quickBuy.visible" width="460px" :close-on-click-modal="false">
+    <el-dialog title="快速下单" :visible.sync="quickBuy.visible" width="480px" :close-on-click-modal="false">
       <div v-if="quickBuy.item" class="quick-buy-body">
         <div class="quick-buy-row">
           <span class="quick-buy-label">商品</span>
@@ -427,46 +427,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .search-form {
   background: linear-gradient(180deg, #fafbff 0%, #f3f5fb 100%);
   border: 1px solid #e8ecf5;
@@ -702,17 +662,12 @@ export default {
 .price-text {
   font-size: 17px;
   font-weight: 600;
-  color: #d97706;
+  color: var(--color-price);
   font-variant-numeric: tabular-nums;
 }
 .goods-stock {
   font-size: 12px;
   color: #8a93a4;
-}
-.pagination-wrap {
-  text-align: right;
-  padding-top: 16px;
-  border-top: 1px dashed #e8ebf2;
 }
 .quick-buy-body {
   display: flex;
@@ -733,7 +688,7 @@ export default {
 .quick-buy-total {
   font-size: 17px;
   font-weight: 600;
-  color: #d97706;
+  color: var(--color-price);
   font-variant-numeric: tabular-nums;
 }
 .coupon-off {

@@ -4,7 +4,7 @@
       <div slot="header" class="card-header">
         <div class="header-left">
           <span class="card-title">商品详情</span>
-          <span v-if="product" class="header-meta header-meta--id">ID #{{ product.pId }}</span>
+          <span v-if="product" class="header-meta mono">ID #{{ product.pId }}</span>
         </div>
         <div class="header-actions">
           <el-button type="text" icon="el-icon-service" @click="goService">智能客服</el-button>
@@ -154,51 +154,10 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .header-actions {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-  font-family: 'Menlo', 'Consolas', monospace;
 }
 .detail-body {
   padding: 4px 0;
@@ -276,7 +235,7 @@ export default {
 .hero-price {
   font-size: 18px;
   font-weight: 600;
-  color: #d97706;
+  color: var(--color-price);
   font-variant-numeric: tabular-nums;
 }
 .hero-price-origin {
@@ -295,7 +254,7 @@ export default {
   color: #1f2733;
 }
 .desc-id {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #4c5163;
 }
 .desc-icon {

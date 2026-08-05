@@ -1,0 +1,47 @@
+/* 全局设计 token：颜色 / 灰阶 / 圆角 / 阴影 / 字号 */
+:root {
+  /* 品牌色（紫渐变主题） */
+  --color-primary: #667eea;
+  --color-primary-dark: #764ba2;
+  --color-primary-light: rgba(102, 126, 234, 0.1);
+  --gradient-brand: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  /* 顶栏/hero 深蓝渐变 */
+  --gradient-topbar: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+
+  /* 功能色 */
+  --color-success: #67c23a;
+  --color-warning: #e6a23c;
+  --color-danger: #f56c6c;
+  --color-price: #d97706;
+
+  /* 灰阶（文字） */
+  --text-title: #1f2733;
+  --text-primary: #303133;
+  --text-regular: #4a5568;
+  --text-secondary: #7a8694;
+  --text-placeholder: #a8b0c0;
+
+  /* 边框 / 分隔线 */
+  --border-color: #e4e8f2;
+  --border-color-light: #eef0f5;
+
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-card: 14px;
+  --radius-lg: 16px;
+
+  /* 阴影 */
+  --shadow-card: 0 4px 16px rgba(31, 45, 77, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(31, 45, 77, 0.12);
+  --shadow-pop: 0 8px 24px rgba(31, 45, 77, 0.12);
+
+  /* 字号层级 */
+  --font-page-title: 20px;
+  --font-card-title: 16px;
+  --font-body: 14px;
+  --font-aux: 12px;
+
+  /* 等宽数字字体（订单号 / ID / 金额） */
+  --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+}

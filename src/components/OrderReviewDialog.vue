@@ -2,7 +2,7 @@
   <el-dialog
     title="商品评价"
     :visible="visible"
-    width="620px"
+    width="560px"
     :close-on-click-modal="false"
     custom-class="review-dialog"
     @close="handleClose"

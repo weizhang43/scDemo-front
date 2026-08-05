@@ -128,7 +128,7 @@ export default {
 }
 .layout-header {
   padding: 0;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+  background: var(--gradient-topbar);
   color: #fff;
   box-shadow: 0 2px 12px rgba(30, 60, 114, 0.25);
   position: relative;

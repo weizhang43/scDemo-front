@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ total }} 个权限节点</span>
         </div>
         <div class="header-actions">
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd(null)">新增顶级权限</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd(null)">新增顶级权限</el-button>
           <el-button size="small" icon="el-icon-refresh" @click="fetchTree">刷新</el-button>
         </div>
       </div>
@@ -58,8 +58,8 @@
     </el-card>
 
     <!-- 新增/编辑弹窗 -->
-    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="520px" :close-on-click-modal="false">
-      <el-form ref="moduleForm" :model="moduleForm" :rules="rules" label-width="100px">
+    <el-dialog :title="dialogTitle" :visible.sync="dialogVisible" width="560px" :close-on-click-modal="false">
+      <el-form ref="moduleForm" :model="moduleForm" :rules="rules" label-width="90px">
         <el-form-item label="父节点">
           <el-cascader
             v-model="moduleForm.parentPath"
@@ -257,10 +257,6 @@ export default {
 
 <style scoped>
 .module-list { max-width: 1200px; margin: 0 auto; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-.header-meta { font-size: 13px; color: #718096; }
 
 .tree-wrap {
   background: #fff;

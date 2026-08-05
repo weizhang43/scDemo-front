@@ -19,7 +19,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无售后记录"
       >
@@ -57,7 +57,7 @@
         <el-table-column label="操作" width="180" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goOrder(scope.row.oId)">查看订单</el-button>
-            <el-button v-if="scope.row.status === 0" type="text" icon="el-icon-close" class="btn-danger"
+            <el-button v-if="scope.row.status === 0" type="text" icon="el-icon-close" class="text-danger"
                        @click="handleCancel(scope.row)">撤销</el-button>
           </template>
         </el-table-column>
@@ -191,52 +191,8 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
-}
 .order-no {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #3b4a6b;
   font-size: 13px;
   font-weight: 600;
@@ -252,16 +208,10 @@ export default {
   font-size: 13px;
 }
 .cell-amount {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
-}
-.btn-danger {
-  color: #f56c6c !important;
-}
-.btn-danger:hover {
-  color: #d9363e !important;
+  font-family: var(--font-mono);
 }
 </style>
 
@@ -285,8 +235,8 @@ export default {
   overflow: hidden;
 }
 .my-aftersale-list .el-table th.el-table__cell {
-  background: #f3f5fa !important;
-  color: #2d3748;
+  background: #f5f7fb !important;
+  color: #4a5568;
   font-weight: 600;
   padding: 12px 0;
 }

@@ -115,7 +115,7 @@
     </el-card>
 
     <!-- 通知详情 -->
-    <el-dialog :title="current.title" :visible.sync="detailVisible" width="680px" top="8vh">
+    <el-dialog :title="current.title" :visible.sync="detailVisible" width="560px" top="8vh">
       <div class="notice-detail" v-html="current.content"></div>
     </el-dialog>
   </div>
@@ -282,10 +282,8 @@ export default {
 .stat-num { font-size: 26px; font-weight: 700; line-height: 1.15; }
 .stat-label { font-size: 12px; opacity: 0.85; margin-top: 2px; }
 
-/* 卡片通用 */
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 15px; font-weight: 600; color: #2d3748; display: flex; align-items: center; gap: 6px; }
-.header-meta { font-size: 12px; color: #909399; }
+/* 卡片通用（标题带图标，保留 flex 变体） */
+.card-title { display: flex; align-items: center; gap: 6px; }
 .accent-blue { color: #2a5298; }
 
 .mid-row {

@@ -21,7 +21,7 @@
         :model="form"
         :rules="rules"
         label-position="top"
-        class="fp-form"
+        class="fp-form auth-form"
         @submit.native.prevent
       >
         <!-- 步骤 1：验证手机号 -->
@@ -38,7 +38,7 @@
             </div>
           </el-form-item>
           <el-form-item class="action">
-            <el-button type="primary" :loading="verifying" class="submit-btn" @click="handleVerifyCode">下一步</el-button>
+            <el-button type="primary" :loading="verifying" class="submit-btn auth-submit-btn" @click="handleVerifyCode">下一步</el-button>
           </el-form-item>
         </div>
 
@@ -51,7 +51,7 @@
             <el-input v-model="form.confirmPassword" type="password" show-password placeholder="请再次输入新密码" prefix-icon="el-icon-lock" />
           </el-form-item>
           <el-form-item class="action">
-            <el-button type="primary" :loading="resetting" class="submit-btn" @click="handleReset">确认重置</el-button>
+            <el-button type="primary" :loading="resetting" class="submit-btn auth-submit-btn" @click="handleReset">确认重置</el-button>
           </el-form-item>
         </div>
 
@@ -59,11 +59,11 @@
         <div v-else class="success-block">
           <i class="el-icon-circle-check success-icon"></i>
           <p class="success-text">密码重置成功，请使用新密码登录</p>
-          <el-button type="primary" class="submit-btn" @click="goLogin">去登录</el-button>
+          <el-button type="primary" class="submit-btn auth-submit-btn" @click="goLogin">去登录</el-button>
         </div>
 
         <div class="fp-footer">
-          <router-link to="/login" class="link">返回登录</router-link>
+          <router-link to="/login" class="auth-link">返回登录</router-link>
         </div>
       </el-form>
     </div>
@@ -188,7 +188,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #4b6cb7 0%, #192841 100%);
+  background: var(--gradient-topbar);
   overflow: hidden;
   padding: 40px 16px;
 }
@@ -201,6 +201,7 @@ export default {
   position: relative;
   z-index: 1;
   width: 420px;
+  max-width: calc(100vw - 32px);
   padding: 40px 36px 28px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.92);
@@ -218,18 +219,6 @@ export default {
 .brand-title { margin: 0 0 6px; color: #1f2733; font-size: 22px; font-weight: 600; }
 .brand-subtitle { margin: 0; color: #7a8694; font-size: 13px; }
 .fp-steps { margin-bottom: 26px; }
-.fp-form .field >>> .el-form-item__label { color: #4a5568; font-weight: 500; padding-bottom: 4px; }
-.fp-form .field >>> .el-input__inner {
-  border-radius: 10px; height: 44px; line-height: 44px;
-  border: 1px solid #e2e8f0; background: #f8fafc; padding-left: 36px;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-}
-.fp-form .field >>> .el-input__inner:hover { border-color: #cbd5e0; }
-.fp-form .field >>> .el-input__inner:focus {
-  border-color: #667eea; background: #fff;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
-.fp-form .field >>> .el-input__prefix { left: 10px; color: #a0aec0; }
 .code-row { display: flex; gap: 10px; }
 .code-row .el-input { flex: 1; }
 .code-btn {
@@ -240,19 +229,8 @@ export default {
 .code-btn:not(:disabled):hover { border-color: #667eea; color: #667eea; }
 .code-btn.is-disabled { background: #f1f5f9; color: #a0aec0; }
 .action { margin-bottom: 8px; }
-.submit-btn {
-  width: 100%; height: 44px; border: none; border-radius: 10px;
-  font-size: 15px; font-weight: 600; letter-spacing: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 8px 20px rgba(118, 75, 162, 0.35);
-  transition: transform 0.15s, box-shadow 0.2s, filter 0.2s;
-}
-.submit-btn:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 12px 24px rgba(118, 75, 162, 0.45); }
-.submit-btn:active { transform: translateY(0); }
 .success-block { text-align: center; padding: 16px 0 8px; }
 .success-icon { font-size: 56px; color: #67c23a; }
 .success-text { color: #4a5568; font-size: 14px; margin: 12px 0 22px; }
 .fp-footer { text-align: center; font-size: 13px; margin-top: 8px; }
-.link { color: #667eea; font-weight: 500; text-decoration: none; }
-.link:hover { color: #764ba2; text-decoration: underline; }
 </style>

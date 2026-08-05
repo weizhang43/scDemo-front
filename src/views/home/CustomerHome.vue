@@ -401,46 +401,17 @@ export default {
 }
 .stat:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.2); }
 .stat-ico { font-size: 17px; opacity: 0.9; }
-.stat-num { font-size: 24px; font-weight: 700; line-height: 1.2; font-family: 'Menlo', 'Consolas', monospace; }
+.stat-num { font-size: 24px; font-weight: 700; line-height: 1.2; font-family: var(--font-mono); }
 .stat-label { font-size: 12px; opacity: 0.85; }
 .stat.warn-o.has-warn { background: rgba(245, 108, 108, 0.32); border-color: rgba(245, 108, 108, 0.5); }
 
 /* 卡片通用 */
-.card-header { display: flex; justify-content: space-between; align-items: center; }
 .header-right { display: flex; align-items: center; gap: 10px; }
 .btn-more { padding: 0; color: #667eea; font-weight: 600; }
 .btn-more:hover, .btn-more:focus { color: #8497f2; }
 .btn-more i { margin-left: 2px; }
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 17px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 .card-title i { margin-right: 6px; }
 .card-sub { font-size: 12px; color: #8a93a4; margin-bottom: 10px; }
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  font-family: 'Menlo', 'Consolas', monospace;
-}
 .count-badge {
   min-width: 24px;
   padding: 2px 9px;
@@ -450,7 +421,7 @@ export default {
   color: #fff;
   text-align: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .count-badge.zero { background: #cbd2de; }
 .accent-blue { color: #667eea; }
@@ -482,7 +453,7 @@ export default {
   font-weight: 700;
   color: #8a93a4;
   background: #f0f2f7;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .rank-no.top { color: #fff; }
 .rank-no.top-1 { background: linear-gradient(135deg, #f5b04c, #e8912a); }
@@ -523,7 +494,7 @@ export default {
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .rank-metric i { margin-right: 4px; }
 .rank-metric.sales { color: #667eea; }
@@ -593,11 +564,11 @@ export default {
 .goods-stock { font-size: 11px; color: #8a93a4; }
 
 /* 订单倒计时 */
-.countdown { font-size: 13px; font-weight: 600; color: #e6a23c; font-family: 'Menlo', 'Consolas', monospace; }
+.countdown { font-size: 13px; font-weight: 600; color: #e6a23c; font-family: var(--font-mono); }
 .countdown i { margin-right: 4px; }
 .countdown.expired { color: #f56c6c; }
 
-@media (max-width: 900px) {
+@media (max-width: 992px) {
   .rank-row { grid-template-columns: 1fr; }
 }
 </style>

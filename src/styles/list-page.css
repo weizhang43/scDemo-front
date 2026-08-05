@@ -1,0 +1,105 @@
+/* 列表页公共样式：卡片头 / 紫竖条标题 / 分页 / 状态标签栏
+   页面 scoped 中的同名重复定义应删除，统一走这里 */
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.card-header .header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.card-title {
+  font-size: var(--font-card-title);
+  font-weight: 600;
+  color: var(--text-title);
+  position: relative;
+  padding-left: 12px;
+  line-height: 1;
+}
+.card-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--gradient-brand);
+}
+.header-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.pagination-wrap {
+  margin-top: 18px;
+  padding: 14px 4px 4px;
+  text-align: right;
+  border-top: 1px dashed var(--border-color-light);
+}
+
+/* 列表页 el-card 统一外观 */
+.list-card.el-card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-card);
+}
+
+/* 状态标签栏（订单/售后等列表顶部的状态切换） */
+.status-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.status-tabs .status-tab {
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  color: var(--text-regular);
+  background: #f3f5fa;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  user-select: none;
+}
+.status-tabs .status-tab:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.status-tabs .status-tab.is-active {
+  color: #fff;
+  background: var(--gradient-brand);
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* 等宽数字（ID / 订单号 / 金额） */
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* 价格统一样式 */
+.price {
+  color: var(--color-price);
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+/* 危险文字按钮统一 */
+.el-button--text.text-danger,
+.el-button--text.btn-danger {
+  color: #f56c6c;
+}
+.el-button--text.text-danger:hover,
+.el-button--text.text-danger:focus,
+.el-button--text.btn-danger:hover,
+.el-button--text.btn-danger:focus {
+  color: #f78989;
+}

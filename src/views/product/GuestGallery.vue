@@ -33,7 +33,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.35);
 }
 .topbar-brand {

@@ -184,8 +184,8 @@ export default {
   margin: 6px 0 10px;
   font-size: 32px;
   font-weight: 700;
-  color: #e67700;
-  font-family: 'Menlo', 'Consolas', monospace;
+  color: var(--color-price);
+  font-family: var(--font-mono);
 }
 .txn-desc >>> .el-descriptions__label {
   width: 110px;
@@ -193,7 +193,6 @@ export default {
   color: #4a5568;
 }
 .mono {
-  font-family: 'Menlo', 'Consolas', monospace;
   color: #3b4a6b;
 }
 .cashier-actions {

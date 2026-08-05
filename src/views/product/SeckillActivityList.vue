@@ -18,7 +18,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
       >
         <el-table-column type="index" label="序号" width="60" align="center" :index="indexMethod" />
         <el-table-column label="商品" min-width="220">
@@ -154,44 +154,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .header-actions {
   display: flex;
   align-items: center;
@@ -238,7 +200,7 @@ export default {
   margin-top: 2px;
 }
 .seckill-price {
-  color: #cf1322;
+  color: var(--color-price);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -253,15 +215,6 @@ export default {
 }
 .cell-muted {
   color: #c0c4cc;
-}
-.text-danger {
-  color: #f56c6c;
-}
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
 }
 </style>
 
@@ -286,8 +239,8 @@ export default {
   overflow: hidden;
 }
 .seckill-list .el-table th.el-table__cell {
-  background: #f3f5fa !important;
-  color: #2d3748;
+  background: #f5f7fb !important;
+  color: #4a5568;
   font-weight: 600;
   padding: 12px 0;
 }

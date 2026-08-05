@@ -1,0 +1,170 @@
+/* Element UI 主色由默认蓝 #409eff 统一为品牌紫 #667eea（无 sass-loader，用覆盖方式） */
+
+/* 按钮 */
+.el-button--primary {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+.el-button--primary:hover,
+.el-button--primary:focus {
+  background-color: #7d92ee;
+  border-color: #7d92ee;
+}
+.el-button--primary:active {
+  background-color: #5c71d3;
+  border-color: #5c71d3;
+}
+.el-button--primary.is-disabled,
+.el-button--primary.is-disabled:hover,
+.el-button--primary.is-disabled:focus,
+.el-button--primary.is-disabled:active {
+  background-color: #b3befa;
+  border-color: #b3befa;
+}
+.el-button--primary.is-plain {
+  color: #667eea;
+  background: #f0f2fd;
+  border-color: #c2cbf7;
+}
+.el-button--primary.is-plain:hover,
+.el-button--primary.is-plain:focus {
+  background: #667eea;
+  border-color: #667eea;
+  color: #fff;
+}
+.el-button--text {
+  color: #667eea;
+}
+.el-button--text:hover,
+.el-button--text:focus {
+  color: #7d92ee;
+}
+.el-button--text.is-disabled,
+.el-button--text.is-disabled:hover {
+  color: #c0c4cc;
+}
+
+/* 链接 */
+.el-link.el-link--primary {
+  color: #667eea;
+}
+.el-link.el-link--primary:hover {
+  color: #7d92ee;
+}
+
+/* 输入框 / 选择器聚焦 */
+.el-input__inner:focus,
+.el-textarea__inner:focus,
+.el-select .el-input.is-focus .el-input__inner,
+.el-select .el-input__inner:focus,
+.el-range-editor.is-active,
+.el-range-editor.is-active:hover {
+  border-color: #667eea;
+}
+.el-select-dropdown__item.selected {
+  color: #667eea;
+}
+
+/* 复选框 / 单选框 */
+.el-checkbox__input.is-checked .el-checkbox__inner,
+.el-checkbox__input.is-indeterminate .el-checkbox__inner {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+.el-checkbox__input.is-checked + .el-checkbox__label {
+  color: #667eea;
+}
+.el-checkbox__inner:hover,
+.el-checkbox__input.is-focus .el-checkbox__inner {
+  border-color: #667eea;
+}
+.el-radio__input.is-checked .el-radio__inner {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+.el-radio__input.is-checked + .el-radio__label {
+  color: #667eea;
+}
+.el-radio__inner:hover {
+  border-color: #667eea;
+}
+.el-radio-button__orig-radio:checked + .el-radio-button__inner {
+  background-color: #667eea;
+  border-color: #667eea;
+  box-shadow: -1px 0 0 0 #667eea;
+}
+
+/* 开关 */
+.el-switch.is-checked .el-switch__core {
+  background-color: #667eea;
+  border-color: #667eea;
+}
+
+/* 分页 */
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: #667eea;
+}
+.el-pagination.is-background .el-pager li:not(.disabled):hover {
+  color: #667eea;
+}
+.el-pager li.active,
+.el-pager li:hover {
+  color: #667eea;
+}
+.el-pagination button:hover {
+  color: #667eea;
+}
+
+/* 标签页 */
+.el-tabs__item.is-active,
+.el-tabs__item:hover {
+  color: #667eea;
+}
+.el-tabs__active-bar {
+  background-color: #667eea;
+}
+
+/* 下拉菜单 / 级联 / 日期面板选中态 */
+.el-dropdown-menu__item:focus,
+.el-dropdown-menu__item:not(.is-disabled):hover {
+  color: #667eea;
+  background-color: rgba(102, 126, 234, 0.08);
+}
+.el-date-table td.today span {
+  color: #667eea;
+}
+.el-date-table td.current:not(.disabled) span {
+  background-color: #667eea;
+}
+.el-date-table td.available:hover {
+  color: #667eea;
+}
+.el-cascader-node.in-active-path,
+.el-cascader-node.is-active,
+.el-cascader-node.is-selectable.in-checked-path {
+  color: #667eea;
+}
+
+/* 加载 / 上传 / 步骤条 */
+.el-loading-spinner .path {
+  stroke: #667eea;
+}
+.el-loading-spinner .el-loading-text {
+  color: #667eea;
+}
+.el-upload:hover,
+.el-upload-dragger:hover {
+  border-color: #667eea;
+}
+.el-upload-dragger.is-dragover {
+  border-color: #667eea;
+  background-color: rgba(102, 126, 234, 0.06);
+}
+.el-steps .el-step__head.is-finish,
+.el-steps .el-step__title.is-finish,
+.el-steps .el-step__description.is-finish {
+  color: #667eea;
+  border-color: #667eea;
+}
+
+/* 消息框主按钮跟随上面的 .el-button--primary 覆盖，无需单独处理 */

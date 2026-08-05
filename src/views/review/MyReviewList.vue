@@ -17,7 +17,7 @@
         v-loading="loading"
         border
         stripe
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
       >
         <el-table-column type="index" :index="indexMethod" label="序号" width="70" align="center" />
         <el-table-column label="商品名称" min-width="180" align="center" show-overflow-tooltip>
@@ -144,44 +144,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .cell-icon {
   color: #9aa3b2;
   margin-right: 6px;
@@ -200,16 +162,10 @@ export default {
 .cell-time {
   color: #4a5568;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .row-rate {
   line-height: 1;
-}
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
 }
 </style>
 

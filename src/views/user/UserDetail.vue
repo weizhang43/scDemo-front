@@ -44,7 +44,7 @@
           ref="profileForm"
           :model="form"
           :rules="rules"
-          label-width="100px"
+          label-width="90px"
           class="profile-form"
         >
           <el-form-item label="用户名">
@@ -295,16 +295,6 @@ export default {
 .user-detail.is-embedded > .el-card {
   max-width: none;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .btn-back {
   color: #5a6478;
   font-weight: 500;
@@ -317,34 +307,13 @@ export default {
   color: #667eea;
   background: #f5f7ff;
 }
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
 .header-meta {
-  font-size: 13px;
-  color: #8a93a4;
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 10px;
   border-radius: 10px;
   line-height: 1.4;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .detail-body {
   display: flex;
@@ -427,7 +396,7 @@ export default {
   margin-top: 6px;
   font-size: 13px;
   color: #8a93a4;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   background: #fff;
   padding: 2px 10px;
   border-radius: 10px;

@@ -15,7 +15,7 @@ html, body, #app {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 </style>

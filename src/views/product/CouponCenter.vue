@@ -61,7 +61,7 @@
           border
           stripe
           style="width:100%;"
-          :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+          :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
           :cell-style="{ textAlign: 'center' }"
           empty-text="还没有优惠券，去领券中心看看吧"
         >
@@ -171,8 +171,6 @@ export default {
 
 <style scoped>
 .coupon-center { width: 100%; }
-.card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
 .coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
 .coupon-item {
   display: flex; align-items: center; border-radius: 10px; overflow: hidden;

@@ -79,7 +79,7 @@ export default {
   color: #764ba2;
 }
 .stats-main {
-  padding: 0 0 0 16px;
+  padding: 0 16px 16px;
   overflow: visible;
 }
 </style>

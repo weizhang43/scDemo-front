@@ -7,8 +7,8 @@
           <span class="header-meta">共 {{ total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-refresh" @click="fetchList">刷新</el-button>
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd">发布优惠券</el-button>
+          <el-button type="text" size="small" icon="el-icon-refresh" @click="fetchList">刷新</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">发布优惠券</el-button>
         </div>
       </div>
 
@@ -18,7 +18,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无优惠券"
       >
@@ -60,7 +60,7 @@
             <el-button
               v-if="scope.row.status === 1"
               type="text"
-              style="color:#f56c6c"
+              class="text-danger"
               @click="handleDisable(scope.row)"
             >停用</el-button>
             <span v-else style="color:#bbb">-</span>
@@ -68,19 +68,21 @@
         </el-table-column>
       </el-table>
 
-      <el-pagination
-        style="margin-top:16px;text-align:right;"
-        background
-        layout="total, prev, pager, next"
-        :total="total"
-        :page-size="query.pageSize"
-        :current-page="query.pageNo"
-        @current-change="handlePageChange"
-      />
+      <div class="pagination-wrap">
+        <el-pagination
+          background
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          :page-size="query.pageSize"
+          :page-sizes="[10, 20, 50]"
+          :current-page="query.pageNo"
+          @current-change="handlePageChange"
+        />
+      </div>
     </el-card>
 
     <el-dialog title="发布优惠券" :visible.sync="dialogVisible" width="560px" :close-on-click-modal="false">
-      <el-form ref="couponForm" :model="couponForm" :rules="rules" label-width="100px">
+      <el-form ref="couponForm" :model="couponForm" :rules="rules" label-width="90px">
         <el-form-item label="券名称" prop="name">
           <el-input v-model="couponForm.name" placeholder="如：满100减20" maxlength="64" show-word-limit />
         </el-form-item>
@@ -244,9 +246,5 @@ export default {
 
 <style scoped>
 .coupon-template-list { width: 100%; }
-.card-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-.header-left { display: flex; align-items: center; gap: 14px; }
-.card-title { font-size: 16px; font-weight: 600; color: #2d3748; }
-.header-meta { font-size: 13px; color: #718096; }
 .tip { margin-left: 10px; color: #909399; font-size: 12px; }
 </style>

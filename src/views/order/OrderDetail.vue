@@ -119,7 +119,7 @@
             border
             stripe
             class="goods-table"
-            :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
+            :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
             empty-text="暂无商品"
           >
             <el-table-column type="index" label="序号" width="70" align="center" />
@@ -375,44 +375,8 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-  font-family: 'Menlo', 'Consolas', monospace;
+.header-meta--id {
+  font-family: var(--font-mono);
 }
 .detail-body {
   padding: 4px 0;
@@ -451,7 +415,7 @@ export default {
   font-weight: 700;
   color: #1f2733;
   margin-bottom: 6px;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .hero-sub {
   display: flex;
@@ -486,11 +450,11 @@ export default {
   color: #1f2733;
 }
 .desc-id {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #4c5163;
 }
 .desc-no {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #3b4a6b;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -500,10 +464,10 @@ export default {
   margin-right: 6px;
 }
 .desc-amount {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.3px;
 }
 .goods-section {
@@ -562,15 +526,15 @@ export default {
   color: #1f2733;
 }
 .cell-amount {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .cell-qty {
   color: #4a5568;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
 }
 .goods-table >>> .el-table__row:hover > td.el-table__cell {
   background-color: #f0f4ff !important;

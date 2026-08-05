@@ -79,5 +79,5 @@ export default {
 
 <style scoped>
 .coupon-select { min-width: 220px; }
-.option-amount { float: right; color: #d97706; font-weight: 600; }
+.option-amount { float: right; color: var(--color-price); font-weight: 600; }
 </style>

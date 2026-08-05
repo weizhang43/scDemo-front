@@ -50,7 +50,7 @@
         border
         stripe
         style="width: 100%;"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600, textAlign: 'center' }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600, textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无订单数据"
       >
@@ -96,7 +96,7 @@
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-truck" @click="openShipDialog(scope.row)">发货</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
-            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
+            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="text-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -114,7 +114,7 @@
         />
       </div>
 
-      <el-dialog title="订单发货" :visible.sync="shipDialogVisible" width="420px" :close-on-click-modal="false">
+      <el-dialog title="订单发货" :visible.sync="shipDialogVisible" width="480px" :close-on-click-modal="false">
         <el-form ref="shipForm" :model="shipForm" :rules="shipRules" label-width="90px">
           <el-form-item label="订单编号">
             <span class="order-no">{{ shipForm.orderNo || '-' }}</span>
@@ -132,7 +132,7 @@
         </div>
       </el-dialog>
 
-      <el-dialog title="更新订单状态" :visible.sync="statusDialogVisible" width="420px" :close-on-click-modal="false">
+      <el-dialog title="更新订单状态" :visible.sync="statusDialogVisible" width="480px" :close-on-click-modal="false">
         <el-form :model="statusForm" label-width="90px">
           <el-form-item label="订单编号">
             <span class="order-no">{{ statusForm.orderNo || '-' }}</span>
@@ -434,44 +434,6 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
 .search-form {
   margin-bottom: 18px;
   padding: 18px 20px 2px;
@@ -521,19 +483,13 @@ export default {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
-}
 .order-id {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #4c5163;
   font-size: 13px;
 }
 .order-no {
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   color: #3b4a6b;
   font-size: 13px;
   font-weight: 600;
@@ -557,22 +513,10 @@ export default {
   font-size: 13px;
 }
 .cell-amount {
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
-}
-.btn-danger {
-  color: #f56c6c !important;
-}
-.btn-danger:hover {
-  color: #d9363e !important;
-}
-.btn-danger.is-disabled,
-.btn-danger.is-disabled:hover,
-.btn-danger.is-disabled:focus {
-  color: #c0c4cc !important;
-  cursor: not-allowed;
+  font-family: var(--font-mono);
 }
 </style>
 
@@ -608,8 +552,8 @@ export default {
   overflow: hidden;
 }
 .order-list .el-table th.el-table__cell {
-  background: #f3f5fa !important;
-  color: #2d3748;
+  background: #f5f7fb !important;
+  color: #4a5568;
   font-weight: 600;
   padding: 12px 0;
 }

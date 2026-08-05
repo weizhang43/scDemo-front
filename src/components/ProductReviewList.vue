@@ -221,7 +221,7 @@ export default {
   font-size: 12px;
   color: #9aa3b2;
   font-variant-numeric: tabular-nums;
-  font-family: 'Menlo', 'Consolas', monospace;
+  font-family: var(--font-mono);
   margin-left: auto;
 }
 .review-content {
@@ -249,7 +249,7 @@ export default {
 }
 .review-list .el-rate__text {
   font-size: 13px;
-  color: #e67700;
+  color: var(--color-price);
   font-weight: 600;
 }
 </style>

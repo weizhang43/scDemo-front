@@ -7,14 +7,14 @@
           <span class="header-meta">共 {{ pagination.total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="success" size="small" icon="el-icon-plus" @click="openAdd">新增商品</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增商品</el-button>
           <el-button type="info" size="small" icon="el-icon-download" :disabled="exporting" @click="handleExport">
             {{ exporting ? `导出中 ${exportProgress}%` : '导出' }}
           </el-button>
           <el-button v-if="exporting" type="danger" size="small" icon="el-icon-close" @click="handleCancelExport">取消</el-button>
         </div>
       </div>
-      <el-form :model="searchForm" class="search-form" label-width="80px">
+      <el-form :model="searchForm" class="search-form" label-width="90px">
         <div class="search-row">
           <el-form-item label="商品名称" class="search-item">
             <el-input v-model="searchForm.pName" placeholder="请输入商品名称" prefix-icon="el-icon-goods" clearable @keyup.enter.native="handleSearch" />
@@ -69,7 +69,7 @@
         stripe
         style="width: 100%;"
         :row-class-name="rowClassName"
-        :header-cell-style="{ background: '#f3f5fa', color: '#2d3748', fontWeight: 600 }"
+        :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
       >
         <el-table-column type="index" label="序号" width="60" align="center"
                          :index="indexMethod" />
@@ -105,7 +105,7 @@
         </el-table-column>
         <el-table-column prop="shelfLife" label="保质期(天)" width="95" align="center" />
         <el-table-column prop="origin" label="产地" width="90" align="center" />
-        <el-table-column prop="manufacturer" label="厂家名称" min-width="160" align="center"， show-overflow-tooltip />
+        <el-table-column prop="manufacturer" label="厂家名称" min-width="160" align="center" show-overflow-tooltip />
         <el-table-column prop="stock" label="库存" width="80" align="center">
           <template slot-scope="scope">
             <span :class="{ 'stock-low': scope.row.stock !== null && scope.row.stock < 10 }">
@@ -185,8 +185,8 @@
     </el-card>
 
     <!-- 新增商品弹窗 -->
-    <el-dialog title="新增商品" :visible.sync="addVisible" width="520px" :close-on-click-modal="false">
-      <el-form ref="addForm" :model="addForm" :rules="addRules" label-width="100px">
+    <el-dialog title="新增商品" :visible.sync="addVisible" width="560px" :close-on-click-modal="false">
+      <el-form ref="addForm" :model="addForm" :rules="addRules" label-width="90px">
         <el-form-item label="商品名称" prop="pName">
           <el-input v-model="addForm.pName" placeholder="请输入商品名称" />
         </el-form-item>
@@ -234,7 +234,7 @@
             <img v-if="addForm.imageUrl" :src="addForm.imageUrl" class="uploaded-image" alt="商品图片">
             <i v-else class="el-icon-plus image-uploader-icon" />
           </el-upload>
-          <el-button v-if="addForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn" @click="addForm.imageUrl = ''">移除</el-button>
+          <el-button v-if="addForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn text-danger" @click="addForm.imageUrl = ''">移除</el-button>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -244,8 +244,8 @@
     </el-dialog>
 
     <!-- 编辑商品弹窗 -->
-    <el-dialog title="编辑商品" :visible.sync="editVisible" width="520px" :close-on-click-modal="false">
-      <el-form ref="editForm" :model="editForm" :rules="editRules" label-width="100px">
+    <el-dialog title="编辑商品" :visible.sync="editVisible" width="560px" :close-on-click-modal="false">
+      <el-form ref="editForm" :model="editForm" :rules="editRules" label-width="90px">
         <el-form-item label="商品名称" prop="pName">
           <el-input v-model="editForm.pName" placeholder="请输入商品名称" />
         </el-form-item>
@@ -293,7 +293,7 @@
             <img v-if="editForm.imageUrl" :src="editForm.imageUrl" class="uploaded-image" alt="商品图片">
             <i v-else class="el-icon-plus image-uploader-icon" />
           </el-upload>
-          <el-button v-if="editForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn" @click="editForm.imageUrl = ''">移除</el-button>
+          <el-button v-if="editForm.imageUrl" type="text" icon="el-icon-delete" class="clear-image-btn text-danger" @click="editForm.imageUrl = ''">移除</el-button>
         </el-form-item>
       </el-form>
       <div slot="footer">
@@ -303,8 +303,8 @@
     </el-dialog>
 
     <!-- 补货弹窗 -->
-    <el-dialog title="商品补货" :visible.sync="restockVisible" width="420px" :close-on-click-modal="false">
-      <el-form ref="restockForm" :model="restockForm" :rules="restockRules" label-width="100px">
+    <el-dialog title="商品补货" :visible.sync="restockVisible" width="480px" :close-on-click-modal="false">
+      <el-form ref="restockForm" :model="restockForm" :rules="restockRules" label-width="90px">
         <el-form-item label="商品名称">
           <span class="restock-name">{{ restockRow && restockRow.pName }}</span>
         </el-form-item>
@@ -325,8 +325,8 @@
     </el-dialog>
 
     <!-- 设折扣弹窗 -->
-    <el-dialog title="商品折扣" :visible.sync="promotionVisible" width="680px" :close-on-click-modal="false">
-      <el-form ref="promotionForm" :model="promotionForm" :rules="promotionRules" label-width="100px">
+    <el-dialog title="商品折扣" :visible.sync="promotionVisible" width="820px" :close-on-click-modal="false">
+      <el-form ref="promotionForm" :model="promotionForm" :rules="promotionRules" label-width="90px">
         <el-form-item label="商品">
           <span class="dialog-name">{{ activityRow && activityRow.pName }}</span>
           <span class="dialog-hint">原价 ¥ {{ activityRow && activityRow.price }}</span>
@@ -380,7 +380,7 @@
 
     <!-- 发布秒杀弹窗 -->
     <el-dialog title="发布秒杀活动" :visible.sync="seckillVisible" width="560px" :close-on-click-modal="false">
-      <el-form ref="seckillForm" :model="seckillForm" :rules="seckillRules" label-width="100px">
+      <el-form ref="seckillForm" :model="seckillForm" :rules="seckillRules" label-width="90px">
         <el-form-item label="商品">
           <span class="dialog-name">{{ activityRow && activityRow.pName }}</span>
           <span class="dialog-hint">原价 ¥ {{ activityRow && activityRow.price }} · 库存 {{ activityRow && activityRow.stock }}</span>
@@ -1055,45 +1055,7 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   box-sizing: border-box;
 }
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.card-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1f2733;
-  position: relative;
-  padding-left: 12px;
-  line-height: 1;
-}
-.card-title::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 18px;
-  border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-meta {
-  font-size: 13px;
-  color: #8a93a4;
-  font-weight: 500;
-  background: #f3f5fa;
-  padding: 3px 10px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
-.header-actions {
+.card-header .header-actions {
   display: flex;
   gap: 8px;
 }
@@ -1164,12 +1126,6 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.pagination-wrap {
-  margin-top: 18px;
-  padding: 14px 4px 4px;
-  text-align: right;
-  border-top: 1px dashed #e8ebf2;
-}
 .cell-strong {
   font-weight: 600;
   color: #1f2733;
@@ -1188,7 +1144,7 @@ export default {
   font-weight: 600;
 }
 .price-text {
-  color: #d97706;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1210,7 +1166,7 @@ export default {
   gap: 6px;
 }
 .discount-price {
-  color: #cf1322;
+  color: var(--color-price);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -1224,7 +1180,7 @@ export default {
   color: #8a93a4;
 }
 .dialog-strong {
-  color: #cf1322;
+  color: var(--color-price);
 }
 .sub-title {
   margin: 4px 0 10px;
@@ -1234,9 +1190,6 @@ export default {
   color: #4a5568;
   border-left: 3px solid #667eea;
   line-height: 1.2;
-}
-.text-danger {
-  color: #f56c6c;
 }
 .restock-name {
   font-weight: 600;
@@ -1291,7 +1244,6 @@ export default {
 }
 .clear-image-btn {
   margin-top: 4px;
-  color: #f56c6c;
 }
 </style>
 
@@ -1379,8 +1331,8 @@ export default {
   overflow: hidden;
 }
 .product-list .el-table th.el-table__cell {
-  background: #f3f5fa !important;
-  color: #2d3748;
+  background: #f5f7fb !important;
+  color: #4a5568;
   font-weight: 600;
   padding: 12px 0;
 }
