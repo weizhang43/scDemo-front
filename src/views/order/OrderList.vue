@@ -94,6 +94,7 @@
         <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
+            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-truck" @click="openShipDialog(scope.row)">发货</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="btn-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
           </template>
@@ -112,6 +113,24 @@
           @size-change="handleSizeChange"
         />
       </div>
+
+      <el-dialog title="订单发货" :visible.sync="shipDialogVisible" width="420px" :close-on-click-modal="false">
+        <el-form ref="shipForm" :model="shipForm" :rules="shipRules" label-width="90px">
+          <el-form-item label="订单编号">
+            <span class="order-no">{{ shipForm.orderNo || '-' }}</span>
+          </el-form-item>
+          <el-form-item label="快递公司" prop="shippingCompany">
+            <el-input v-model="shipForm.shippingCompany" placeholder="请输入快递公司" maxlength="64" />
+          </el-form-item>
+          <el-form-item label="快递单号" prop="trackingNo">
+            <el-input v-model="shipForm.trackingNo" placeholder="请输入快递单号" maxlength="64" />
+          </el-form-item>
+        </el-form>
+        <div slot="footer">
+          <el-button @click="shipDialogVisible = false">取 消</el-button>
+          <el-button type="primary" :loading="shipSubmitting" @click="confirmShip">确认发货</el-button>
+        </div>
+      </el-dialog>
 
       <el-dialog title="更新订单状态" :visible.sync="statusDialogVisible" width="420px" :close-on-click-modal="false">
         <el-form :model="statusForm" label-width="90px">
@@ -144,19 +163,21 @@
 </template>
 
 <script>
-import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount } from '../../api/order';
+import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount, shipOrder } from '../../api/order';
 import { downloadBlob } from '../../utils/export';
 
 const STATUS_MAP = {
   '-1': { label: '取消', type: 'info' },
   '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待签收', type: 'primary' },
+  '1': { label: '待发货', type: 'primary' },
+  '3': { label: '已发货', type: '' },
   '2': { label: '已完成', type: 'success' }
 };
 
 const STATUS_TABS = [
   { name: '0', label: '待支付' },
-  { name: '1', label: '待签收' },
+  { name: '1', label: '待发货' },
+  { name: '3', label: '已发货' },
   { name: '2', label: '已完成' },
   { name: '-1', label: '已取消' }
 ];
@@ -183,6 +204,18 @@ export default {
       statusDialogVisible: false,
       statusSubmitting: false,
       exporting: false,
+      shipDialogVisible: false,
+      shipSubmitting: false,
+      shipForm: {
+        id: null,
+        orderNo: '',
+        shippingCompany: '',
+        trackingNo: ''
+      },
+      shipRules: {
+        shippingCompany: [{ required: true, message: '请输入快递公司', trigger: 'blur' }],
+        trackingNo: [{ required: true, message: '请输入快递单号', trigger: 'blur' }]
+      },
       statusForm: {
         id: null,
         orderNo: '',
@@ -285,6 +318,35 @@ export default {
     },
     goDetail(id) {
       this.$router.push(`/order/${id}`);
+    },
+    openShipDialog(row) {
+      this.shipForm = {
+        id: row.oid,
+        orderNo: row.orderNo,
+        shippingCompany: '',
+        trackingNo: ''
+      };
+      this.shipDialogVisible = true;
+      this.$nextTick(() => {
+        if (this.$refs.shipForm) this.$refs.shipForm.clearValidate();
+      });
+    },
+    confirmShip() {
+      this.$refs.shipForm.validate(valid => {
+        if (!valid) return;
+        this.shipSubmitting = true;
+        shipOrder(this.shipForm.id, this.shipForm.shippingCompany.trim(), this.shipForm.trackingNo.trim())
+          .then(() => {
+            this.$message.success('发货成功');
+            this.shipDialogVisible = false;
+            this.fetchData();
+            this.fetchStatusCount();
+          })
+          .catch(() => {})
+          .finally(() => {
+            this.shipSubmitting = false;
+          });
+      });
     },
     statusText(status) {
       return (STATUS_MAP[status] || {}).label || '未知';

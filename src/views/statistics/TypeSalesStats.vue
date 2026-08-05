@@ -16,7 +16,7 @@
         :header-cell-style="{ background: '#f5f6fd', color: '#3b3f63', fontWeight: 600 }"
       >
         <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="typeName" label="商品类型" min-width="160" align="center">
+        <el-table-column prop="typeName" label="商品分类" min-width="160" align="center">
           <template slot-scope="scope">
             <el-tag size="mini" effect="plain">{{ scope.row.typeName }}</el-tag>
           </template>
@@ -33,7 +33,6 @@
 
 <script>
 import { getTypeSales } from '../../api/statistics';
-import { PRODUCT_TYPE_OPTIONS } from '../../constants/productType';
 import echarts from './echarts';
 
 export default {
@@ -67,13 +66,9 @@ export default {
     fetchData() {
       this.loading = true;
       getTypeSales().then(res => {
-        const salesByType = {};
-        (res.dataList || []).forEach(row => {
-          salesByType[row.pType] = row.salesCount || 0;
-        });
-        this.tableData = PRODUCT_TYPE_OPTIONS.map(o => ({
-          typeName: o.label,
-          salesCount: salesByType[o.value] || 0
+        this.tableData = (res.dataList || []).map(r => ({
+          typeName: r.categoryName || '未分类',
+          salesCount: r.salesCount || 0
         }));
         this.renderChart();
       }).finally(() => {

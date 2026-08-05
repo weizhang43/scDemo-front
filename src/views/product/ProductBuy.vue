@@ -91,8 +91,12 @@
                 暂无收货地址，去添加
               </el-button>
             </el-form-item>
+            <el-form-item label="使用优惠券">
+              <coupon-select :order-amount="Number(totalAmount)" :disabled="!canBuy" @change="onCouponChange" />
+            </el-form-item>
             <el-form-item label="合计金额">
-              <span class="total-text">¥ {{ totalAmount }}</span>
+              <span class="total-text">¥ {{ payAmount }}</span>
+              <span v-if="coupon" class="form-tip coupon-off">已优惠 ¥ {{ coupon.couponAmount.toFixed(2) }}</span>
             </el-form-item>
             <el-form-item>
               <el-button
@@ -127,16 +131,18 @@ import { getAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
 import ProductReviewList from '../../components/ProductReviewList.vue';
+import CouponSelect from '../../components/CouponSelect.vue';
 
 export default {
   name: 'ProductBuy',
-  components: { ProductReviewList },
+  components: { ProductReviewList, CouponSelect },
   data() {
     return {
       product: null,
       addressList: [],
       addressId: null,
       quantity: 1,
+      coupon: null,
       loading: false,
       submitting: false,
       addingCart: false
@@ -161,6 +167,11 @@ export default {
     },
     totalAmount() {
       return (this.unitPrice * (Number(this.quantity) || 0)).toFixed(2);
+    },
+    payAmount() {
+      const total = Number(this.totalAmount);
+      const off = this.coupon ? this.coupon.couponAmount : 0;
+      return Math.max(total - off, 0).toFixed(2);
     },
     /** 服务端权威单价：有折扣即折后价。下单金额由服务端重算，这里只负责展示与比对 */
     unitPrice() {
@@ -220,6 +231,9 @@ export default {
       const region = [addr.province, addr.city, addr.district].filter(v => v).join('');
       return `${addr.consignee} ${addr.phone} ${region}${addr.detail || ''}${addr.isDefault === 1 ? '（默认）' : ''}`;
     },
+    onCouponChange(c) {
+      this.coupon = c;
+    },
     handleSubmit() {
       if (!this.addressId) {
         this.$message.warning('请选择收货地址');
@@ -240,6 +254,8 @@ export default {
         addPerson: user.uName || (user.realName || 'anonymous'),
         addressId: this.addressId,
         orderStatus: 0,
+        couponId: this.coupon ? this.coupon.couponId : null,
+        expectedPayAmount: this.coupon ? Number(this.payAmount) : null,
         items: [{ pId: this.product.pId, quantity: this.quantity, expectedPrice: this.unitPrice }]
       })
         // 订单落在待支付态，主键从 daoResult.oid 取（Jackson 把 getOId() 序列化成 oid）
@@ -477,6 +493,9 @@ export default {
   font-weight: 700;
   color: #d97706;
   font-variant-numeric: tabular-nums;
+}
+.coupon-off {
+  color: #67c23a;
 }
 @media (max-width: 768px) {
   .product-buy {

@@ -80,14 +80,20 @@
             <el-tag :type="statusTagType(scope.row.orderStatus)" size="small" effect="light">
               {{ statusText(scope.row.orderStatus) }}
             </el-tag>
+            <div v-if="afterSaleTag(scope.row)" class="aftersale-flag">
+              <el-tag :type="afterSaleTag(scope.row).type" size="mini" effect="plain">
+                {{ afterSaleTag(scope.row).label }}
+              </el-tag>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" align="center" fixed="right">
+        <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
             <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
-            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
+            <el-button v-if="scope.row.orderStatus == 3" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
             <el-button v-if="scope.row.orderStatus == 2" type="text" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
+            <el-button v-if="canApplyAfterSale(scope.row)" type="text" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="btn-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
             <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="btn-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
@@ -115,6 +121,14 @@
       :reviewed-p-ids="reviewedPIds"
       @submitted="refresh"
     />
+
+    <after-sale-apply-dialog
+      :visible.sync="afterSaleVisible"
+      :o-id="afterSaleOId"
+      :order-no="afterSaleOrderNo"
+      :refund-amount="afterSaleAmount"
+      @submitted="refresh"
+    />
   </div>
 </template>
 
@@ -122,17 +136,20 @@
 import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount, getOrderById } from '../../api/order';
 import { getOrderReviewedPIds } from '../../api/review';
 import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
+import AfterSaleApplyDialog from '../../components/AfterSaleApplyDialog.vue';
 
 const STATUS_MAP = {
   '-1': { label: '已取消', type: 'info' },
   '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待签收', type: 'primary' },
+  '1': { label: '待发货', type: 'primary' },
+  '3': { label: '已发货', type: '' },
   '2': { label: '已完成', type: 'success' }
 };
 
 const STATUS_TABS = [
   { name: '0', label: '待支付' },
-  { name: '1', label: '待签收' },
+  { name: '1', label: '待发货' },
+  { name: '3', label: '已发货' },
   { name: '2', label: '已完成' },
   { name: '-1', label: '已取消' }
 ];
@@ -142,9 +159,15 @@ const ACTION_TEXT = {
   '2': '确认收货'
 };
 
+const AFTER_SALE_TAG = {
+  '0': { label: '售后审核中', type: 'warning' },
+  '1': { label: '退款中', type: 'primary' },
+  '2': { label: '已退款', type: 'danger' }
+};
+
 export default {
   name: 'MyOrderList',
-  components: { OrderReviewDialog },
+  components: { OrderReviewDialog, AfterSaleApplyDialog },
   data() {
     return {
       searchForm: {
@@ -161,6 +184,10 @@ export default {
       reviewOId: null,
       reviewItems: [],
       reviewedPIds: [],
+      afterSaleVisible: false,
+      afterSaleOId: null,
+      afterSaleOrderNo: '',
+      afterSaleAmount: null,
       pagination: {
         pageNo: 1,
         pageSize: 10,
@@ -297,6 +324,22 @@ export default {
     },
     goPay(id) {
       this.$router.push(`/pay/${id}`);
+    },
+    afterSaleTag(row) {
+      const status = row.afterSaleStatus;
+      if (status === null || status === undefined) return null;
+      return AFTER_SALE_TAG[status] || null;
+    },
+    canApplyAfterSale(row) {
+      if (row.orderStatus != 2 && row.orderStatus != 3) return false;
+      const status = row.afterSaleStatus;
+      return status !== 0 && status !== 1 && status !== 2;
+    },
+    openAfterSale(row) {
+      this.afterSaleOId = row.oid;
+      this.afterSaleOrderNo = row.orderNo || '';
+      this.afterSaleAmount = row.orderAmount;
+      this.afterSaleVisible = true;
     },
     goGallery() {
       this.$router.push('/gallery');
@@ -462,7 +505,9 @@ export default {
 .btn-danger:hover {
   color: #d9363e !important;
 }
-</style>
+.aftersale-flag {
+  margin-top: 4px;
+}</style>
 
 <style>
 .my-order-list .el-card {

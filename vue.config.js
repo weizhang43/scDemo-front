@@ -17,6 +17,10 @@ module.exports = {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/pay': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/xxl-job-admin': {
         target: 'http://localhost',
         changeOrigin: true

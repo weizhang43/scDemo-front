@@ -57,6 +57,15 @@ export function updateOrderStatus(id, orderStatus) {
   });
 }
 
+/** 商家发货：填写快递公司与单号，订单 1(已支付)→3(已发货) */
+export function shipOrder(id, shippingCompany, trackingNo) {
+  return request({
+    url: '/order/ship',
+    method: 'post',
+    params: { id, shippingCompany, trackingNo }
+  });
+}
+
 export function deleteOrder(id) {
   return request({
     url: `/order/${id}`,

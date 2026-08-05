@@ -23,6 +23,22 @@
         </div>
       </div>
 
+      <div v-if="categories.length" class="category-nav">
+        <span class="category-nav-label">分类</span>
+        <span
+          class="category-pill"
+          :class="{ 'is-active': categoryId === null }"
+          @click="handleCategoryChange(null)"
+        >全部</span>
+        <span
+          v-for="c in categories"
+          :key="c.id"
+          class="category-pill"
+          :class="{ 'is-active': categoryId === c.id }"
+          @click="handleCategoryChange(c.id)"
+        >{{ c.name }}</span>
+      </div>
+
       <el-tabs v-model="sortBy" class="sort-tabs" @tab-click="handleSortChange">
         <el-tab-pane v-for="tab in sortTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
       </el-tabs>
@@ -100,14 +116,44 @@
         />
       </div>
     </el-card>
+
+    <el-dialog title="快速下单" :visible.sync="quickBuy.visible" width="460px" :close-on-click-modal="false">
+      <div v-if="quickBuy.item" class="quick-buy-body">
+        <div class="quick-buy-row">
+          <span class="quick-buy-label">商品</span>
+          <span>{{ quickBuy.item.pName }} × 1</span>
+        </div>
+        <div class="quick-buy-row">
+          <span class="quick-buy-label">收货地址</span>
+          <span>{{ shortAddress(defaultAddress) }}</span>
+        </div>
+        <div class="quick-buy-row">
+          <span class="quick-buy-label">优惠券</span>
+          <coupon-select :order-amount="quickBuyPrice" @change="onQuickCouponChange" />
+        </div>
+        <div class="quick-buy-row">
+          <span class="quick-buy-label">应付金额</span>
+          <span class="quick-buy-total">
+            ¥ {{ quickBuyPayAmount }}
+            <span v-if="quickBuy.coupon" class="coupon-off">已优惠 ¥ {{ quickBuy.coupon.couponAmount.toFixed(2) }}</span>
+          </span>
+        </div>
+      </div>
+      <div slot="footer">
+        <el-button @click="quickBuy.visible = false">取消</el-button>
+        <el-button type="primary" :loading="buyingId !== null" @click="doQuickBuy">确认下单</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { pageQuery } from '../../api/product';
+import { getCategoryTree } from '../../api/category';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
+import CouponSelect from '../../components/CouponSelect.vue';
 
 // 空 name 即后端的默认排序（p_id 倒序），不往请求里塞 sortBy
 const SORT_TABS = [
@@ -119,6 +165,7 @@ const SORT_TABS = [
 
 export default {
   name: 'ProductGallery',
+  components: { CouponSelect },
   data() {
     return {
       list: [],
@@ -126,8 +173,15 @@ export default {
       defaultAddress: null,
       buyingId: null,
       addingId: null,
+      quickBuy: {
+        visible: false,
+        item: null,
+        coupon: null
+      },
       sortTabs: SORT_TABS,
       sortBy: '',
+      categories: [],
+      categoryId: null,
       searchForm: {
         pName: ''
       },
@@ -138,17 +192,39 @@ export default {
       }
     };
   },
+  computed: {
+    quickBuyPrice() {
+      if (!this.quickBuy.item) return 0;
+      return Number(this.effectivePriceOf(this.quickBuy.item)) || 0;
+    },
+    quickBuyPayAmount() {
+      const off = this.quickBuy.coupon ? this.quickBuy.coupon.couponAmount : 0;
+      return Math.max(this.quickBuyPrice - off, 0).toFixed(2);
+    }
+  },
   created() {
     this.fetchData();
+    this.fetchCategories();
     this.loadDefaultAddress();
   },
   methods: {
+    fetchCategories() {
+      getCategoryTree()
+        .then(res => { this.categories = res.dataList || []; })
+        .catch(() => {});
+    },
+    handleCategoryChange(id) {
+      this.categoryId = id;
+      this.pagination.pageNo = 1;
+      this.fetchData();
+    },
     fetchData() {
       this.loading = true;
-      // 下架商品由服务端按角色过滤，这里只额外排除过期商品
+      // 下架商品由服务端按角色过滤，这里只额外排除过期商品；选一级分类时服务端会聚合其子分类商品
       pageQuery({
         pName: this.searchForm.pName || '',
         isExpired: 0,
+        categoryId: this.categoryId || undefined,
         sortBy: this.sortBy || undefined,
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize
@@ -199,7 +275,7 @@ export default {
     },
     /**
      * 悬浮层快速下单：默认地址 + 1 件，落单后进支付页（订单仍是待支付）。
-     * 悬浮按钮容易误触，且下单会即时扣库存，所以先 $confirm 把商品/金额/收货地址摊开给用户看。
+     * 悬浮按钮容易误触，且下单会即时扣库存，所以先弹窗把商品/金额/收货地址/选券摊开给用户看。
      */
     handleQuickBuy(item) {
       if (this.isSoldOut(item)) {
@@ -219,43 +295,46 @@ export default {
           .catch(() => {});
         return;
       }
-      const addr = this.defaultAddress;
-      const price = Number(this.effectivePriceOf(item)) || 0;
-      // 商品名来自商家录入，走纯文本 message（不开 dangerouslyUseHTMLString）
-      this.$confirm(
-        `确认下单「${item.pName}」1 件，应付 ¥ ${price.toFixed(2)}，寄往 ${this.shortAddress(addr)}？`,
-        '快速下单',
-        { confirmButtonText: '确认下单', cancelButtonText: '取消', type: 'info' }
-      )
-        .then(() => {
-          const user = this.$store.state.userInfo || {};
-          this.buyingId = item.pId;
-          return placeOrderV2({
-            uId: user.uId,
-            addPerson: user.uName || user.realName || 'anonymous',
-            addressId: addr.aId,
-            orderStatus: 0,
-            items: [{ pId: item.pId, quantity: 1, expectedPrice: price }]
-          })
-            .then(res => {
-              const oid = (res && res.daoResult && res.daoResult.oid) || null;
-              if (oid) {
-                this.$router.push('/pay/' + oid);
-                return;
-              }
-              // 拿不到主键就退回提示，绝不把已成立的订单报成失败
-              this.$message.success('下单成功，请到我的订单完成支付');
-              this.fetchData();
-            })
-            // 价格/库存类失败：回源让用户直接看到新价与新库存
-            .catch(() => {
-              this.fetchData();
-            })
-            .finally(() => {
-              this.buyingId = null;
-            });
+      this.quickBuy.item = item;
+      this.quickBuy.coupon = null;
+      this.quickBuy.visible = true;
+    },
+    onQuickCouponChange(c) {
+      this.quickBuy.coupon = c;
+    },
+    doQuickBuy() {
+      const item = this.quickBuy.item;
+      if (!item || this.buyingId !== null) return;
+      const user = this.$store.state.userInfo || {};
+      this.buyingId = item.pId;
+      placeOrderV2({
+        uId: user.uId,
+        addPerson: user.uName || user.realName || 'anonymous',
+        addressId: this.defaultAddress.aId,
+        orderStatus: 0,
+        couponId: this.quickBuy.coupon ? this.quickBuy.coupon.couponId : null,
+        expectedPayAmount: this.quickBuy.coupon ? Number(this.quickBuyPayAmount) : null,
+        items: [{ pId: item.pId, quantity: 1, expectedPrice: this.quickBuyPrice }]
+      })
+        .then(res => {
+          this.quickBuy.visible = false;
+          const oid = (res && res.daoResult && res.daoResult.oid) || null;
+          if (oid) {
+            this.$router.push('/pay/' + oid);
+            return;
+          }
+          // 拿不到主键就退回提示，绝不把已成立的订单报成失败
+          this.$message.success('下单成功，请到我的订单完成支付');
+          this.fetchData();
         })
-        .catch(() => {});
+        // 价格/库存类失败：回源让用户直接看到新价与新库存
+        .catch(() => {
+          this.quickBuy.visible = false;
+          this.fetchData();
+        })
+        .finally(() => {
+          this.buyingId = null;
+        });
     },
     /** 加购固定 1 件，服务端按 (uId, pId) 累加并按实时库存截断 */
     handleQuickAddCart(item) {
@@ -292,6 +371,7 @@ export default {
     handleReset() {
       this.searchForm.pName = '';
       this.sortBy = '';
+      this.categoryId = null;
       this.pagination.pageNo = 1;
       this.fetchData();
     },
@@ -373,6 +453,37 @@ export default {
 }
 .sort-tabs {
   margin-bottom: 14px;
+}
+.category-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.category-nav-label {
+  font-size: 13px;
+  color: #8a93a4;
+  margin-right: 2px;
+}
+.category-pill {
+  padding: 5px 16px;
+  border-radius: 14px;
+  background: #f3f5fa;
+  border: 1px solid #eef0f4;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.category-pill:hover {
+  color: #667eea;
+}
+.category-pill.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 .goods-row {
   margin-bottom: 4px;
@@ -557,6 +668,34 @@ export default {
   text-align: right;
   padding-top: 16px;
   border-top: 1px dashed #e8ebf2;
+}
+.quick-buy-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.quick-buy-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #1f2733;
+}
+.quick-buy-label {
+  flex: 0 0 70px;
+  color: #8a93a4;
+}
+.quick-buy-total {
+  font-size: 17px;
+  font-weight: 600;
+  color: #d97706;
+  font-variant-numeric: tabular-nums;
+}
+.coupon-off {
+  font-size: 12px;
+  font-weight: 500;
+  color: #67c23a;
+  margin-left: 4px;
 }
 @media (max-width: 768px) {
   .product-gallery {

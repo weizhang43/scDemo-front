@@ -101,8 +101,12 @@
             />
           </el-select>
           <el-button v-if="!addressList.length" type="text" @click="goAddress">暂无收货地址，去添加</el-button>
+          <coupon-select :order-amount="Number(selectedTotal)" @change="onCouponChange" />
           <div class="footer-right">
-            <span class="total-text">合计 ¥ {{ selectedTotal }}</span>
+            <span class="total-text">
+              合计 ¥ {{ payTotal }}
+              <span v-if="coupon" class="coupon-off">已优惠 ¥ {{ coupon.couponAmount.toFixed(2) }}</span>
+            </span>
             <el-button
               icon="el-icon-delete"
               :disabled="!selectedRows.length"
@@ -127,15 +131,18 @@
 import { getCartList, updateCartQuantity, deleteCartItem, batchDeleteCart } from '../../api/cart';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
+import CouponSelect from '../../components/CouponSelect.vue';
 
 export default {
   name: 'CartList',
+  components: { CouponSelect },
   data() {
     return {
       rows: [],
       selectedRows: [],
       addressList: [],
       addressId: null,
+      coupon: null,
       loading: false,
       submitting: false
     };
@@ -151,6 +158,11 @@ export default {
         0
       );
       return total.toFixed(2);
+    },
+    payTotal() {
+      const total = Number(this.selectedTotal);
+      const off = this.coupon ? this.coupon.couponAmount : 0;
+      return Math.max(total - off, 0).toFixed(2);
     },
     canCheckout() {
       return this.selectedRows.length > 0 && !!this.addressId && !this.submitting;
@@ -207,6 +219,9 @@ export default {
     },
     handleSelectionChange(sel) {
       this.selectedRows = sel;
+    },
+    onCouponChange(c) {
+      this.coupon = c;
     },
     handleQuantityChange(row) {
       updateCartQuantity({ pId: row.pId, quantity: row.quantity })
@@ -281,6 +296,8 @@ export default {
         addPerson: user.uName || (user.realName || 'anonymous'),
         addressId: this.addressId,
         orderStatus: 0,
+        couponId: this.coupon ? this.coupon.couponId : null,
+        expectedPayAmount: this.coupon ? Number(this.payTotal) : null,
         items: this.selectedRows.map(r => ({
           pId: r.pId,
           quantity: r.quantity,
@@ -460,6 +477,12 @@ export default {
   font-weight: 600;
   color: #d97706;
   font-variant-numeric: tabular-nums;
+}
+.coupon-off {
+  font-size: 12px;
+  font-weight: 500;
+  color: #67c23a;
+  margin-left: 4px;
 }
 .form-tip {
   font-size: 12px;

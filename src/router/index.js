@@ -60,6 +60,24 @@ const routes = [
         meta: { requiresAuth: true, types: [1] }
       },
       {
+        path: 'categories',
+        name: 'CategoryManage',
+        component: () => import('../views/product/CategoryManage.vue'),
+        meta: { requiresAuth: true, types: [1, 3] }
+      },
+      {
+        path: 'coupon-templates',
+        name: 'CouponTemplateList',
+        component: () => import('../views/product/CouponTemplateList.vue'),
+        meta: { requiresAuth: true, types: [1, 3] }
+      },
+      {
+        path: 'coupons',
+        name: 'CouponCenter',
+        component: () => import('../views/product/CouponCenter.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
         path: 'gallery',
         name: 'ProductGallery',
         component: () => import('../views/product/ProductGallery.vue'),
@@ -81,6 +99,12 @@ const routes = [
         path: 'orders',
         name: 'OrderList',
         component: () => import('../views/order/OrderList.vue'),
+        meta: { requiresAuth: true, types: [1] }
+      },
+      {
+        path: 'aftersale',
+        name: 'AfterSaleList',
+        component: () => import('../views/order/AfterSaleList.vue'),
         meta: { requiresAuth: true, types: [1] }
       },
       {
@@ -121,6 +145,12 @@ const routes = [
         meta: { requiresAuth: true, types: [2] }
       },
       {
+        path: 'my-aftersale',
+        name: 'MyAfterSaleList',
+        component: () => import('../views/order/MyAfterSaleList.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
         path: 'my-reviews',
         name: 'MyReviewList',
         component: () => import('../views/review/MyReviewList.vue'),
@@ -136,6 +166,12 @@ const routes = [
         path: 'pay/:id',
         name: 'OrderPay',
         component: () => import('../views/order/OrderPay.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'cashier/:transactionId',
+        name: 'MockCashier',
+        component: () => import('../views/pay/MockCashier.vue'),
         meta: { requiresAuth: true, types: [2] }
       },
       {

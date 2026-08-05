@@ -54,6 +54,59 @@
           </el-descriptions-item>
         </el-descriptions>
 
+        <div v-if="canApplyAfterSale" class="aftersale-apply-row">
+          <el-button type="warning" plain size="small" icon="el-icon-refresh-left" @click="afterSaleVisible = true">
+            申请售后
+          </el-button>
+        </div>
+
+        <div v-if="afterSale" class="goods-section">
+          <div class="section-title">
+            <i class="el-icon-refresh-left"></i>
+            <span>售后信息</span>
+          </div>
+          <el-descriptions :column="2" border class="detail-desc">
+            <el-descriptions-item label="售后状态">
+              <el-tag :type="afterSaleTagType(afterSale.status)" size="small" effect="light">
+                {{ afterSaleStatusText(afterSale.status) }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="退款金额">
+              <span class="desc-amount">¥{{ formatAmount(afterSale.refundAmount) }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="申请原因" :span="2">
+              {{ afterSale.reason || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="afterSale.status === 3" label="拒绝原因" :span="2">
+              {{ afterSale.rejectReason || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="申请时间" :span="2">
+              <i class="el-icon-time desc-icon"></i>{{ formatTime(afterSale.createTime) }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+
+        <div v-if="hasShipInfo" class="goods-section">
+          <div class="section-title">
+            <i class="el-icon-truck"></i>
+            <span>物流信息</span>
+          </div>
+          <el-descriptions :column="2" border class="detail-desc">
+            <el-descriptions-item label="快递公司">
+              {{ order.shippingCompany || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item label="快递单号">
+              <span class="desc-no">{{ order.trackingNo || '-' }}</span>
+            </el-descriptions-item>
+            <el-descriptions-item label="发货时间">
+              <i class="el-icon-time desc-icon"></i>{{ formatTime(order.shipTime) }}
+            </el-descriptions-item>
+            <el-descriptions-item label="收货时间">
+              <i class="el-icon-time desc-icon"></i>{{ order.receiveTime ? formatTime(order.receiveTime) : '待收货' }}
+            </el-descriptions-item>
+          </el-descriptions>
+        </div>
+
         <div class="goods-section">
           <div class="section-title">
             <i class="el-icon-goods"></i>
@@ -128,6 +181,14 @@
       :reviewed-p-ids="reviewedPIds"
       @submitted="loadReviewedPIds"
     />
+
+    <after-sale-apply-dialog
+      :visible.sync="afterSaleVisible"
+      :o-id="order && order.oid"
+      :order-no="(order && order.orderNo) || ''"
+      :refund-amount="order && order.orderAmount"
+      @submitted="loadAfterSale"
+    />
   </div>
 </template>
 
@@ -135,18 +196,29 @@
 import { getOrderById } from '../../api/order';
 import { likeProduct, getMyLikedProducts } from '../../api/product';
 import { getOrderReviewedPIds } from '../../api/review';
+import { getAfterSaleByOrder } from '../../api/aftersale';
 import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
+import AfterSaleApplyDialog from '../../components/AfterSaleApplyDialog.vue';
 
 const STATUS_MAP = {
   '-1': { label: '取消', type: 'info' },
   '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待签收', type: 'primary' },
+  '1': { label: '待发货', type: 'primary' },
+  '3': { label: '已发货', type: '' },
   '2': { label: '已完成', type: 'success' }
+};
+
+const AFTERSALE_STATUS_MAP = {
+  '0': { label: '待审核', type: 'warning' },
+  '1': { label: '退款中', type: 'primary' },
+  '2': { label: '已退款', type: 'success' },
+  '3': { label: '已拒绝', type: 'danger' },
+  '4': { label: '已取消', type: 'info' }
 };
 
 export default {
   name: 'OrderDetail',
-  components: { OrderReviewDialog },
+  components: { OrderReviewDialog, AfterSaleApplyDialog },
   data() {
     return {
       order: null,
@@ -155,7 +227,9 @@ export default {
       reviewedPIds: [],
       likingId: null,
       reviewVisible: false,
-      reviewItems: []
+      reviewItems: [],
+      afterSale: null,
+      afterSaleVisible: false
     };
   },
   computed: {
@@ -169,6 +243,17 @@ export default {
     },
     canReview() {
       return this.isCustomer && Number((this.order || {}).orderStatus) === 2;
+    },
+    hasShipInfo() {
+      const o = this.order || {};
+      return !!(o.shippingCompany || o.trackingNo || o.shipTime);
+    },
+    canApplyAfterSale() {
+      if (!this.isCustomer || !this.order) return false;
+      const status = Number(this.order.orderStatus);
+      if (status !== 2 && status !== 3) return false;
+      // 已有在途/已退款工单不可再申请；被拒/已取消可重新申请
+      return !this.afterSale || this.afterSale.status === 3 || this.afterSale.status === 4;
     }
   },
   created() {
@@ -197,6 +282,15 @@ export default {
       getOrderReviewedPIds(oid)
         .then(res => {
           this.reviewedPIds = (res.dataList || []).map(Number);
+        })
+        .catch(() => {});
+    },
+    loadAfterSale() {
+      const oid = (this.order || {}).oid;
+      if (!oid) return;
+      getAfterSaleByOrder(oid)
+        .then(res => {
+          this.afterSale = res.daoResult || null;
         })
         .catch(() => {});
     },
@@ -238,6 +332,7 @@ export default {
           if (this.isCustomer) {
             this.loadLikedPIds();
             this.loadReviewedPIds();
+            this.loadAfterSale();
           }
         })
         .catch(() => {
@@ -255,6 +350,12 @@ export default {
     },
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
+    },
+    afterSaleStatusText(status) {
+      return (AFTERSALE_STATUS_MAP[status] || {}).label || '未知';
+    },
+    afterSaleTagType(status) {
+      return (AFTERSALE_STATUS_MAP[status] || {}).type || 'info';
     },
     formatTime(time) {
       if (!time) return '-';
@@ -407,6 +508,10 @@ export default {
 }
 .goods-section {
   margin-top: 20px;
+}
+.aftersale-apply-row {
+  margin-top: 14px;
+  text-align: right;
 }
 .section-title {
   display: flex;

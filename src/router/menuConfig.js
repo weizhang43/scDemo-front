@@ -5,8 +5,11 @@ export const U_TYPE_ADMIN = 3;
 export const MENUS = [
   { path: '/home', label: '首页', icon: 'el-icon-s-home', types: [1, 2, 3] },
   { path: '/products', label: '商品管理', icon: 'el-icon-goods', types: [1] },
+  { path: '/categories', label: '分类管理', icon: 'el-icon-menu', types: [1, 3] },
   { path: '/seckills', label: '秒杀活动', icon: 'el-icon-alarm-clock', types: [1] },
+  { path: '/coupon-templates', label: '优惠券管理', icon: 'el-icon-s-ticket', types: [1, 3] },
   { path: '/orders', label: '订单管理', icon: 'el-icon-s-order', types: [1] },
+  { path: '/aftersale', label: '售后管理', icon: 'el-icon-refresh-left', types: [1] },
   {
     path: '/stats', label: '统计报表', icon: 'el-icon-s-data', types: [1],
     children: [
@@ -17,8 +20,10 @@ export const MENUS = [
   },
   { path: '/gallery', label: '商品列表', icon: 'el-icon-picture-outline', types: [2] },
   { path: '/seckill', label: '限时秒杀', icon: 'el-icon-alarm-clock', types: [2] },
+  { path: '/coupons', label: '领券中心', icon: 'el-icon-s-ticket', types: [2] },
   { path: '/cart', label: '购物车', icon: 'el-icon-shopping-cart-2', types: [2] },
   { path: '/my-orders', label: '我的订单', icon: 'el-icon-s-order', types: [2] },
+  { path: '/my-aftersale', label: '我的售后', icon: 'el-icon-refresh-left', types: [2] },
   { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
   { path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
   { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3] },

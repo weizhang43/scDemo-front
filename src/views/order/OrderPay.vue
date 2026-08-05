@@ -69,12 +69,12 @@
             <el-button
               type="primary"
               icon="el-icon-wallet"
-              :loading="paying"
+              :loading="paying || polling"
               :disabled="!canPay"
               @click="handlePay"
             >确认支付 ¥ {{ formatAmount(order.orderAmount) }}</el-button>
             <el-button type="text" class="btn-danger" @click="handleCancel">取消订单</el-button>
-            <span class="form-tip">支付方式仅作演示，实际扣款未接入</span>
+            <span class="form-tip">{{ polling ? '正在确认支付结果…' : '将跳转到模拟收银台完成支付' }}</span>
           </div>
         </div>
 
@@ -93,6 +93,7 @@
 <script>
 import { getOrderById, updateOrderStatus } from '../../api/order';
 import { getMyTimeoutOrders } from '../../api/home';
+import { createPay, getPayStatus } from '../../api/pay';
 
 const STATUS_MAP = {
   '-1': { label: '已取消', type: 'info' },
@@ -118,7 +119,10 @@ export default {
       now: Date.now(),
       timer: null,
       loading: false,
-      paying: false
+      paying: false,
+      polling: false,
+      pollTimer: null,
+      pollCount: 0
     };
   },
   computed: {
@@ -126,7 +130,7 @@ export default {
       return !!this.order && Number(this.order.orderStatus) === 0;
     },
     canPay() {
-      return this.isPending && !this.paying;
+      return this.isPending && !this.paying && !this.polling;
     },
     /** 后端 @JsonFormat 出来的是 '2026-07-31 10:00:00'，部分浏览器直接 new Date() 会得到 Invalid Date */
     remainMs() {
@@ -178,9 +182,14 @@ export default {
     this.timer = setInterval(() => {
       this.now = Date.now();
     }, 1000);
+    // 从收银台回跳时带 payNo：进入轮询等待网关异步回调驱动订单状态
+    if (this.$route.query.payNo) {
+      this.startPolling(this.$route.query.payNo);
+    }
   },
   beforeDestroy() {
     if (this.timer) clearInterval(this.timer);
+    this.stopPolling();
   },
   methods: {
     fetchOrder() {
@@ -215,10 +224,18 @@ export default {
     handlePay() {
       if (!this.canPay) return;
       this.paying = true;
-      updateOrderStatus(this.order.oid, 1)
-        .then(() => {
-          this.$message.success('支付成功');
-          this.$router.push('/my-orders');
+      // 真实网关语义：创建支付单 → 跳收银台，订单状态由网关异步回调驱动
+      createPay(this.order.oid, this.payMethod)
+        .then(res => {
+          const vo = res.daoResult || {};
+          if (!vo.transactionId) {
+            this.$message.error('创建支付单失败，请重试');
+            return;
+          }
+          this.$router.push({
+            path: `/cashier/${vo.transactionId}`,
+            query: { oid: String(this.order.oid), payNo: vo.payNo }
+          });
         })
         // 失败多半是订单已被超时自动取消，回源刷新让页面自己说明白
         .catch(() => {
@@ -228,6 +245,49 @@ export default {
         .finally(() => {
           this.paying = false;
         });
+    },
+    /** 收银台回跳后每 2s 轮询一次支付单状态，最多 30 次 */
+    startPolling(payNo) {
+      this.polling = true;
+      this.pollCount = 0;
+      this.pollTimer = setInterval(() => {
+        this.pollCount += 1;
+        if (this.pollCount > 30) {
+          this.stopPolling();
+          this.$message.warning('支付结果确认超时，请稍后在我的订单中查看');
+          this.fetchOrder();
+          return;
+        }
+        getPayStatus(payNo)
+          .then(res => {
+            const status = Number(res.daoResult && res.daoResult.status);
+            if (status === 1) {
+              this.stopPolling();
+              this.$message.success('支付成功');
+              this.goOrders();
+            } else if (status === 2) {
+              this.stopPolling();
+              this.$message.error('支付失败，可重新发起支付');
+              this.fetchOrder();
+            } else if (status === 3 || status === 4 || status === 5) {
+              this.stopPolling();
+              this.$message.info(status === 3 ? '支付已关闭（订单可能已取消）' : '订单已取消，支付款将自动退回');
+              this.fetchOrder();
+            }
+            // 0：待支付，继续轮询
+          })
+          .catch(() => {
+            this.stopPolling();
+            this.fetchOrder();
+          });
+      }, 2000);
+    },
+    stopPolling() {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
+      this.polling = false;
     },
     handleCancel() {
       this.$confirm('确认取消该订单吗？取消后库存将自动返还。', '提示', {
