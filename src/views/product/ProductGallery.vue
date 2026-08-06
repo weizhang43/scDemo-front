@@ -218,6 +218,8 @@ export default {
     }
   },
   created() {
+    const keyword = this.$route.query.keyword;
+    if (keyword) this.searchForm.pName = String(keyword);
     this.fetchData();
     this.fetchCategories();
     if (!this.isGuest) {

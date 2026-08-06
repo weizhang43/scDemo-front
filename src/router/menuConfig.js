@@ -23,7 +23,8 @@ export const MENUS = [
   { path: '/coupons', label: '领券中心', icon: 'el-icon-s-ticket', types: [2] },
   { path: '/cart', label: '购物车', icon: 'el-icon-shopping-cart-2', types: [2] },
   { path: '/my-orders', label: '我的订单', icon: 'el-icon-s-order', types: [2] },
-  { path: '/my-aftersale', label: '我的售后', icon: 'el-icon-refresh-left', types: [2] },
+  { path: '/my-aftersale', label: '我的售后', icon: 'el-icon-refresh-left', types: [
+      2] },
   { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
   //{ path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
   { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3] },

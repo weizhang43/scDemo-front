@@ -1,73 +1,82 @@
 <template>
   <div class="home">
-    <!-- 顶部欢迎 + 概览 -->
+    <!-- 顶部欢迎 + 今日核心指标 -->
     <div class="hero">
       <div class="hero-left">
         <div class="hero-hi">欢迎回来，{{ username }} 👋</div>
-        <div class="hero-sub">这里是系统运营概览，请关注下方预警信息</div>
+        <div class="hero-sub">今日经营概况一览，销售额按商品原价口径统计</div>
       </div>
       <div class="hero-stats">
-        <div class="stat">
-          <i class="el-icon-bell stat-ico" />
-          <div class="stat-num">{{ display.notice }}</div>
-          <div class="stat-label">系统通知</div>
-        </div>
-        <div class="stat warn-e" :class="{ 'has-warn': expiring.length }">
-          <i class="el-icon-warning-outline stat-ico" />
-          <div class="stat-num">{{ display.expiring }}</div>
-          <div class="stat-label">即将过期</div>
-        </div>
-        <div class="stat warn-s" :class="{ 'has-warn': lowStock.length }">
-          <i class="el-icon-goods stat-ico" />
-          <div class="stat-num">{{ display.stock }}</div>
-          <div class="stat-label">库存不足</div>
-        </div>
-        <div class="stat warn-o" :class="{ 'has-warn': timeoutOrders.length }">
-          <i class="el-icon-time stat-ico" />
-          <div class="stat-num">{{ display.order }}</div>
-          <div class="stat-label">超时订单</div>
-        </div>
+        <MetricCard icon="el-icon-money" label="今日销售额" :value="overview.todayGmv" prefix="¥" />
+        <MetricCard icon="el-icon-s-order" label="今日订单" :value="overview.todayOrderCount" />
+        <MetricCard icon="el-icon-box" label="待发货" :value="overview.pendingShipCount" to="/orders"
+                    :warn="overview.pendingShipCount > 0" />
+        <MetricCard icon="el-icon-service" label="待处理售后" :value="overview.pendingAfterSaleCount" to="/aftersale"
+                    :warn="overview.pendingAfterSaleCount > 0" />
       </div>
     </div>
 
-    <!-- 1. 系统通知轮播 -->
-    <el-card class="notice-card" shadow="never">
-      <div slot="header" class="card-header">
-        <span class="card-title"><i class="el-icon-bell accent-blue" /> 系统通知</span>
-        <span class="header-meta">共 {{ notices.length }} 条</span>
-      </div>
-      <el-carousel
-        v-if="notices.length"
-        height="260px"
-        :interval="4000"
-        :autoplay="true"
-        :pause-on-hover="true"
-        :loop="true"
-        arrow="hover"
-        indicator-position="inside"
-        type="card"
-      >
-        <el-carousel-item v-for="n in notices" :key="n.noticeId" @click.native="openNotice(n)">
-          <div class="carousel-slide" :style="slideStyle(n)">
-            <div class="carousel-mask">
-              <div class="carousel-title">{{ n.title }}</div>
-              <div class="carousel-time"><i class="el-icon-time" /> {{ n.createTime }}</div>
+    <!-- 销售趋势 + 待办事项 -->
+    <div class="trend-row">
+      <el-card class="panel-card trend-card" shadow="never">
+        <div slot="header" class="card-header">
+          <span class="card-title"><i class="el-icon-data-line accent" /> 近 7 天销售趋势</span>
+          <el-button type="text" size="mini" @click="go('/stats/monthly-sales')">月度报表 <i class="el-icon-arrow-right" /></el-button>
+        </div>
+        <div ref="trendChart" class="trend-chart" v-loading="loadingTrend"></div>
+      </el-card>
+
+      <el-card class="panel-card todo-card" shadow="never">
+        <div slot="header" class="card-header">
+          <span class="card-title"><i class="el-icon-s-claim accent" /> 待办事项</span>
+        </div>
+        <div class="todo-list">
+          <div class="todo-item" @click="go('/orders')">
+            <i class="el-icon-box todo-ico ship" />
+            <div class="todo-main">
+              <div class="todo-title">待发货订单</div>
+              <div class="todo-sub">买家已付款，尽快安排发货</div>
             </div>
+            <span class="todo-count" :class="{ zero: !overview.pendingShipCount }">{{ overview.pendingShipCount }}</span>
           </div>
-        </el-carousel-item>
-      </el-carousel>
-      <el-empty v-else description="暂无通知" :image-size="90" />
-    </el-card>
+          <div class="todo-item" @click="go('/aftersale')">
+            <i class="el-icon-service todo-ico aftersale" />
+            <div class="todo-main">
+              <div class="todo-title">待审核售后</div>
+              <div class="todo-sub">
+                <template v-if="pendingAfterSales.length">
+                  最新：¥{{ pendingAfterSales[0].refundAmount }}（{{ pendingAfterSales[0].orderNo || '-' }}）
+                </template>
+                <template v-else>买家发起的退款申请</template>
+              </div>
+            </div>
+            <span class="todo-count" :class="{ zero: !overview.pendingAfterSaleCount }">{{ overview.pendingAfterSaleCount }}</span>
+          </div>
+          <div class="todo-item" @click="go('/orders')">
+            <i class="el-icon-time todo-ico unpaid" />
+            <div class="todo-main">
+              <div class="todo-title">待付款订单</div>
+              <div class="todo-sub">超时未支付将自动取消</div>
+            </div>
+            <span class="todo-count" :class="{ zero: !overview.unpaidCount }">{{ overview.unpaidCount }}</span>
+          </div>
+        </div>
+        <div class="notice-mini">
+          <div class="notice-mini-title"><i class="el-icon-bell" /> 系统通知</div>
+          <NoticeCarousel height="132px" />
+        </div>
+      </el-card>
+    </div>
 
     <div class="warning-row">
-      <!-- 2. 商品过期预警 -->
+      <!-- 商品过期预警 -->
       <el-card class="warn-card theme-e" shadow="never">
         <div slot="header" class="card-header">
           <span class="card-title"><i class="el-icon-warning-outline" /> 商品过期预警</span>
           <span class="count-badge" :class="{ zero: !expiring.length }">{{ expiring.length }}</span>
         </div>
         <div class="card-sub">三个月内到期商品</div>
-        <el-table v-loading="loadingExpiring" :data="expiring" height="278" size="mini"
+        <el-table v-loading="loadingExpiring" :data="expiring" height="252" size="mini"
                   :row-class-name="expireRowClass" class="warn-table">
           <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无即将过期商品</div></template>
           <el-table-column prop="pName" label="商品" min-width="90" show-overflow-tooltip />
@@ -82,15 +91,16 @@
         </el-table>
       </el-card>
 
-      <!-- 3. 商品库存预警 -->
+      <!-- 商品库存预警 -->
       <el-card class="warn-card theme-s" shadow="never">
         <div slot="header" class="card-header">
           <span class="card-title"><i class="el-icon-goods" /> 商品库存预警</span>
           <span class="count-badge" :class="{ zero: !lowStock.length }">{{ lowStock.length }}</span>
         </div>
-        <div class="card-sub">库存低于 100 的商品</div>
-        <el-table v-loading="loadingStock" :data="lowStock" height="278" size="mini"
-                  :row-class-name="stockRowClass" class="warn-table">
+        <div class="card-sub">库存低于 100 的商品，点击去补货</div>
+        <el-table v-loading="loadingStock" :data="lowStock" height="252" size="mini"
+                  :row-class-name="stockRowClass" class="warn-table"
+                  @row-click="() => go('/products')">
           <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 库存充足</div></template>
           <el-table-column prop="pName" label="商品" min-width="100" show-overflow-tooltip />
           <el-table-column label="库存" min-width="120" align="center">
@@ -104,58 +114,87 @@
         </el-table>
       </el-card>
 
-      <!-- 4. 订单超时预警 -->
-      <el-card class="warn-card theme-o" shadow="never">
+      <!-- 本店热销榜 -->
+      <el-card class="warn-card theme-h" shadow="never">
         <div slot="header" class="card-header">
-          <span class="card-title"><i class="el-icon-time" /> 订单超时预警</span>
-          <span class="count-badge" :class="{ zero: !timeoutOrders.length }">{{ timeoutOrders.length }}</span>
+          <span class="card-title"><i class="el-icon-trophy" /> 本店热销 TOP5</span>
+          <el-button type="text" size="mini" class="btn-more" @click="go('/products')">管理商品 <i class="el-icon-arrow-right" /></el-button>
         </div>
-        <div class="card-sub">待处理的超时订单</div>
-        <el-table v-loading="loadingOrders" :data="timeoutOrders" height="278" size="mini"
-                  :row-class-name="orderRowClass" class="warn-table">
-          <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无超时订单</div></template>
-          <el-table-column prop="orderNo" label="订单号" min-width="120" show-overflow-tooltip />
-          <el-table-column label="金额" width="80" align="center">
-            <template slot-scope="s">￥{{ s.row.orderAmount }}</template>
-          </el-table-column>
-          <el-table-column label="倒计时" width="104" align="center">
-            <template slot-scope="s">
-              <span :class="['countdown', { expired: remain(s.row) <= 0 }]">
-                <i :class="remain(s.row) <= 0 ? 'el-icon-warning' : 'el-icon-alarm-clock'" />{{ countdownText(s.row) }}
-              </span>
-            </template>
-          </el-table-column>
-        </el-table>
+        <div class="card-sub">按累计销量排行</div>
+        <div v-loading="loadingRank" class="rank-list">
+          <div v-for="(item, idx) in salesRank" :key="item.pId" class="rank-item">
+            <span class="rank-no" :class="idx < 3 ? 'top top-' + (idx + 1) : ''">{{ idx + 1 }}</span>
+            <div class="rank-thumb">
+              <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="thumb-img">
+                <div slot="error" class="thumb-fallback"><i class="el-icon-picture-outline" /></div>
+              </el-image>
+              <div v-else class="thumb-fallback"><i class="el-icon-picture-outline" /></div>
+            </div>
+            <div class="rank-main">
+              <div class="rank-name" :title="item.pName">{{ item.pName || '-' }}</div>
+              <div class="rank-price" v-if="item.price != null">¥ {{ item.effectivePrice != null ? item.effectivePrice : item.price }}</div>
+            </div>
+            <span class="rank-metric"><i class="el-icon-shopping-cart-full" />{{ item.salesCount }}</span>
+          </div>
+          <div v-if="!loadingRank && !salesRank.length" class="empty-box"><i class="el-icon-info" /> 暂无销量数据</div>
+        </div>
       </el-card>
     </div>
 
-    <!-- 通知详情 -->
-    <el-dialog :title="current.title" :visible.sync="detailVisible" width="560px" top="8vh" custom-class="notice-dialog">
-      <div class="notice-detail" v-html="current.content"></div>
-    </el-dialog>
+    <!-- 待付款超时预警明细 -->
+    <el-card class="panel-card order-card" shadow="never">
+      <div slot="header" class="card-header">
+        <span class="card-title"><i class="el-icon-alarm-clock accent" /> 订单超时预警</span>
+        <span class="count-badge warn-badge" :class="{ zero: !timeoutOrders.length }">{{ timeoutOrders.length }}</span>
+      </div>
+      <div class="card-sub">待付款订单，超时后自动取消并回补库存</div>
+      <el-table v-loading="loadingOrders" :data="timeoutOrders" size="mini"
+                :row-class-name="orderRowClass" class="warn-table">
+        <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无超时订单</div></template>
+        <el-table-column prop="orderNo" label="订单号" min-width="180" show-overflow-tooltip />
+        <el-table-column label="金额" width="110" align="center">
+          <template slot-scope="s">￥{{ s.row.orderAmount }}</template>
+        </el-table-column>
+        <el-table-column label="下单时间" min-width="160" align="center">
+          <template slot-scope="s">{{ s.row.createTime || '-' }}</template>
+        </el-table-column>
+        <el-table-column label="倒计时" width="140" align="center">
+          <template slot-scope="s">
+            <CountdownText :expire-time="s.row.expireTime" />
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
 <script>
-import { getPublishedNotices } from '../../api/notice';
-import { getExpiringProducts, getLowStockProducts, getTimeoutOrders } from '../../api/home';
+import MetricCard from '../../components/home/MetricCard.vue';
+import NoticeCarousel from '../../components/home/NoticeCarousel.vue';
+import CountdownText from '../../components/home/CountdownText.vue';
+import echarts, { CHART_COLORS } from '../statistics/echarts';
+import { getExpiringProducts, getLowStockProducts, getTimeoutOrders, getSalesRank, getDashboardOverview, getDailySales } from '../../api/home';
+import { queryAfterSale } from '../../api/aftersale';
 
 export default {
   name: 'Home',
+  components: { MetricCard, NoticeCarousel, CountdownText },
   data() {
     return {
-      notices: [],
+      overview: { todayGmv: 0, todayOrderCount: 0, pendingShipCount: 0, pendingAfterSaleCount: 0, unpaidCount: 0 },
+      dailySales: [],
+      pendingAfterSales: [],
       expiring: [],
       lowStock: [],
       timeoutOrders: [],
+      salesRank: [],
+      loadingTrend: false,
       loadingExpiring: false,
       loadingStock: false,
       loadingOrders: false,
-      detailVisible: false,
-      current: { title: '', content: '' },
+      loadingRank: false,
       now: Date.now(),
-      timer: null,
-      display: { notice: 0, expiring: 0, stock: 0, order: 0 }
+      chart: null
     };
   },
   computed: {
@@ -166,44 +205,74 @@ export default {
   },
   created() {
     this.fetchAll();
-    this.timer = setInterval(() => { this.now = Date.now(); }, 1000);
+  },
+  mounted() {
+    window.addEventListener('resize', this.resizeChart);
   },
   beforeDestroy() {
-    if (this.timer) clearInterval(this.timer);
+    window.removeEventListener('resize', this.resizeChart);
+    if (this.chart) { this.chart.dispose(); this.chart = null; }
   },
   methods: {
     fetchAll() {
-      getPublishedNotices().then(res => { this.notices = res.dataList || []; this.countTo('notice', this.notices.length); }).catch(() => {});
+      getDashboardOverview().then(res => {
+        this.overview = res.daoResult || this.overview;
+      }).catch(() => {});
+      this.loadingTrend = true;
+      getDailySales(7).then(res => {
+        this.dailySales = res.dataList || [];
+        this.$nextTick(this.renderTrend);
+      }).catch(() => {}).finally(() => { this.loadingTrend = false; });
+      queryAfterSale({ status: 0, pageNo: 1, pageSize: 3 }).then(res => {
+        this.pendingAfterSales = (res.daoResult || {}).records || [];
+      }).catch(() => {});
       this.loadingExpiring = true;
-      getExpiringProducts().then(res => { this.expiring = res.dataList || []; this.countTo('expiring', this.expiring.length); })
+      getExpiringProducts().then(res => { this.expiring = res.dataList || []; })
         .catch(() => {}).finally(() => { this.loadingExpiring = false; });
       this.loadingStock = true;
-      getLowStockProducts().then(res => { this.lowStock = res.dataList || []; this.countTo('stock', this.lowStock.length); })
+      getLowStockProducts().then(res => { this.lowStock = res.dataList || []; })
         .catch(() => {}).finally(() => { this.loadingStock = false; });
       this.loadingOrders = true;
-      getTimeoutOrders().then(res => { this.timeoutOrders = res.dataList || []; this.countTo('order', this.timeoutOrders.length); })
+      getTimeoutOrders().then(res => { this.timeoutOrders = res.dataList || []; })
         .catch(() => {}).finally(() => { this.loadingOrders = false; });
+      this.loadingRank = true;
+      getSalesRank(5).then(res => { this.salesRank = res.dataList || []; })
+        .catch(() => {}).finally(() => { this.loadingRank = false; });
     },
-    countTo(key, target) {
-      const start = performance.now();
-      const duration = 700;
-      const step = t => {
-        const p = Math.min(1, (t - start) / duration);
-        const eased = 1 - Math.pow(1 - p, 3);
-        this.display[key] = Math.round(target * eased);
-        if (p < 1) requestAnimationFrame(step);
-      };
-      requestAnimationFrame(step);
+    renderTrend() {
+      const el = this.$refs.trendChart;
+      if (!el) return;
+      if (!this.chart) this.chart = echarts.init(el);
+      const dates = this.dailySales.map(d => (d.date || '').slice(5));
+      this.chart.setOption({
+        color: CHART_COLORS,
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['销售额', '订单量'], top: 0 },
+        grid: { left: 10, right: 10, top: 36, bottom: 4, containLabel: true },
+        xAxis: { type: 'category', data: dates, axisTick: { alignWithLabel: true } },
+        yAxis: [
+          { type: 'value', name: '销售额(元)', splitLine: { lineStyle: { type: 'dashed' } } },
+          { type: 'value', name: '订单量', minInterval: 1, splitLine: { show: false } }
+        ],
+        series: [
+          {
+            name: '销售额', type: 'line', smooth: true, symbolSize: 7,
+            data: this.dailySales.map(d => d.gmv),
+            areaStyle: { opacity: 0.12 }
+          },
+          {
+            name: '订单量', type: 'bar', yAxisIndex: 1, barWidth: 18,
+            itemStyle: { borderRadius: [4, 4, 0, 0], opacity: 0.85 },
+            data: this.dailySales.map(d => d.orderCount)
+          }
+        ]
+      });
     },
-    slideStyle(n) {
-      if (n.coverImage) {
-        return { backgroundImage: `url(${n.coverImage})` };
-      }
-      return { background: 'linear-gradient(135deg,#1e3c72,#2a5298 55%,#667eea)' };
+    resizeChart() {
+      if (this.chart) this.chart.resize();
     },
-    openNotice(n) {
-      this.current = n;
-      this.detailVisible = true;
+    go(path) {
+      this.$router.push(path).catch(() => {});
     },
     // 到期日 = 生产日期 + 保质期天数
     expireTs(row) {
@@ -230,25 +299,12 @@ export default {
       return row.stock <= 20 ? 'row-danger' : '';
     },
     orderRowClass({ row }) {
-      return this.remain(row) <= 0 ? 'row-danger' : '';
+      if (!row.expireTime) return '';
+      const ts = new Date(String(row.expireTime).replace(/-/g, '/')).getTime();
+      return ts - Date.now() <= 0 ? 'row-danger' : '';
     },
     stockPct(stock) {
       return Math.max(6, Math.min(100, (Number(stock) || 0)));
-    },
-    remain(row) {
-      if (!row.expireTime) return 0;
-      const ts = new Date(String(row.expireTime).replace(/-/g, '/')).getTime();
-      return ts - this.now;
-    },
-    countdownText(row) {
-      const ms = this.remain(row);
-      if (ms <= 0) return '已超时';
-      const total = Math.floor(ms / 1000);
-      const h = Math.floor(total / 3600);
-      const m = Math.floor((total % 3600) / 60);
-      const s = total % 60;
-      const p = v => (v < 10 ? '0' + v : v);
-      return `${p(h)}:${p(m)}:${p(s)}`;
     }
   }
 };
@@ -266,7 +322,7 @@ export default {
   flex-wrap: wrap;
   gap: 16px;
   padding: 24px 28px;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   border-radius: 16px;
   color: #fff;
   overflow: hidden;
@@ -287,80 +343,68 @@ export default {
 .hero-left { position: relative; z-index: 1; }
 .hero-hi { font-size: 23px; font-weight: 700; letter-spacing: 0.5px; }
 .hero-sub { margin-top: 6px; font-size: 13px; opacity: 0.85; }
-.hero-stats { position: relative; z-index: 1; display: flex; gap: 14px; }
-.stat {
-  position: relative;
-  min-width: 84px;
-  padding: 12px 16px;
-  text-align: center;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(6px);
-  transition: transform 0.2s ease, background-color 0.2s ease;
-}
-.stat:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.24); }
-.stat-ico { font-size: 15px; opacity: 0.7; }
-.stat-num { font-size: 26px; font-weight: 700; line-height: 1.15; }
-.stat-label { font-size: 12px; opacity: 0.85; margin-top: 2px; }
-.stat.warn-e .stat-num { color: #ffd6a5; }
-.stat.warn-s .stat-num { color: #ffe08a; }
-.stat.warn-o .stat-num { color: #ff9aa2; }
-.stat.has-warn::after {
-  content: '';
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ff6b6b;
-  box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6);
-  animation: pulse 1.8s infinite;
-}
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.6); }
-  70% { box-shadow: 0 0 0 8px rgba(255, 107, 107, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
-}
+.hero-stats { position: relative; z-index: 1; display: flex; gap: 14px; flex-wrap: wrap; }
 
-/* 卡片通用 */
-.accent-blue { color: #2a5298; }
-
-.notice-card {
-  margin-bottom: 20px;
-  border-radius: 12px;
+/* 通用卡片 */
+.accent { color: #667eea; }
+.panel-card {
+  border-radius: 14px;
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
-.notice-card >>> .el-card__body { padding: 18px 20px 26px; }
+.card-title i { margin-right: 6px; }
+.card-sub { font-size: 12px; color: #a0a4ac; margin: 0 0 10px 2px; }
 
-/* 轮播 */
-.carousel-slide {
-  height: 100%;
-  background-size: cover;
-  background-position: center;
-  cursor: pointer;
-  border-radius: 10px;
+/* 趋势 + 待办 */
+.trend-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+.trend-chart { height: 316px; }
+.todo-list { display: flex; flex-direction: column; gap: 10px; }
+.todo-item {
   display: flex;
-  align-items: flex-end;
-  overflow: hidden;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f7f8fc;
+  border: 1px solid #eef0f5;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-.carousel-mask {
-  width: 100%;
-  padding: 18px 22px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.65));
+.todo-item:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(30, 60, 114, 0.12); background: #fff; }
+.todo-ico { font-size: 20px; }
+.todo-ico.ship { color: #667eea; }
+.todo-ico.aftersale { color: #e6a23c; }
+.todo-ico.unpaid { color: #f56c6c; }
+.todo-main { flex: 1; min-width: 0; }
+.todo-title { font-size: 13px; font-weight: 600; color: #2d3748; }
+.todo-sub { font-size: 12px; color: #8a93a4; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.todo-count {
+  min-width: 26px;
+  padding: 2px 9px;
+  border-radius: 11px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
   color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: var(--font-mono);
 }
-.carousel-title { font-size: 19px; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); }
-.carousel-time { font-size: 12px; opacity: 0.85; margin-top: 6px; }
+.todo-count.zero { background: #cbd2de; }
+.notice-mini { margin-top: 14px; }
+.notice-mini-title { font-size: 13px; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
+.notice-mini-title i { color: #667eea; margin-right: 4px; }
 
 /* 预警卡片 */
 .warning-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
+  margin-bottom: 18px;
 }
 .warn-card {
   position: relative;
@@ -373,8 +417,6 @@ export default {
 .warn-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12); }
 .warn-card >>> .el-card__header { border-bottom: none; padding: 14px 18px 6px; }
 .warn-card >>> .el-card__body { padding: 0 18px 16px; }
-
-/* 顶部主题条 + 标题图标底色 */
 .warn-card::before {
   content: '';
   position: absolute;
@@ -383,14 +425,12 @@ export default {
 }
 .theme-e::before { background: linear-gradient(90deg, #f5b76b, #e6a23c); }
 .theme-s::before { background: linear-gradient(90deg, #79bbff, #409eff); }
-.theme-o::before { background: linear-gradient(90deg, #ff9a9e, #f56c6c); }
+.theme-h::before { background: linear-gradient(90deg, #667eea, #764ba2); }
 .theme-e .card-title i { color: #e6a23c; }
 .theme-s .card-title i { color: #409eff; }
-.theme-o .card-title i { color: #f56c6c; }
+.theme-h .card-title i { color: #667eea; }
+.warn-card .card-sub { margin-left: 24px; }
 
-.card-sub { font-size: 12px; color: #a0a4ac; margin: 0 0 10px 24px; }
-
-/* 数量徽标 */
 .count-badge {
   min-width: 24px;
   height: 22px;
@@ -401,19 +441,19 @@ export default {
   font-weight: 700;
   color: #fff;
   border-radius: 11px;
+  font-family: var(--font-mono);
 }
 .theme-e .count-badge { background: #e6a23c; }
 .theme-s .count-badge { background: #409eff; }
-.theme-o .count-badge { background: #f56c6c; }
+.warn-badge { background: #f56c6c; }
 .count-badge.zero { background: #c8ccd4; }
+.btn-more { padding: 0; color: #667eea; font-weight: 600; }
 
 /* 表格 */
 .warn-table >>> th.el-table__cell { background: #fafbfc; color: #606266; font-weight: 600; }
-.warn-table >>> .el-table__row { transition: background-color 0.15s ease; }
 .warn-table >>> .row-danger td.el-table__cell { background: #fff5f5 !important; }
 .warn-table >>> .el-table__row:hover > td.el-table__cell { background: #f2f6fc !important; }
-
-.empty-box { color: #b3b8c2; font-size: 13px; padding: 18px 0; }
+.empty-box { color: #b3b8c2; font-size: 13px; padding: 18px 0; text-align: center; }
 .empty-box i { color: #67c23a; margin-right: 4px; }
 
 /* 库存进度条 */
@@ -426,22 +466,55 @@ export default {
 .stock-num.warn { color: #e6a23c; }
 .stock-num.danger { color: #f56c6c; }
 
-.countdown {
-  display: inline-flex;
+/* 热销榜 */
+.rank-list { min-height: 252px; }
+.rank-item {
+  display: flex;
   align-items: center;
-  gap: 3px;
-  font-family: var(--font-mono);
-  color: #e6a23c;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+  gap: 10px;
+  padding: 7px 6px;
+  border-radius: 10px;
 }
-.countdown.expired { color: #f56c6c; }
+.rank-no {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #8a93a4;
+  background: #f0f2f7;
+  font-family: var(--font-mono);
+}
+.rank-no.top { color: #fff; }
+.rank-no.top-1 { background: linear-gradient(135deg, #f5b04c, #e8912a); }
+.rank-no.top-2 { background: linear-gradient(135deg, #b6bfd0, #98a3b8); }
+.rank-no.top-3 { background: linear-gradient(135deg, #d29a72, #b87a4f); }
+.rank-thumb { flex-shrink: 0; width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: #f3f5fa; }
+.thumb-img { width: 100%; height: 100%; display: block; }
+.thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c3cad8;
+  font-size: 17px;
+}
+.rank-main { flex: 1; min-width: 0; }
+.rank-name { font-size: 13px; font-weight: 500; color: #2d3748; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-price { margin-top: 2px; font-size: 12px; color: #f56c6c; font-weight: 600; }
+.rank-metric { flex-shrink: 0; font-size: 13px; font-weight: 700; color: #667eea; font-family: var(--font-mono); }
+.rank-metric i { margin-right: 4px; }
 
-.notice-detail { max-height: 62vh; overflow: auto; line-height: 1.75; color: #303133; }
-.notice-detail >>> img { max-width: 100%; border-radius: 4px; }
+.order-card { margin-bottom: 18px; }
+.order-card >>> .el-card__header { border-bottom: none; padding: 14px 18px 6px; }
+.order-card >>> .el-card__body { padding: 0 18px 16px; }
 
 @media (max-width: 992px) {
-  .warning-row { grid-template-columns: 1fr; }
+  .trend-row, .warning-row { grid-template-columns: 1fr; }
   .hero { flex-direction: column; align-items: flex-start; }
 }
 </style>

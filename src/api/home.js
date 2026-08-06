@@ -59,3 +59,28 @@ export function getNewestProducts(limit) {
     params: { limit }
   });
 }
+
+// 工作台概览：今日成交额/单量、待发货、待付款、待处理售后（商家=本店口径，管理员=平台口径）
+export function getDashboardOverview() {
+  return request({
+    url: '/order/statistics/overview',
+    method: 'get'
+  });
+}
+
+// 工作台：近 N 天逐日成交趋势（默认 7 天，无成交日期补 0）
+export function getDailySales(days) {
+  return request({
+    url: '/order/statistics/dailySales',
+    method: 'get',
+    params: days ? { days } : {}
+  });
+}
+
+// 管理员驾驶舱：用户总量、按类型构成、今日新增注册数
+export function getUserOverview() {
+  return request({
+    url: '/user/statistics/overview',
+    method: 'get'
+  });
+}
