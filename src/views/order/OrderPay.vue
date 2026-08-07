@@ -246,45 +246,57 @@ export default {
           this.paying = false;
         });
     },
-    /** 收银台回跳后每 2s 轮询一次支付单状态，最多 30 次 */
+    /**
+     * 收银台回跳后轮询支付单状态：前 1 分钟每 2s 一次，之后退避为每 5s 一次，
+     * 一直轮询到订单支付到期（expireTime 来自服务端，对应 Nacos 的 order-timeout-minute）。
+     * expireTime 取不到时兜底只轮询 30 次（约 1 分钟），避免无界轮询。
+     */
     startPolling(payNo) {
       this.polling = true;
       this.pollCount = 0;
-      this.pollTimer = setInterval(() => {
-        this.pollCount += 1;
-        if (this.pollCount > 30) {
-          this.stopPolling();
-          this.$message.warning('支付结果确认超时，请稍后在我的订单中查看');
-          this.fetchOrder();
-          return;
-        }
-        getPayStatus(payNo)
-          .then(res => {
-            const status = Number(res.daoResult && res.daoResult.status);
-            if (status === 1) {
-              this.stopPolling();
-              this.$message.success('支付成功');
-              this.goOrders();
-            } else if (status === 2) {
-              this.stopPolling();
-              this.$message.error('支付失败，可重新发起支付');
-              this.fetchOrder();
-            } else if (status === 3 || status === 4 || status === 5) {
-              this.stopPolling();
-              this.$message.info(status === 3 ? '支付已关闭（订单可能已取消）' : '订单已取消，支付款将自动退回');
-              this.fetchOrder();
-            }
-            // 0：待支付，继续轮询
-          })
-          .catch(() => {
+      this.schedulePoll(payNo);
+    },
+    schedulePoll(payNo) {
+      const interval = this.pollCount < 30 ? 2000 : 5000;
+      this.pollTimer = setTimeout(() => this.pollOnce(payNo), interval);
+    },
+    pollOnce(payNo) {
+      this.pollCount += 1;
+      const deadlineReached = this.expireTime ? this.remainMs <= 0 : this.pollCount > 30;
+      if (deadlineReached) {
+        this.stopPolling();
+        this.$message.warning('支付结果确认超时，请稍后在我的订单中查看');
+        this.fetchOrder();
+        return;
+      }
+      getPayStatus(payNo)
+        .then(res => {
+          const status = Number(res.daoResult && res.daoResult.status);
+          if (status === 1) {
             this.stopPolling();
+            this.$message.success('支付成功');
+            this.goOrders();
+          } else if (status === 2) {
+            this.stopPolling();
+            this.$message.error('支付失败，可重新发起支付');
             this.fetchOrder();
-          });
-      }, 2000);
+          } else if (status === 3 || status === 4 || status === 5) {
+            this.stopPolling();
+            this.$message.info(status === 3 ? '支付已关闭（订单可能已取消）' : '订单已取消，支付款将自动退回');
+            this.fetchOrder();
+          } else {
+            // 0：待支付，继续轮询
+            this.schedulePoll(payNo);
+          }
+        })
+        // 瞬时网络错误不终止轮询，到期判断会兜底收尾
+        .catch(() => {
+          this.schedulePoll(payNo);
+        });
     },
     stopPolling() {
       if (this.pollTimer) {
-        clearInterval(this.pollTimer);
+        clearTimeout(this.pollTimer);
         this.pollTimer = null;
       }
       this.polling = false;
