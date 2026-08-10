@@ -38,6 +38,24 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/personal-work',
+    name: 'PersonalWork',
+    component: () => import('../views/work/PersonalWork.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/work-report/add',
+    name: 'WorkReportAdd',
+    component: () => import('../views/work/WorkReportAdd.vue'),
+    meta: { public: true }
+  },
+  {
+    path: '/work-report/:id',
+    name: 'WorkReportDetail',
+    component: () => import('../views/work/WorkReportDetail.vue'),
+    meta: { public: true }
+  },
+  {
     path: '/',
     component: () => import('../layout/Layout.vue'),
     children: [
