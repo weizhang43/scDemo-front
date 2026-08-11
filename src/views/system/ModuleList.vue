@@ -1,6 +1,6 @@
 <template>
   <div class="module-list">
-    <el-card>
+    <el-card class="list-card">
       <div slot="header" class="card-header">
         <div class="header-left">
           <span class="card-title">权限列表</span>
@@ -259,20 +259,23 @@ export default {
 .module-list { max-width: 1200px; margin: 0 auto; }
 
 .tree-wrap {
-  background: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
+  background: #fafbfd;
+  border: 1px solid var(--border-color-light);
+  border-radius: var(--radius-md);
   padding: 12px 16px;
   min-height: 240px;
 }
+.tree-wrap >>> .el-tree {
+  background: transparent;
+}
 .tree-wrap >>> .el-tree-node__content {
   height: 40px;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   padding-right: 8px;
   transition: background-color 0.15s ease;
 }
 .tree-wrap >>> .el-tree-node__content:hover {
-  background-color: #f3f6fb;
+  background-color: var(--color-primary-light);
 }
 .tree-node {
   flex: 1;
@@ -284,29 +287,29 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: var(--font-body);
 }
 .node-name > i {
-  color: #2a5298;
+  color: var(--color-primary);
   font-size: 15px;
 }
 .name-text {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--text-title);
   min-width: 120px;
 }
 .node-perm {
-  color: #718096;
-  font-size: 12px;
-  font-family: Consolas, Monaco, monospace;
+  color: var(--text-secondary);
+  font-size: var(--font-aux);
+  font-family: var(--font-mono);
   background: #f1f3f7;
   padding: 1px 8px;
   border-radius: 3px;
 }
 .node-url {
-  color: #409eff;
-  font-size: 12px;
-  font-family: Consolas, Monaco, monospace;
+  color: var(--color-primary);
+  font-size: var(--font-aux);
+  font-family: var(--font-mono);
 }
 
 /* 右键菜单 */
@@ -317,27 +320,27 @@ export default {
   padding: 6px 0;
   list-style: none;
   background: #fff;
-  border: 1px solid #e4e7ed;
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0, 0,0,0.12);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-pop);
   min-width: 140px;
   user-select: none;
 }
 .context-menu li {
   padding: 8px 16px;
   font-size: 13px;
-  color: #2d3748;
+  color: var(--text-regular);
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .context-menu li:hover {
-  background: #f3f6fb;
-  color: #2a5298;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 .context-menu li.danger:hover {
   background: #fef0f0;
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 </style>

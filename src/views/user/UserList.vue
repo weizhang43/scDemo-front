@@ -7,6 +7,7 @@
           <span class="header-meta">共 {{ pagination.total }} 条</span>
         </div>
         <div class="header-actions">
+          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增用户</el-button>
           <el-button type="info" size="small" icon="el-icon-download" :loading="exporting" @click="handleExport">导出</el-button>
         </div>
       </div>
@@ -38,6 +39,10 @@
         </el-form-item>
       </el-form>
 
+      <el-tabs v-model="activeUType" class="utype-tabs" @tab-click="handleUTypeTab">
+        <el-tab-pane v-for="tab in uTypeTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
+      </el-tabs>
+
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -58,6 +63,13 @@
         <el-table-column prop="realName" label="真实姓名" min-width="140" align="center">
           <template slot-scope="scope">
             <span>{{ scope.row.realName || '-' }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="uType" label="用户类型" width="100" align="center">
+          <template slot-scope="scope">
+            <el-tag :type="uTypeTagType(scope.row.uType)" size="small" effect="light">
+              {{ uTypeText(scope.row.uType) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="gender" label="性别" width="90" align="center">
@@ -84,11 +96,18 @@
             <span class="cell-text">{{ scope.row.birthday || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300" align="center" fixed="right">
+        <el-table-column label="操作" width="340" align="center" fixed="right">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.uId)">详情</el-button>
             <el-button type="text" icon="el-icon-location-outline" @click="goAddress(scope.row.uId)">收货地址</el-button>
             <el-button type="text" icon="el-icon-s-check" @click="openRole(scope.row)">关联角色</el-button>
+            <el-button
+              v-if="$store.getters.hasPerm('user:delete')"
+              type="text"
+              icon="el-icon-delete"
+              class="danger-btn"
+              @click="handleDelete(scope.row)"
+            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -125,6 +144,7 @@
             :label="r.id"
             :disabled="r.status !== 1"
             class="role-checkbox-item"
+            :class="{ 'is-checked-card': checkedRoleIds.includes(r.id) }"
           >
             <span class="role-name">{{ r.name }}</span>
             <span class="role-code">[{{ r.code }}]</span>
@@ -137,11 +157,56 @@
         <el-button type="primary" :loading="roleSaving" @click="handleSaveRoles">保存</el-button>
       </div>
     </el-dialog>
+
+    <!-- 新增用户弹窗 -->
+    <el-dialog
+      title="新增用户"
+      :visible.sync="addDialogVisible"
+      width="520px"
+      :close-on-click-modal="false"
+      @closed="resetAddForm"
+    >
+      <el-form ref="addForm" :model="addForm" :rules="addRules" label-width="90px">
+        <el-form-item label="用户名" prop="uName">
+          <el-input v-model="addForm.uName" placeholder="请输入用户名" maxlength="64" />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="addForm.password" type="password" show-password placeholder="请输入密码" />
+        </el-form-item>
+        <el-form-item label="用户类型" prop="uType">
+          <el-radio-group v-model="addForm.uType">
+            <el-radio :label="1">商家</el-radio>
+            <el-radio :label="2">顾客</el-radio>
+            <el-radio :label="3">管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="真实姓名">
+          <el-input v-model="addForm.realName" placeholder="选填" maxlength="64" />
+        </el-form-item>
+        <el-form-item label="手机号" prop="phone">
+          <el-input v-model="addForm.phone" placeholder="选填" maxlength="20" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="addForm.email" placeholder="选填" />
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio-group v-model="addForm.gender">
+            <el-radio :label="0">保密</el-radio>
+            <el-radio :label="1">男</el-radio>
+            <el-radio :label="2">女</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="addDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="addSaving" @click="handleSaveAdd">保存</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getUserList, exportUser } from '../../api/user';
+import { getUserList, exportUser, addUser, deleteUser } from '../../api/user';
 import { getRoleList } from '../../api/role';
 import { getUserRoleIds, assignUserRoles } from '../../api/userRole';
 import { downloadBlob } from '../../utils/export';
@@ -152,11 +217,24 @@ const GENDER_MAP = {
   2: { label: '女', type: 'danger' }
 };
 
+const U_TYPE_MAP = {
+  1: { label: '商家', type: 'warning' },
+  2: { label: '顾客', type: 'success' },
+  3: { label: '管理员', type: 'primary' }
+};
+
 export default {
   name: 'UserList',
   data() {
     return {
-      searchForm: { key: '', gender: '', birthdayRange: [] },
+      searchForm: { key: '', uType: '', gender: '', birthdayRange: [] },
+      activeUType: 'all',
+      uTypeTabs: [
+        { name: 'all', label: '全部' },
+        { name: '1', label: '商家' },
+        { name: '2', label: '顾客' },
+        { name: '3', label: '管理员' }
+      ],
       tableData: [],
       loading: false,
       exporting: false,
@@ -167,7 +245,21 @@ export default {
       roleSaving: false,
       roleOptions: [],
       checkedRoleIds: [],
-      currentRow: null
+      currentRow: null,
+      // 新增用户
+      addDialogVisible: false,
+      addSaving: false,
+      addForm: { uName: '', password: '', uType: 2, realName: '', phone: '', email: '', gender: 0 },
+      addRules: {
+        uName: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 6, message: '密码至少 6 位', trigger: 'blur' }
+        ],
+        uType: [{ required: true, message: '请选择用户类型', trigger: 'change' }],
+        phone: [{ pattern: /^1\d{10}$/, message: '手机号格式不正确', trigger: 'blur' }],
+        email: [{ type: 'email', message: '邮箱格式不正确', trigger: 'blur' }]
+      }
     };
   },
   created() {
@@ -178,6 +270,7 @@ export default {
       this.loading = true;
       const params = {
         key: this.searchForm.key || '',
+        uType: this.searchForm.uType === '' || this.searchForm.uType === null ? '' : this.searchForm.uType,
         gender: this.searchForm.gender === '' || this.searchForm.gender === null ? '' : this.searchForm.gender,
         birthdayStart: (this.searchForm.birthdayRange && this.searchForm.birthdayRange[0]) || '',
         birthdayEnd: (this.searchForm.birthdayRange && this.searchForm.birthdayRange[1]) || '',
@@ -201,6 +294,8 @@ export default {
     },
     handleReset() {
       this.searchForm.key = '';
+      this.searchForm.uType = '';
+      this.activeUType = 'all';
       this.searchForm.gender = '';
       this.searchForm.birthdayRange = [];
       this.pagination.pageNo = 1;
@@ -215,6 +310,11 @@ export default {
       this.pagination.pageNo = 1;
       this.fetchData();
     },
+    handleUTypeTab(tab) {
+      this.searchForm.uType = tab.name === 'all' ? '' : Number(tab.name);
+      this.pagination.pageNo = 1;
+      this.fetchData();
+    },
     indexMethod(index) {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
     },
@@ -223,6 +323,12 @@ export default {
     },
     genderTagType(g) {
       return (GENDER_MAP[g] || {}).type || 'info';
+    },
+    uTypeText(t) {
+      return (U_TYPE_MAP[t] || {}).label || '-';
+    },
+    uTypeTagType(t) {
+      return (U_TYPE_MAP[t] || {}).type || 'info';
     },
     goDetail(uId) {
       this.$router.push({ path: '/profile', query: { id: uId } });
@@ -241,7 +347,7 @@ export default {
       ])
         .then(([roleRes, idsRes]) => {
           this.roleOptions = roleRes.dataList || [];
-          this.checkedRoleIds = idsRes.daoResult || [];
+          this.checkedRoleIds = idsRes.dataList || [];
         })
         .finally(() => { this.roleLoading = false; });
     },
@@ -254,9 +360,50 @@ export default {
         })
         .finally(() => { this.roleSaving = false; });
     },
+    openAdd() {
+      this.addDialogVisible = true;
+    },
+    resetAddForm() {
+      this.addForm = { uName: '', password: '', uType: 2, realName: '', phone: '', email: '', gender: 0 };
+      if (this.$refs.addForm) {
+        this.$refs.addForm.clearValidate();
+      }
+    },
+    handleSaveAdd() {
+      this.$refs.addForm.validate(valid => {
+        if (!valid) return;
+        this.addSaving = true;
+        addUser({ ...this.addForm })
+          .then(() => {
+            this.$message.success('新增成功');
+            this.addDialogVisible = false;
+            this.fetchData();
+          })
+          .catch(() => {})
+          .finally(() => { this.addSaving = false; });
+      });
+    },
+    handleDelete(row) {
+      this.$confirm(`确定删除用户「${row.realName || row.uName}」吗？删除后该账号将无法登录。`, '删除确认', {
+        type: 'warning',
+        confirmButtonText: '删除',
+        cancelButtonText: '取消'
+      })
+        .then(() => deleteUser(row.uId))
+        .then(res => {
+          if (!res) return;
+          this.$message.success('删除成功');
+          if (this.tableData.length === 1 && this.pagination.pageNo > 1) {
+            this.pagination.pageNo -= 1;
+          }
+          this.fetchData();
+        })
+        .catch(() => {});
+    },
     handleExport() {
       const params = {
         key: this.searchForm.key || '',
+        uType: this.searchForm.uType === '' || this.searchForm.uType === null ? '' : this.searchForm.uType,
         gender: this.searchForm.gender === '' || this.searchForm.gender === null ? '' : this.searchForm.gender,
         birthdayStart: (this.searchForm.birthdayRange && this.searchForm.birthdayRange[0]) || '',
         birthdayEnd: (this.searchForm.birthdayRange && this.searchForm.birthdayRange[1]) || ''
@@ -318,6 +465,58 @@ export default {
   color: #4a5568;
   font-size: 13px;
 }
+.danger-btn {
+  color: #f56c6c;
+}
+.danger-btn:hover,
+.danger-btn:focus {
+  color: #f78989;
+}
+/* 关联角色弹框：整行可点的边框卡片 */
+.role-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.role-checkbox-item {
+  display: flex;
+  align-items: center;
+  margin: 0 !important;
+  padding: 12px 14px;
+  border: 1px solid #e6e9f0;
+  border-radius: 10px;
+  background: #fafbfd;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.role-checkbox-item:hover {
+  border-color: var(--color-primary, #667eea);
+}
+.role-checkbox-item.is-checked-card {
+  border-color: var(--color-primary, #667eea);
+  background: rgba(102, 126, 234, 0.06);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+}
+.role-checkbox-item.is-disabled {
+  opacity: 0.6;
+}
+.role-name {
+  font-weight: 600;
+  color: #1f2733;
+}
+.role-code {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #9aa3b2;
+  font-family: var(--font-mono);
+}
+.role-disabled {
+  margin-left: 8px;
+  font-size: 12px;
+  color: #f56c6c;
+}
 </style>
 
 <style>
@@ -334,5 +533,44 @@ export default {
 }
 .user-list .el-card__body {
   padding: 20px 24px 12px;
+}
+.user-list .utype-tabs {
+  margin-bottom: 18px;
+}
+.user-list .utype-tabs .el-tabs__header {
+  margin: 0;
+}
+.user-list .utype-tabs .el-tabs__content {
+  display: none;
+}
+.user-list .utype-tabs .el-tabs__nav-wrap::after {
+  display: none;
+}
+.user-list .utype-tabs .el-tabs__active-bar {
+  display: none;
+}
+.user-list .utype-tabs .el-tabs__nav {
+  display: inline-flex;
+  gap: 8px;
+  padding: 5px;
+  background: #f3f5fa;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+}
+.user-list .utype-tabs .el-tabs__item {
+  height: 34px;
+  line-height: 34px;
+  padding: 0 18px !important;
+  color: #6b7280;
+  border-radius: 9px;
+  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.user-list .utype-tabs .el-tabs__item:hover {
+  color: var(--color-primary);
+}
+.user-list .utype-tabs .el-tabs__item.is-active {
+  color: #fff;
+  background: var(--gradient-brand);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 </style>

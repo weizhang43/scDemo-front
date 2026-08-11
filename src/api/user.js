@@ -66,6 +66,21 @@ export function getUserList(params) {
   });
 }
 
+export function addUser(data) {
+  return request({
+    url: '/user/add',
+    method: 'post',
+    data
+  });
+}
+
+export function deleteUser(uId) {
+  return request({
+    url: `/user/${uId}`,
+    method: 'delete'
+  });
+}
+
 export function getUserDetail(id) {
   return request({
     url: `/user/detail/${id}`,

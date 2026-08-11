@@ -8,6 +8,13 @@ export function getUserRoleIds(userId) {
   });
 }
 
+export function getMyPerms() {
+  return request({
+    url: '/user/userRole/perms',
+    method: 'get'
+  });
+}
+
 export function assignUserRoles(userId, roleIds) {
   return request({
     url: '/user/userRole/assignRoles',

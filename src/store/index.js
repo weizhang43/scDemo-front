@@ -6,11 +6,22 @@ import { getCartCount } from '../api/cart';
 
 Vue.use(Vuex);
 
+const PERMS_KEY = 'sc_perms';
+
+function getPerms() {
+  try {
+    return JSON.parse(localStorage.getItem(PERMS_KEY)) || [];
+  } catch (e) {
+    return [];
+  }
+}
+
 export default new Vuex.Store({
   state: {
     token: getToken() || '',
     userInfo: getUser() || {},
-    cartCount: 0
+    cartCount: 0,
+    perms: getPerms()
   },
   getters: {
     userType(state) {
@@ -18,6 +29,9 @@ export default new Vuex.Store({
     },
     menus(state, getters) {
       return menusForType(getters.userType);
+    },
+    hasPerm(state) {
+      return perm => (state.perms || []).includes(perm);
     }
   },
   mutations: {
@@ -40,13 +54,19 @@ export default new Vuex.Store({
     SET_CART_COUNT(state, n) {
       state.cartCount = Number(n) || 0;
     },
+    SET_PERMS(state, perms) {
+      state.perms = perms || [];
+      localStorage.setItem(PERMS_KEY, JSON.stringify(state.perms));
+    },
     LOGOUT(state) {
       state.token = '';
       state.userInfo = {};
       // 不归零的话，同一标签页里顾客登出后商家登入会继承一个陈旧角标
       state.cartCount = 0;
+      state.perms = [];
       removeToken();
       removeUser();
+      localStorage.removeItem(PERMS_KEY);
     }
   },
   actions: {

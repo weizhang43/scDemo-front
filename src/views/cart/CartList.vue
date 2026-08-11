@@ -24,6 +24,7 @@
           @selection-change="handleSelectionChange"
         >
           <el-table-column type="selection" width="46" :selectable="rowSelectable" />
+          <el-table-column type="index" label="序号" width="60" align="center" />
           <el-table-column label="商品" min-width="260">
             <template slot-scope="scope">
               <div class="goods-cell">

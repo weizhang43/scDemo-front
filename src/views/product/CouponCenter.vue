@@ -65,6 +65,7 @@
           :cell-style="{ textAlign: 'center' }"
           empty-text="还没有优惠券，去领券中心看看吧"
         >
+          <el-table-column type="index" label="序号" width="60" align="center" />
           <el-table-column prop="name" label="券名称" min-width="150" show-overflow-tooltip />
           <el-table-column label="优惠规则" min-width="160">
             <template slot-scope="s">{{ ruleText(s.row) }}</template>

@@ -113,6 +113,7 @@
 
 <script>
 import { login } from '../../api/user';
+import { getMyPerms } from '../../api/userRole';
 import { getPublishedNotices } from '../../api/notice';
 import { landingFor, roleByKey, ROLES } from '../../router/menuConfig';
 
@@ -170,6 +171,10 @@ export default {
             const user = result.user || {};
             this.$store.commit('SET_TOKEN', token);
             this.$store.commit('SET_USER', user);
+            // 拉取按钮权限，失败不阻断登录
+            getMyPerms()
+              .then(permRes => this.$store.commit('SET_PERMS', permRes.dataList || []))
+              .catch(() => this.$store.commit('SET_PERMS', []));
             this.$message.success('登录成功');
             this.$router.push(landingFor(user.uType));
           })

@@ -22,8 +22,8 @@
         :header-cell-style="{ background: '#f5f7fb', color: '#4a5568', fontWeight: 600 }"
         empty-text="暂无分类"
       >
+        <el-table-column type="index" label="序号" width="70" align="center" />
         <el-table-column prop="name" label="分类名称" min-width="220" />
-        <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column label="层级" width="100" align="center">
           <template slot-scope="s">
             <el-tag :type="s.row.parentId === 0 ? 'primary' : 'info'" size="mini">

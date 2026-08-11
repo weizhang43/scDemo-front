@@ -12,7 +12,7 @@
       </div>
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="操作人">
-          <el-input v-model="searchForm.uName" placeholder="操作人用户名" prefix-icon="el-icon-user" clearable style="width: 160px;" @keyup.enter.native="handleSearch" />
+          <el-input v-model="searchForm.uName" placeholder="用户名/真实姓名" prefix-icon="el-icon-user" clearable style="width: 160px;" @keyup.enter.native="handleSearch" />
         </el-form-item>
         <el-form-item label="模块">
           <el-input v-model="searchForm.module" placeholder="所属模块" clearable style="width: 140px;" @keyup.enter.native="handleSearch" />
@@ -59,7 +59,7 @@
         <el-table-column type="index" label="序号" width="70" align="center" :index="indexMethod" />
         <el-table-column prop="uName" label="操作人" min-width="110" align="center">
           <template slot-scope="scope">
-            <span class="cell-strong">{{ scope.row.uName || '-' }}</span>
+            <span class="cell-strong">{{ scope.row.realName || scope.row.uName || '-' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="module" label="模块" min-width="110" align="center">
@@ -130,7 +130,7 @@
     <!-- 日志详情弹窗 -->
     <el-dialog title="日志详情" :visible.sync="detailVisible" width="560px">
       <el-descriptions v-if="currentRow" :column="2" border size="small">
-        <el-descriptions-item label="操作人">{{ currentRow.uName || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="操作人">{{ currentRow.realName || currentRow.uName || '-' }}</el-descriptions-item>
         <el-descriptions-item label="操作人ID">{{ currentRow.uId == null ? '-' : currentRow.uId }}</el-descriptions-item>
         <el-descriptions-item label="模块">{{ currentRow.module || '-' }}</el-descriptions-item>
         <el-descriptions-item label="操作类型">{{ opTypeText(currentRow.opType) }}</el-descriptions-item>

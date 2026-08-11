@@ -21,7 +21,7 @@
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无角色数据"
       >
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column type="index" label="序号" width="70" align="center" />
         <el-table-column prop="code" label="角色编码" min-width="140" />
         <el-table-column prop="name" label="角色名称" min-width="140" />
         <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
@@ -68,25 +68,32 @@
     </el-dialog>
 
     <!-- 授权弹窗 -->
-    <el-dialog title="角色授权" :visible.sync="assignVisible" width="560px" :close-on-click-modal="false">
-      <div style="margin-bottom:8px;color:#666;">
+    <el-dialog
+      :title="`角色授权 - ${currentRole ? currentRole.name : ''}`"
+      :visible.sync="assignVisible"
+      width="560px"
+      :close-on-click-modal="false"
+    >
+      <div class="assign-tip">
         为 <b>{{ currentRole && currentRole.name }}</b> 勾选需要授予的权限:
       </div>
-      <el-tree
-        ref="moduleTree"
-        :data="moduleTree"
-        :props="treeProps"
-        node-key="id"
-        show-checkbox
-        :default-expand-all="true"
-        :default-checked-keys="checkedKeys"
-        :check-strictly="false"
-      >
-        <span slot-scope="{ data }">
-          <span>{{ data.name }}</span>
-          <span style="color:#999;font-size:12px;margin-left:6px;">[{{ data.type }}] {{ data.permission }}</span>
-        </span>
-      </el-tree>
+      <div class="assign-tree-wrap">
+        <el-tree
+          ref="moduleTree"
+          :data="moduleTree"
+          :props="treeProps"
+          node-key="id"
+          show-checkbox
+          :default-expand-all="true"
+          :default-checked-keys="checkedKeys"
+          :check-strictly="false"
+        >
+          <span slot-scope="{ data }" class="assign-node">
+            <span>{{ data.name }}</span>
+            <span class="assign-node-meta">[{{ data.type }}] {{ data.permission }}</span>
+          </span>
+        </el-tree>
+      </div>
       <div slot="footer">
         <el-button @click="assignVisible = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="handleAssign">保存</el-button>
@@ -174,13 +181,29 @@ export default {
       Promise.all([getModuleTree(), getRoleModuleIds(row.id)])
         .then(([treeRes, idsRes]) => {
           this.moduleTree = treeRes.dataList || [];
-          this.checkedKeys = idsRes.daoResult || [];
+          // 已存 ID 含半选父节点，直接 setCheckedKeys 会把父节点下未授权的子节点全勾上，只回显叶子
+          const leafIds = this.collectLeafIds(this.moduleTree);
+          this.checkedKeys = (idsRes.dataList || []).filter(id => leafIds.has(id));
           this.$nextTick(() => {
             if (this.$refs.moduleTree) {
               this.$refs.moduleTree.setCheckedKeys(this.checkedKeys);
             }
           });
         });
+    },
+    collectLeafIds(nodes) {
+      const ids = new Set();
+      const walk = list => {
+        (list || []).forEach(n => {
+          if (n.children && n.children.length) {
+            walk(n.children);
+          } else {
+            ids.add(n.id);
+          }
+        });
+      };
+      walk(nodes);
+      return ids;
     },
     handleAssign() {
       const checked = this.$refs.moduleTree.getCheckedKeys();
@@ -200,4 +223,31 @@ export default {
 
 <style scoped>
 .role-list { max-width: 1200px; margin: 0 auto; }
+.assign-tip {
+  margin-bottom: 10px;
+  color: #666;
+}
+.assign-tree-wrap {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 10px 8px;
+  border: 1px solid #eef0f4;
+  border-radius: 10px;
+  background: #fafbfd;
+}
+.assign-tree-wrap >>> .el-tree {
+  background: transparent;
+}
+.assign-tree-wrap >>> .el-tree-node__content {
+  height: 32px;
+  border-radius: 6px;
+}
+.assign-tree-wrap >>> .el-tree-node__content:hover {
+  background: rgba(102, 126, 234, 0.08);
+}
+.assign-node-meta {
+  color: #9aa3b2;
+  font-size: 12px;
+  margin-left: 6px;
+}
 </style>

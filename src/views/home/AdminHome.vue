@@ -81,7 +81,10 @@
       </div>
       <el-table v-loading="loadingLogs" :data="recentLogs" size="mini" class="log-table">
         <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无操作日志</div></template>
-        <el-table-column prop="uName" label="操作人" width="120" align="center" />
+        <el-table-column type="index" label="序号" width="60" align="center" />
+        <el-table-column label="操作人" width="120" align="center">
+          <template slot-scope="s">{{ s.row.realName || s.row.uName || '-' }}</template>
+        </el-table-column>
         <el-table-column prop="module" label="模块" width="120" align="center" />
         <el-table-column prop="opType" label="操作类型" width="110" align="center" />
         <el-table-column prop="description" label="操作描述" min-width="200" align="center" show-overflow-tooltip />

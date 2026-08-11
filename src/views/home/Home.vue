@@ -79,6 +79,7 @@
         <el-table v-loading="loadingExpiring" :data="expiring" height="252" size="mini"
                   :row-class-name="expireRowClass" class="warn-table">
           <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无即将过期商品</div></template>
+          <el-table-column type="index" label="序号" width="55" align="center" />
           <el-table-column prop="pName" label="商品" min-width="90" show-overflow-tooltip />
           <el-table-column label="到期日" width="110" align="center">
             <template slot-scope="s">{{ expireDate(s.row) }}</template>
@@ -102,6 +103,7 @@
                   :row-class-name="stockRowClass" class="warn-table"
                   @row-click="() => go('/products')">
           <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 库存充足</div></template>
+          <el-table-column type="index" label="序号" width="55" align="center" />
           <el-table-column prop="pName" label="商品" min-width="100" show-overflow-tooltip />
           <el-table-column label="库存" min-width="120" align="center">
             <template slot-scope="s">
@@ -151,6 +153,7 @@
       <el-table v-loading="loadingOrders" :data="timeoutOrders" size="mini"
                 :row-class-name="orderRowClass" class="warn-table">
         <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无超时订单</div></template>
+        <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="orderNo" label="订单号" min-width="180" show-overflow-tooltip />
         <el-table-column label="金额" width="110" align="center">
           <template slot-scope="s">￥{{ s.row.orderAmount }}</template>

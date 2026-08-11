@@ -27,7 +27,7 @@
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无通知"
       >
-        <el-table-column prop="noticeId" label="ID" width="70" />
+        <el-table-column type="index" label="序号" width="70" align="center" :index="indexMethod" />
         <el-table-column label="封面" width="90">
           <template slot-scope="s">
             <el-image v-if="s.row.coverImage" :src="s.row.coverImage" style="width:48px;height:36px" fit="cover" :preview-src-list="[s.row.coverImage]" />
@@ -204,6 +204,9 @@ export default {
     handlePageChange(p) {
       this.query.pageNum = p;
       this.fetchList();
+    },
+    indexMethod(index) {
+      return (this.query.pageNum - 1) * this.query.pageSize + index + 1;
     },
     onEditorCreated(editor) {
       this.editor = Object.seal(editor);

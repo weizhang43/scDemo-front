@@ -22,7 +22,7 @@
         :cell-style="{ textAlign: 'center' }"
         empty-text="暂无优惠券"
       >
-        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column type="index" label="序号" width="70" align="center" :index="indexMethod" />
         <el-table-column prop="name" label="券名称" min-width="150" show-overflow-tooltip />
         <el-table-column label="类型" width="80">
           <template slot-scope="s">
@@ -173,6 +173,9 @@ export default {
     handlePageChange(p) {
       this.query.pageNo = p;
       this.fetchList();
+    },
+    indexMethod(index) {
+      return (this.query.pageNo - 1) * this.query.pageSize + index + 1;
     },
     ruleText(row) {
       const threshold = Number(row.thresholdAmount || 0);
