@@ -2,6 +2,51 @@ export const U_TYPE_MERCHANT = 1;
 export const U_TYPE_CUSTOMER = 2;
 export const U_TYPE_ADMIN = 3;
 
+export const ROLES = [
+  {
+    key: 'admin',
+    uType: U_TYPE_ADMIN,
+    label: '管理员',
+    desc: '平台运营与用户管理',
+    subtitle: '管理用户、分类、公告与系统日志',
+    icon: 'el-icon-s-check',
+    accent: '#764ba2',
+    accentSoft: 'rgba(118, 75, 162, 0.12)',
+    canRegister: false
+  },
+  {
+    key: 'merchant',
+    uType: U_TYPE_MERCHANT,
+    label: '商家',
+    desc: '商品订单与售后管理',
+    subtitle: '管理商品、秒杀、订单与售后',
+    icon: 'el-icon-s-shop',
+    accent: '#e8850e',
+    accentSoft: 'rgba(232, 133, 14, 0.12)',
+    canRegister: true
+  },
+  {
+    key: 'customer',
+    uType: U_TYPE_CUSTOMER,
+    label: '顾客',
+    desc: '购物下单与售后申请',
+    subtitle: '逛商品、抢秒杀、领优惠券',
+    icon: 'el-icon-shopping-cart-full',
+    accent: '#0f9b8e',
+    accentSoft: 'rgba(15, 155, 142, 0.12)',
+    canRegister: true
+  }
+];
+
+export function roleByKey(key) {
+  return ROLES.filter(r => r.key === key)[0] || null;
+}
+
+export function roleByType(uType) {
+  const t = Number(uType);
+  return ROLES.filter(r => r.uType === t)[0] || null;
+}
+
 export const MENUS = [
   { path: '/home', label: '首页', icon: 'el-icon-s-home', types: [1, 2, 3] },
   { path: '/products', label: '商品管理', icon: 'el-icon-goods', types: [1] },

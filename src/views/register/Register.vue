@@ -135,7 +135,7 @@ export default {
         uName: '',
         password: '',
         confirmPassword: '',
-        uType: 2,
+        uType: Number(this.$route.query.uType) === 1 ? 1 : 2,
         realName: '',
         gender: 1,
         phone: '',

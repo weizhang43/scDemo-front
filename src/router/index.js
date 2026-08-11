@@ -6,9 +6,16 @@ import { canAccess, landingFor } from './menuConfig';
 Vue.use(VueRouter);
 
 const routes = [
-  { path: '/', redirect: '/login' },
+  { path: '/', redirect: '/portal' },
   {
-    path: '/login',
+    path: '/portal',
+    name: 'RolePortal',
+    component: () => import('../views/login/RolePortal.vue'),
+    meta: { public: true }
+  },
+  { path: '/login', redirect: '/portal' },
+  {
+    path: '/login/:role',
     name: 'Login',
     component: () => import('../views/login/Login.vue'),
     meta: { public: true }
@@ -279,12 +286,17 @@ const router = new VueRouter({
   routes
 });
 
+// 角色选择页、各角色登录页与注册页：已登录用户不应再看到，直接送回其落地页
+function isAuthEntry(path) {
+  return path === '/portal' || path === '/register' || path.indexOf('/login') === 0;
+}
+
 router.beforeEach((to, from, next) => {
   const hasToken = getToken();
   const uType = (getUser() || {}).uType;
   if (to.meta.requiresAuth && !hasToken) {
-    next('/login');
-  } else if ((to.path === '/login' || to.path === '/register') && hasToken) {
+    next('/portal');
+  } else if (isAuthEntry(to.path) && hasToken) {
     next(landingFor(uType));
   } else if (hasToken && !canAccess(uType, to.meta.types)) {
     next(landingFor(uType));

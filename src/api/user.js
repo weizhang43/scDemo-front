@@ -12,6 +12,9 @@ export function login(data) {
   const params = new URLSearchParams();
   params.append('uName', data.uName);
   params.append('password', data.password);
+  if (data.uType !== undefined && data.uType !== null) {
+    params.append('uType', data.uType);
+  }
   return request({
     url: '/user/login',
     method: 'post',

@@ -51,10 +51,18 @@
           </el-carousel>
         </div>
       </div>
-      <div class="panel-right">
+      <div class="panel-right" :style="{ '--accent': role.accent, '--accent-soft': role.accentSoft }">
+        <router-link to="/portal" class="back-link">
+          <i class="el-icon-arrow-left" />
+          切换身份
+        </router-link>
+        <div class="role-badge">
+          <i :class="role.icon" />
+          {{ role.label }}
+        </div>
         <div class="brand">
-          <h2 class="brand-title">欢迎回来</h2>
-          <p class="brand-subtitle">登录你的账户以继续</p>
+          <h2 class="brand-title">{{ role.label }}登录</h2>
+          <p class="brand-subtitle">{{ role.subtitle }}</p>
         </div>
         <el-form
           ref="loginForm"
@@ -87,9 +95,11 @@
           </el-form-item>
           <div class="auth-footer">
             <router-link to="/forgot-password" class="auth-link link--forgot">忘记密码？</router-link>
-            <span class="footer-sep">|</span>
-            还没有账号？
-            <router-link to="/register" class="auth-link">去注册</router-link>
+            <template v-if="role.canRegister">
+              <span class="footer-sep">|</span>
+              还没有账号？
+              <router-link :to="{ path: '/register', query: { uType: role.uType } }" class="auth-link">去注册</router-link>
+            </template>
           </div>
         </el-form>
       </div>
@@ -104,7 +114,7 @@
 <script>
 import { login } from '../../api/user';
 import { getPublishedNotices } from '../../api/notice';
-import { landingFor } from '../../router/menuConfig';
+import { landingFor, roleByKey, ROLES } from '../../router/menuConfig';
 
 export default {
   name: 'Login',
@@ -124,7 +134,16 @@ export default {
       detailVisible: false
     };
   },
+  computed: {
+    role() {
+      return roleByKey(this.$route.params.role) || ROLES[0];
+    }
+  },
   created() {
+    if (!roleByKey(this.$route.params.role)) {
+      this.$router.replace('/portal');
+      return;
+    }
     getPublishedNotices()
       .then(res => { this.notices = res.dataList || []; })
       .catch(() => {});
@@ -144,7 +163,7 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (!valid) return;
         this.loading = true;
-        login(this.loginForm)
+        login({ ...this.loginForm, uType: this.role.uType })
           .then(res => {
             const result = res.daoResult || {};
             const token = result.token;
@@ -167,10 +186,12 @@ export default {
 <style scoped>
 .login-container {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 88px 24px 40px;
+  box-sizing: border-box;
   background: var(--gradient-topbar);
   overflow: hidden;
 }
@@ -201,17 +222,30 @@ export default {
   background: rgba(255, 255, 255, 0.16);
   border: 1px solid rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(8px);
-  transition: background 0.2s, transform 0.15s;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 .customer-entry:hover {
   background: rgba(255, 255, 255, 0.28);
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+}
+.customer-entry:active {
+  transform: translateY(0);
 }
 .blob {
   position: absolute;
   border-radius: 50%;
   filter: blur(60px);
   opacity: 0.5;
+  animation: blob-float 14s ease-in-out infinite alternate;
+}
+@keyframes blob-float {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(24px, -18px) scale(1.08);
+  }
 }
 .blob-1 {
   width: 320px;
@@ -234,6 +268,7 @@ export default {
   top: 40%;
   right: 20%;
   opacity: 0.25;
+  animation-duration: 18s;
 }
 .login-panel {
   position: relative;
@@ -242,12 +277,24 @@ export default {
   width: 900px;
   max-width: calc(100vw - 48px);
   min-height: 520px;
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.32);
   border: 1px solid rgba(255, 255, 255, 0.4);
+  animation: panel-in 0.5s ease both;
+}
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .panel-left {
+  position: relative;
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
@@ -255,11 +302,21 @@ export default {
   background: linear-gradient(160deg, #667eea 0%, #764ba2 100%);
   color: #fff;
 }
+.panel-left::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.18), transparent 55%);
+  pointer-events: none;
+}
 .left-brand {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 26px;
+  margin-bottom: 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 .brand-mark {
   width: 52px;
@@ -275,6 +332,7 @@ export default {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 .brand-slogan {
   margin-top: 4px;
@@ -282,8 +340,12 @@ export default {
   opacity: 0.8;
 }
 .left-notices {
+  position: relative;
   flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 .notice-head {
   display: flex;
@@ -293,6 +355,7 @@ export default {
   font-weight: 600;
   margin-bottom: 12px;
   opacity: 0.92;
+  letter-spacing: 0.5px;
 }
 .carousel-slide {
   height: 100%;
@@ -304,6 +367,11 @@ export default {
   align-items: flex-end;
   overflow: hidden;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.carousel-slide:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
 }
 .carousel-mask {
   width: 100%;
@@ -325,6 +393,7 @@ export default {
   margin-top: 5px;
 }
 .panel-right {
+  position: relative;
   flex: 0 0 400px;
   padding: 48px 36px 32px;
   background: rgba(255, 255, 255, 0.94);
@@ -333,15 +402,58 @@ export default {
   flex-direction: column;
   justify-content: center;
 }
+.back-link {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 999px;
+  color: #7a8694;
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 0.2s, background 0.2s;
+}
+.back-link:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
 .brand {
   text-align: center;
   margin-bottom: 28px;
+}
+.role-badge {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 .brand-title {
   margin: 0 0 6px;
   color: #1f2733;
   font-size: 22px;
   font-weight: 600;
+  letter-spacing: 1px;
+}
+.panel-right >>> .auth-submit-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.panel-right >>> .auth-submit-btn:hover,
+.panel-right >>> .auth-submit-btn:focus {
+  filter: brightness(1.1);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 .brand-subtitle {
   margin: 0;
@@ -375,11 +487,27 @@ export default {
   border-radius: 4px;
 }
 @media (max-width: 768px) {
+  .login-container {
+    padding: 76px 16px 32px;
+  }
+  .top-nav {
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .customer-entry {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
   .panel-left {
     display: none;
   }
   .panel-right {
     flex: 1 1 auto;
+    padding: 44px 24px 28px;
   }
 }
 </style>

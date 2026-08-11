@@ -58,8 +58,8 @@ service.interceptors.response.use(
       clearAll();
       Message.closeAll();
       Message.error(msg || '登录已过期，请重新登录');
-      if (router.currentRoute.path !== '/login') {
-        router.push('/login');
+      if (router.currentRoute.path !== '/portal') {
+        router.push('/portal');
       }
     } else {
       Message.error(msg || error.message || '网络错误');

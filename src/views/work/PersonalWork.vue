@@ -458,9 +458,9 @@ export default {
 
 <style>
 /* el-table 行由子组件渲染，scoped 选择器命中不到，故单独非 scoped 声明并用页面类名限定作用域 */
-.personal-work .el-table .row-finished { background-color: #f0f9eb !important; }
+/* stripe 会把背景色直接刷在隔行的 td 上盖住 tr，因此行着色必须落在 td 而不是 tr */
+.personal-work .el-table .row-finished > td.el-table__cell { background-color: #f0f9eb !important; }
 .personal-work .el-table .row-finished:hover > td.el-table__cell { background-color: #e1f3d8 !important; }
-.personal-work .el-table .row-expired { background-color: #fff5f5 !important; }
-.personal-work .el-table .row-expired td { color: #cf1322 !important; }
+.personal-work .el-table .row-expired > td.el-table__cell { background-color: #fff5f5 !important; color: #cf1322 !important; }
 .personal-work .el-table .row-expired:hover > td.el-table__cell { background-color: #ffe9e7 !important; }
 </style>
