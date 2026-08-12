@@ -1,5 +1,5 @@
 <template>
-  <div class="aftersale-list">
+  <div class="aftersale-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -90,14 +90,7 @@
 
 <script>
 import { queryAfterSale, auditAfterSale } from '../../api/aftersale';
-
-const STATUS_MAP = {
-  '0': { label: '待审核', type: 'warning' },
-  '1': { label: '退款中', type: 'primary' },
-  '2': { label: '已退款', type: 'success' },
-  '3': { label: '已拒绝', type: 'danger' },
-  '4': { label: '已取消', type: 'info' }
-};
+import { formatTime, formatAmount, AFTERSALE_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 export default {
   name: 'AfterSaleList',
@@ -199,19 +192,8 @@ export default {
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
-    formatTime(time) {
-      if (!time) return '-';
-      const d = new Date(time);
-      if (isNaN(d.getTime())) return String(time);
-      const pad = n => (n < 10 ? '0' + n : n);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
+    formatAmount,
+    formatTime
   }
 };
 </script>
@@ -250,45 +232,5 @@ export default {
 }
 .btn-approve:hover {
   color: #529b2e !important;
-}
-</style>
-
-<style>
-.aftersale-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.aftersale-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.aftersale-list .el-card__body {
-  padding: 20px 24px 12px;
-}
-.aftersale-list .el-table {
-  border-radius: 10px;
-  overflow: hidden;
-}
-.aftersale-list .el-table th.el-table__cell {
-  background: #f5f7fb !important;
-  color: #4a5568;
-  font-weight: 600;
-  padding: 12px 0;
-}
-.aftersale-list .el-table td.el-table__cell {
-  border-bottom: 1px solid #eef0f4;
-  padding: 12px 0;
-}
-.aftersale-list .el-table__row:hover > td.el-table__cell {
-  background-color: #f0f4ff !important;
-}
-.aftersale-list .el-table .el-button--text {
-  padding: 4px 6px;
-}
-.aftersale-list .el-table .el-button--text:hover {
-  color: #667eea;
 }
 </style>

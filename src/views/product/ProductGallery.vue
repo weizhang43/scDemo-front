@@ -459,7 +459,7 @@ export default {
   margin-left: auto;
 }
 .sort-option-icon {
-  color: #667eea;
+  color: var(--color-primary);
   margin-right: 6px;
 }
 .category-nav {
@@ -484,11 +484,11 @@ export default {
   transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .category-pill:hover {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .category-pill.is-active {
   color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
@@ -601,7 +601,7 @@ export default {
   margin-left: 0;
 }
 .hover-btn--buy {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
 }
 .hover-btn--buy:hover,
@@ -616,7 +616,7 @@ export default {
 .hover-btn--cart:hover,
 .hover-btn--cart:focus {
   background: #fff;
-  color: #667eea;
+  color: var(--color-primary);
 }
 .goods-body {
   padding: 12px 14px 14px;
@@ -742,7 +742,7 @@ export default {
   border-color: #c3cdf5;
 }
 .product-gallery .sort-select .el-input.is-focus .el-input__inner {
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.18);
 }
 </style>

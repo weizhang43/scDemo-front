@@ -304,7 +304,7 @@ export default {
 }
 .btn-back:hover,
 .btn-back:focus {
-  color: #667eea;
+  color: var(--color-primary);
   background: #f5f7ff;
 }
 .header-meta {
@@ -338,7 +338,7 @@ export default {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
   font-size: 40px;
   font-weight: 700;
@@ -441,7 +441,7 @@ export default {
   border-radius: 8px;
   padding: 10px 22px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
   transition: all 0.25s ease;
 }
@@ -465,7 +465,7 @@ export default {
 }
 .form-actions >>> .btn-reset:hover,
 .form-actions >>> .btn-reset:focus {
-  color: #667eea;
+  color: var(--color-primary);
   border-color: #b3c0f5;
   background: #f5f7ff;
 }
@@ -501,7 +501,7 @@ export default {
   border-color: #b3c0f5;
 }
 .user-detail .profile-form .el-input__inner:focus {
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 .user-detail .profile-form .el-input.is-disabled .el-input__inner {
@@ -510,10 +510,10 @@ export default {
   color: #8a93a4;
 }
 .user-detail .profile-form .el-radio__input.is-checked .el-radio__inner {
-  border-color: #667eea;
-  background: #667eea;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
 }
 .user-detail .profile-form .el-radio__input.is-checked + .el-radio__label {
-  color: #667eea;
+  color: var(--color-primary);
 }
 </style>

@@ -134,7 +134,7 @@ export default {
   background: linear-gradient(135deg, #f3effb 0%, #ece9fb 50%, #f7f5fd 100%);
 }
 .page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
   padding: 0 24px;
 }

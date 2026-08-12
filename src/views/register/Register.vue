@@ -339,8 +339,8 @@ export default {
   white-space: nowrap;
 }
 .code-btn:not(:disabled):hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 .code-btn.is-disabled {
   background: #f1f5f9;

@@ -130,11 +130,11 @@ export default {
 .stats-page >>> .el-card {
   border: none;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 2px 12px var(--color-primary-light);
 }
 .header-meta {
   font-size: 12px;
-  color: #667eea;
+  color: var(--color-primary);
   background: #eef0ff;
   padding: 2px 10px;
   border-radius: 10px;

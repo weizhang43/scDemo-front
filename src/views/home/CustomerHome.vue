@@ -1,76 +1,75 @@
 <template>
   <div class="customer-home">
-    <!-- 顶部欢迎 + 搜索 + 迷你入口 -->
+    <!-- 顶部横幅：欢迎 + 搜索 + 快捷入口 + 公告轮播 -->
     <div class="hero">
       <div class="hero-left">
         <div class="hero-hi">Hi，{{ username }} 👋</div>
-        <div class="hero-sub">发现好物，从这里开始</div>
-        <div class="hero-search">
-          <el-input
-            v-model="keyword"
-            placeholder="搜索想要的商品，回车直达"
-            prefix-icon="el-icon-search"
-            clearable
-            @keyup.enter.native="doSearch"
-          >
-            <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
-          </el-input>
+        <div class="hero-sub-row">
+          <span class="hero-sub">发现好物，从这里开始</span>
+          <div class="hero-search">
+            <el-input
+              v-model="keyword"
+              placeholder="搜索想要的商品，回车直达"
+              prefix-icon="el-icon-search"
+              clearable
+              @keyup.enter.native="doSearch"
+            >
+              <el-button slot="append" icon="el-icon-search" @click="doSearch">搜索</el-button>
+            </el-input>
+          </div>
+        </div>
+        <div class="hero-entries">
+          <div class="entry" @click="go('/cart')">
+            <el-badge :value="cartCount || undefined" :max="99" class="entry-badge">
+              <i class="el-icon-shopping-cart-2 entry-ico" />
+            </el-badge>
+            <span>购物车</span>
+          </div>
+          <div class="entry" @click="go('/coupons')">
+            <el-badge :value="myCouponCount || undefined" :max="99" class="entry-badge">
+              <i class="el-icon-s-ticket entry-ico" />
+            </el-badge>
+            <span>我的券</span>
+          </div>
+          <div class="entry" :class="{ 'entry-warn': unpaidCount > 0 }" @click="go('/my-orders')">
+            <el-badge :value="unpaidCount || undefined" :max="99" class="entry-badge">
+              <i class="el-icon-wallet entry-ico" />
+            </el-badge>
+            <span>待付款</span>
+          </div>
+          <div class="entry" @click="go('/gallery')">
+            <i class="el-icon-goods entry-ico" />
+            <span>逛商城</span>
+          </div>
         </div>
       </div>
-      <div class="hero-entries">
-        <div class="entry" @click="go('/cart')">
-          <el-badge :value="cartCount || undefined" :max="99" class="entry-badge">
-            <i class="el-icon-shopping-cart-2 entry-ico" />
-          </el-badge>
-          <span>购物车</span>
+      <NoticeCarousel height="196px" class="hero-media" />
+    </div>
+
+    <!-- 我的待办（横条，有待办才显示） -->
+    <div v-if="earliestUnpaid || shippedCount > 0" class="todo-bar">
+      <div class="todo-title"><i class="el-icon-bell" /> 我的待办</div>
+      <div v-if="earliestUnpaid" class="todo-item warn" @click="goPay(earliestUnpaid)">
+        <div class="todo-main">
+          <div class="todo-text">待付款订单 <b>¥{{ earliestUnpaid.orderAmount }}</b></div>
+          <div class="todo-sub">
+            剩余 <CountdownText :expire-time="earliestUnpaid.expireTime" expired-text="已超时" />
+            <span v-if="unpaidCount > 1" class="todo-extra">等 {{ unpaidCount }} 单</span>
+          </div>
         </div>
-        <div class="entry" @click="go('/coupons')">
-          <el-badge :value="myCouponCount || undefined" :max="99" class="entry-badge">
-            <i class="el-icon-s-ticket entry-ico" />
-          </el-badge>
-          <span>我的券</span>
+        <el-button type="danger" size="mini" round>去支付</el-button>
+      </div>
+      <div v-if="shippedCount > 0" class="todo-item" @click="go('/my-orders')">
+        <div class="todo-main">
+          <div class="todo-text">{{ shippedCount }} 个包裹正在路上</div>
+          <div class="todo-sub">已发货，记得确认收货</div>
         </div>
-        <div class="entry" :class="{ 'entry-warn': unpaidCount > 0 }" @click="go('/my-orders')">
-          <el-badge :value="unpaidCount || undefined" :max="99" class="entry-badge">
-            <i class="el-icon-wallet entry-ico" />
-          </el-badge>
-          <span>待付款</span>
-        </div>
-        <div class="entry" @click="go('/gallery')">
-          <i class="el-icon-goods entry-ico" />
-          <span>逛商城</span>
-        </div>
+        <el-button type="primary" size="mini" round plain>查看</el-button>
       </div>
     </div>
 
-    <!-- 公告 banner + 我的待办 -->
-    <div class="banner-row">
-      <NoticeCarousel height="190px" class="banner-carousel" />
-      <div class="todo-panel">
-        <div class="todo-title"><i class="el-icon-bell" /> 我的待办</div>
-        <div v-if="earliestUnpaid" class="todo-item warn" @click="goPay(earliestUnpaid)">
-          <div class="todo-main">
-            <div class="todo-text">待付款订单 <b>¥{{ earliestUnpaid.orderAmount }}</b></div>
-            <div class="todo-sub">
-              剩余 <CountdownText :expire-time="earliestUnpaid.expireTime" expired-text="已超时" />
-              <span v-if="unpaidCount > 1" class="todo-extra">等 {{ unpaidCount }} 单</span>
-            </div>
-          </div>
-          <el-button type="danger" size="mini" round>去支付</el-button>
-        </div>
-        <div v-if="shippedCount > 0" class="todo-item" @click="go('/my-orders')">
-          <div class="todo-main">
-            <div class="todo-text">{{ shippedCount }} 个包裹正在路上</div>
-            <div class="todo-sub">已发货，记得确认收货</div>
-          </div>
-          <el-button type="primary" size="mini" round plain>查看</el-button>
-        </div>
-        <div v-if="!earliestUnpaid && !shippedCount" class="todo-empty">
-          <i class="el-icon-circle-check" /> 暂无待办，去逛逛吧
-        </div>
-      </div>
-    </div>
-
+    <!-- 秒杀 + 领券 并排 -->
+    <div class="promo-row">
     <!-- 限时秒杀 -->
     <el-card v-if="seckills.length" class="section-card seckill-card" shadow="never">
       <div slot="header" class="card-header">
@@ -155,7 +154,47 @@
         </div>
       </div>
     </el-card>
+    </div>
 
+    <!-- 新品推荐（通栏货架） -->
+    <el-card class="section-card newest-card" shadow="never">
+      <div slot="header" class="card-header">
+        <span class="card-title"><i class="el-icon-goods accent-purple" /> 新品推荐</span>
+        <el-button type="text" size="mini" class="btn-more" @click="go('/gallery')">更多商品 <i class="el-icon-arrow-right" /></el-button>
+      </div>
+      <el-row v-if="newest.length" :gutter="16" class="goods-row">
+        <el-col v-for="item in newest" :key="item.pId" :md="6" :sm="12" :xs="12">
+          <div
+            class="goods-card"
+            :class="{ 'goods-card--disabled': isSoldOut(item) }"
+            @click="goBuy(item.pId)"
+          >
+            <div class="goods-image-wrap">
+              <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="goods-image">
+                <div slot="error" class="goods-image-fallback"><i class="el-icon-picture-outline" /></div>
+              </el-image>
+              <div v-else class="goods-image-fallback"><i class="el-icon-picture-outline" /></div>
+              <div v-if="isSoldOut(item)" class="sold-out-mask">已售罄</div>
+              <div v-else class="new-badge">NEW</div>
+            </div>
+            <div class="goods-body">
+              <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
+              <div class="goods-foot">
+                <span class="price-text">
+                  ¥ {{ priceOf(item) }}
+                  <span v-if="item.discount" class="price-origin">¥ {{ item.price }}</span>
+                </span>
+                <span class="goods-stock">库存 {{ item.stock == null ? '-' : item.stock }}</span>
+              </div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+      <div v-else-if="loadingNewest" class="newest-loading" v-loading="true"></div>
+      <el-empty v-else description="暂无上新商品" :image-size="90" />
+    </el-card>
+
+    <!-- 榜单双列 -->
     <div class="rank-row">
       <!-- 销量榜 -->
       <el-card class="rank-card" shadow="never">
@@ -213,44 +252,6 @@
         </div>
       </el-card>
     </div>
-
-    <!-- 新品推荐 -->
-    <el-card class="section-card" shadow="never">
-      <div slot="header" class="card-header">
-        <span class="card-title"><i class="el-icon-goods accent-purple" /> 新品推荐</span>
-        <el-button type="text" size="mini" class="btn-more" @click="go('/gallery')">更多商品 <i class="el-icon-arrow-right" /></el-button>
-      </div>
-      <el-row v-if="newest.length" :gutter="16" class="goods-row">
-        <el-col v-for="item in newest" :key="item.pId" :xs="12" :sm="8" :md="6" :lg="3">
-          <div
-            class="goods-card"
-            :class="{ 'goods-card--disabled': isSoldOut(item) }"
-            @click="goBuy(item.pId)"
-          >
-            <div class="goods-image-wrap">
-              <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="goods-image">
-                <div slot="error" class="goods-image-fallback"><i class="el-icon-picture-outline" /></div>
-              </el-image>
-              <div v-else class="goods-image-fallback"><i class="el-icon-picture-outline" /></div>
-              <div v-if="isSoldOut(item)" class="sold-out-mask">已售罄</div>
-              <div v-else class="new-badge">NEW</div>
-            </div>
-            <div class="goods-body">
-              <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
-              <div class="goods-foot">
-                <span class="price-text">
-                  ¥ {{ priceOf(item) }}
-                  <span v-if="item.discount" class="price-origin">¥ {{ item.price }}</span>
-                </span>
-                <span class="goods-stock">库存 {{ item.stock == null ? '-' : item.stock }}</span>
-              </div>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-      <div v-else-if="loadingNewest" class="newest-loading" v-loading="true"></div>
-      <el-empty v-else description="暂无上新商品" :image-size="90" />
-    </el-card>
   </div>
 </template>
 
@@ -264,9 +265,9 @@ import NoticeCarousel from '../../components/home/NoticeCarousel.vue';
 import CountdownText from '../../components/home/CountdownText.vue';
 
 const RANK_LIMIT = 5;
-const NEWEST_LIMIT = 8;
-const SECKILL_LIMIT = 4;
-const COUPON_LIMIT = 4;
+const NEWEST_LIMIT = 4;
+const SECKILL_LIMIT = 2;
+const COUPON_LIMIT = 2;
 
 export default {
   name: 'CustomerHome',
@@ -433,70 +434,109 @@ export default {
 <style scoped>
 .customer-home { max-width: 1280px; margin: 0 auto; }
 
-/* 顶部欢迎条 */
+/* 顶部横幅：左侧欢迎/搜索/入口 + 右侧公告轮播 */
 .hero {
   position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 18px;
-  padding: 24px 28px;
+  gap: 26px;
+  padding: 22px 24px;
   margin-bottom: 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   color: #fff;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, #667eea 100%);
+  background: var(--gradient-topbar);
   box-shadow: 0 8px 24px rgba(30, 60, 114, 0.25);
+  overflow: hidden;
 }
-.hero-left { flex: 1; min-width: 280px; max-width: 520px; }
-.hero-hi { font-size: 21px; font-weight: 700; letter-spacing: 0.3px; }
-.hero-sub { margin-top: 4px; font-size: 13px; opacity: 0.82; }
-.hero-search { margin-top: 14px; }
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.12), transparent 70%);
+  pointer-events: none;
+}
+.hero-left {
+  flex: 1 1 340px;
+  min-width: 300px;
+  position: relative;
+}
+.hero-hi { font-size: 24px; font-weight: 700; letter-spacing: 0.3px; }
+.hero-sub-row { display: flex; align-items: center; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.hero-sub { font-size: 13px; opacity: 0.8; white-space: nowrap; flex-shrink: 0; }
+.hero-search { flex: 1; min-width: 220px; max-width: 380px; }
 .hero-search >>> .el-input__inner { border: none; border-radius: 8px 0 0 8px; }
 .hero-search >>> .el-input-group__append {
   border: none;
   border-radius: 0 8px 8px 0;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand);
   color: #fff;
   font-weight: 600;
 }
-.hero-entries { display: flex; gap: 12px; flex-wrap: wrap; }
+.hero-entries { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .entry {
-  min-width: 84px;
-  padding: 12px 14px;
-  border-radius: 12px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 7px;
+  padding: 8px 15px;
+  border-radius: 999px;
+  font-size: 13px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.18);
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
-.entry:hover { transform: translateY(-3px); background: rgba(255, 255, 255, 0.24); }
+.entry:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.26); }
 .entry.entry-warn { background: rgba(245, 108, 108, 0.32); border-color: rgba(245, 108, 108, 0.5); }
-.entry-ico { font-size: 22px; }
+.entry-ico { font-size: 17px; }
 .entry-badge >>> .el-badge__content { border: none; }
 
-/* 公告 + 待办 */
-.banner-row {
+/* 公告轮播（嵌入横幅右侧） */
+.hero-media {
+  flex: 1.15 1 400px;
+  min-width: 300px;
+  position: relative;
+  border-radius: 12px;
+}
+.hero-media >>> .el-carousel { border-radius: 12px; overflow: hidden; }
+.hero-media >>> .el-empty {
+  padding: 30px 0;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.hero-media >>> .el-empty__description p { color: rgba(255, 255, 255, 0.7); }
+
+/* 秒杀 + 领券 并排 */
+.promo-row {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
   margin-bottom: 16px;
 }
-.banner-carousel >>> .el-carousel { border-radius: 12px; overflow: hidden; }
-.todo-panel {
+.promo-row .section-card { margin-bottom: 0; }
+.promo-row > .section-card:only-child { grid-column: 1 / -1; }
+
+/* 待办横条 */
+.todo-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
   background: #fff;
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
+  border-radius: var(--radius-card);
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+  border-left: 4px solid var(--color-primary);
 }
-.todo-title { font-size: 14px; font-weight: 600; color: #2d3748; margin-bottom: 10px; }
-.todo-title i { color: #667eea; margin-right: 5px; }
+.todo-title { font-size: 14px; font-weight: 600; color: #2d3748; flex-shrink: 0; }
+.todo-title i { color: var(--color-primary); margin-right: 5px; }
 .todo-item {
+  flex: 1;
+  min-width: 260px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -507,7 +547,6 @@ export default {
   cursor: pointer;
   transition: background-color 0.18s ease;
 }
-.todo-item + .todo-item { margin-top: 10px; }
 .todo-item:hover { background: #eef1fb; }
 .todo-item.warn { background: #fdf2f2; }
 .todo-item.warn:hover { background: #fbe9e9; }
@@ -516,24 +555,22 @@ export default {
 .todo-text b { color: #f56c6c; }
 .todo-sub { font-size: 12px; color: #8a93a4; margin-top: 3px; }
 .todo-extra { margin-left: 6px; }
-.todo-empty { padding: 24px 0; text-align: center; color: #a0a8b8; font-size: 13px; }
-.todo-empty i { color: #67c23a; margin-right: 4px; }
 
 /* 区块卡片 */
 .section-card { margin-bottom: 16px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-weight: 600; }
+.card-title { font-size: 15px; font-weight: 700; color: var(--text-title); letter-spacing: 0.3px; }
 .card-title i { margin-right: 6px; }
 .card-sub-inline { font-size: 12px; color: #8a93a4; }
-.accent-purple { color: #764ba2; }
-.btn-more { padding: 0; color: #667eea; font-weight: 600; }
+.accent-purple { color: var(--color-primary-dark); }
+.btn-more { padding: 0; color: var(--color-primary); font-weight: 600; }
 .btn-more:hover, .btn-more:focus { color: #8497f2; }
 .empty-box { padding: 26px 0; text-align: center; color: #a0a8b8; font-size: 13px; }
 .empty-box i { margin-right: 5px; color: #67c23a; }
 
 /* 秒杀 */
 .seckill-title i { color: #f56c6c; }
-.seckill-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.seckill-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .seckill-item {
   border-radius: 12px;
   border: 1px solid #ffe3e3;
@@ -579,7 +616,7 @@ export default {
 .seckill-count { color: #f56c6c; font-weight: 600; font-family: var(--font-mono); }
 
 /* 领券 */
-.coupon-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.coupon-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
 .coupon-mini {
   display: flex;
   align-items: center;
@@ -587,7 +624,7 @@ export default {
   padding: 12px 14px;
   border-radius: 10px;
   color: #fff;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 .coupon-mini.disabled { filter: grayscale(0.7); opacity: 0.75; }
@@ -596,11 +633,17 @@ export default {
 .coupon-info { flex: 1; min-width: 0; }
 .coupon-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .coupon-rule { font-size: 11px; opacity: 0.85; margin-top: 3px; }
-.claim-btn { background: #fff; color: #764ba2; border: none; font-weight: 700; }
+.claim-btn { background: #fff; color: var(--color-primary-dark); border: none; font-weight: 700; }
 
-/* 榜单 */
-.rank-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
-.rank-ico-sales { color: #667eea; }
+/* 榜单双列 */
+.rank-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.rank-row .rank-card { margin-bottom: 0; }
+.rank-ico-sales { color: var(--color-primary); }
 .rank-ico-likes { color: #e6a23c; }
 .rank-list { min-height: 250px; }
 .rank-item {
@@ -650,14 +693,14 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.rank-price { margin-top: 2px; font-size: 12px; color: #f56c6c; font-weight: 600; }
+.rank-price { margin-top: 2px; font-size: 12px; color: var(--color-price); font-weight: 600; }
 .price-origin { color: #9aa3b2; font-weight: 500; font-size: 0.85em; text-decoration: line-through; margin-left: 4px; }
 .rank-metric { flex-shrink: 0; font-size: 13px; font-weight: 700; font-family: var(--font-mono); }
 .rank-metric i { margin-right: 4px; }
-.rank-metric.sales { color: #667eea; }
+.rank-metric.sales { color: var(--color-primary); }
 .rank-metric.likes { color: #e6a23c; }
 
-/* 新品 */
+/* 新品货架 */
 .newest-loading { min-height: 180px; }
 .goods-row { margin-top: 4px; }
 .goods-card {
@@ -672,7 +715,7 @@ export default {
 .goods-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(31, 41, 59, 0.1); }
 .goods-card--disabled { cursor: not-allowed; opacity: 0.72; }
 .goods-card--disabled:hover { transform: none; box-shadow: none; }
-.goods-image-wrap { position: relative; height: 116px; background: #f3f5fa; }
+.goods-image-wrap { position: relative; height: 160px; background: #f3f5fa; }
 .goods-image { width: 100%; height: 100%; display: block; }
 .goods-image-fallback {
   width: 100%;
@@ -716,27 +759,35 @@ export default {
   text-overflow: ellipsis;
 }
 .goods-foot { margin-top: 8px; display: flex; justify-content: space-between; align-items: baseline; }
-.price-text { font-size: 15px; font-weight: 700; color: #f56c6c; }
+.price-text { font-size: 15px; font-weight: 700; color: var(--color-price); }
 .goods-stock { font-size: 11px; color: #8a93a4; }
 
 @media (max-width: 992px) {
-  .banner-row, .rank-row { grid-template-columns: 1fr; }
+  .promo-row, .rank-row { grid-template-columns: 1fr; }
   .seckill-row, .coupon-row { grid-template-columns: repeat(2, 1fr); }
-  .hero { flex-direction: column; align-items: stretch; }
-  .hero-left { max-width: none; }
+  .hero { flex-direction: column; align-items: stretch; gap: 16px; }
+  .hero-left, .hero-media { min-width: 0; }
+  .hero-search { max-width: none; }
+}
+@media (max-width: 560px) {
+  .seckill-row, .coupon-row { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .entry, .seckill-item, .goods-card, .rank-item { transition: none; }
+  .entry:hover, .seckill-item:hover, .goods-card:hover, .rank-item:hover { transform: none; }
 }
 </style>
 
 <style>
 .customer-home .el-card {
   border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
 }
 .customer-home .el-card__header {
-  padding: 15px 20px;
+  padding: 16px 20px 6px;
   background: #fff;
-  border-bottom: 1px solid #eef0f4;
+  border-bottom: none;
 }
-.customer-home .el-card__body { padding: 16px 20px 20px; }
+.customer-home .el-card__body { padding: 12px 20px 18px; }
 </style>

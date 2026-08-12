@@ -1,5 +1,5 @@
 <template>
-  <div class="user-list">
+  <div class="user-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -39,7 +39,7 @@
         </el-form-item>
       </el-form>
 
-      <el-tabs v-model="activeUType" class="utype-tabs" @tab-click="handleUTypeTab">
+      <el-tabs v-model="activeUType" class="utype-tabs pill-tabs" @tab-click="handleUTypeTab">
         <el-tab-pane v-for="tab in uTypeTabs" :key="tab.name" :name="tab.name" :label="tab.label" />
       </el-tabs>
 
@@ -492,10 +492,10 @@ export default {
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 .role-checkbox-item:hover {
-  border-color: var(--color-primary, #667eea);
+  border-color: var(--color-primary, var(--color-primary));
 }
 .role-checkbox-item.is-checked-card {
-  border-color: var(--color-primary, #667eea);
+  border-color: var(--color-primary, var(--color-primary));
   background: rgba(102, 126, 234, 0.06);
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
 }
@@ -520,57 +520,7 @@ export default {
 </style>
 
 <style>
-.user-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.user-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.user-list .el-card__body {
-  padding: 20px 24px 12px;
-}
 .user-list .utype-tabs {
   margin-bottom: 18px;
-}
-.user-list .utype-tabs .el-tabs__header {
-  margin: 0;
-}
-.user-list .utype-tabs .el-tabs__content {
-  display: none;
-}
-.user-list .utype-tabs .el-tabs__nav-wrap::after {
-  display: none;
-}
-.user-list .utype-tabs .el-tabs__active-bar {
-  display: none;
-}
-.user-list .utype-tabs .el-tabs__nav {
-  display: inline-flex;
-  gap: 8px;
-  padding: 5px;
-  background: #f3f5fa;
-  border: 1px solid #eef0f4;
-  border-radius: 12px;
-}
-.user-list .utype-tabs .el-tabs__item {
-  height: 34px;
-  line-height: 34px;
-  padding: 0 18px !important;
-  color: #6b7280;
-  border-radius: 9px;
-  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-.user-list .utype-tabs .el-tabs__item:hover {
-  color: var(--color-primary);
-}
-.user-list .utype-tabs .el-tabs__item.is-active {
-  color: #fff;
-  background: var(--gradient-brand);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 </style>

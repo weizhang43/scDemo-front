@@ -345,7 +345,7 @@ export default {
   font-size: 12px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
 }
 .phase-badge--running {
   background: linear-gradient(135deg, #f56c6c 0%, #cf1322 100%);

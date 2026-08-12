@@ -187,7 +187,7 @@ export default {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   display: flex;
   align-items: center;
   justify-content: center;

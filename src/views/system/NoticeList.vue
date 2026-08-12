@@ -1,5 +1,5 @@
 <template>
-  <div class="notice-list">
+  <div class="notice-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">

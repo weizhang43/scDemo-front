@@ -1,5 +1,5 @@
 <template>
-  <div class="log-list">
+  <div class="log-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -335,22 +335,5 @@ export default {
 }
 .detail-error {
   color: #e53e3e;
-}
-</style>
-
-<style>
-.log-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.log-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.log-list .el-card__body {
-  padding: 20px 24px 12px;
 }
 </style>

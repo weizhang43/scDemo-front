@@ -49,7 +49,7 @@ export default {
   text-align: center;
   font-size: 15px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: var(--gradient-brand);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -67,16 +67,16 @@ export default {
 }
 .side-nav >>> .el-menu-item:hover {
   background-color: #f5f6fd;
-  color: #667eea;
+  color: var(--color-primary);
 }
 .side-nav >>> .el-menu-item.is-active {
   background: linear-gradient(90deg, #eef0ff, rgba(238, 240, 255, 0.3));
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
-  border-left-color: #667eea;
+  border-left-color: var(--color-primary);
 }
 .side-nav >>> .el-menu-item.is-active i {
-  color: #764ba2;
+  color: var(--color-primary-dark);
 }
 .stats-main {
   padding: 0 16px 16px;

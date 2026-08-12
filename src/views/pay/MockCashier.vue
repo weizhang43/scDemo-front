@@ -148,7 +148,7 @@ export default {
   margin: 0 auto 16px;
   padding: 20px 24px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
   box-shadow: 0 6px 24px rgba(102, 126, 234, 0.35);
 }

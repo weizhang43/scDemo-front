@@ -305,7 +305,7 @@ export default {
   border-radius: 16px;
   color: #fff;
   overflow: hidden;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, #667eea 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, var(--color-primary) 100%);
   box-shadow: 0 10px 30px rgba(30, 60, 114, 0.28);
 }
 .hero::before {

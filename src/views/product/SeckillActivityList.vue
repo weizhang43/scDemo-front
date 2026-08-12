@@ -205,7 +205,7 @@ export default {
   font-variant-numeric: tabular-nums;
 }
 .remain-stock {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }

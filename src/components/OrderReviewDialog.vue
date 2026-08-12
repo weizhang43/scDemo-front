@@ -178,7 +178,7 @@ export default {
   margin-bottom: 10px;
 }
 .row-icon {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .row-name {
   font-size: 14px;

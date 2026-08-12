@@ -77,13 +77,13 @@ export default {
 .btn-solid {
   background: #fff;
   border-color: #fff;
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
 }
 .btn-solid:hover,
 .btn-solid:focus {
   background: #f0f2ff;
   border-color: #f0f2ff;
-  color: #764ba2;
+  color: var(--color-primary-dark);
 }
 </style>

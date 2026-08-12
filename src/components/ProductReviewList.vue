@@ -141,10 +141,10 @@ export default {
   width: 3px;
   height: 16px;
   border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
 }
 .section-title i {
-  color: #667eea;
+  color: var(--color-primary);
   font-size: 16px;
 }
 .section-count {
@@ -184,7 +184,7 @@ export default {
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
   font-size: 15px;
   font-weight: 600;

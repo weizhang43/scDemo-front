@@ -99,7 +99,7 @@ export default {
   margin-bottom: 10px;
 }
 .apply-icon {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .apply-order {
   font-size: 14px;

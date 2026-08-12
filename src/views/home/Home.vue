@@ -329,7 +329,7 @@ export default {
   border-radius: 16px;
   color: #fff;
   overflow: hidden;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, #667eea 100%);
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, var(--color-primary) 100%);
   box-shadow: 0 10px 30px rgba(30, 60, 114, 0.28);
 }
 .hero::before {
@@ -349,7 +349,7 @@ export default {
 .hero-stats { position: relative; z-index: 1; display: flex; gap: 14px; flex-wrap: wrap; }
 
 /* 通用卡片 */
-.accent { color: #667eea; }
+.accent { color: var(--color-primary); }
 .panel-card {
   border-radius: 14px;
   border: none;
@@ -380,7 +380,7 @@ export default {
 }
 .todo-item:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(30, 60, 114, 0.12); background: #fff; }
 .todo-ico { font-size: 20px; }
-.todo-ico.ship { color: #667eea; }
+.todo-ico.ship { color: var(--color-primary); }
 .todo-ico.aftersale { color: #e6a23c; }
 .todo-ico.unpaid { color: #f56c6c; }
 .todo-main { flex: 1; min-width: 0; }
@@ -394,13 +394,13 @@ export default {
   font-size: 13px;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   font-family: var(--font-mono);
 }
 .todo-count.zero { background: #cbd2de; }
 .notice-mini { margin-top: 14px; }
 .notice-mini-title { font-size: 13px; font-weight: 600; color: #2d3748; margin-bottom: 8px; }
-.notice-mini-title i { color: #667eea; margin-right: 4px; }
+.notice-mini-title i { color: var(--color-primary); margin-right: 4px; }
 
 /* 预警卡片 */
 .warning-row {
@@ -428,10 +428,10 @@ export default {
 }
 .theme-e::before { background: linear-gradient(90deg, #f5b76b, #e6a23c); }
 .theme-s::before { background: linear-gradient(90deg, #79bbff, #409eff); }
-.theme-h::before { background: linear-gradient(90deg, #667eea, #764ba2); }
+.theme-h::before { background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark)); }
 .theme-e .card-title i { color: #e6a23c; }
 .theme-s .card-title i { color: #409eff; }
-.theme-h .card-title i { color: #667eea; }
+.theme-h .card-title i { color: var(--color-primary); }
 .warn-card .card-sub { margin-left: 24px; }
 
 .count-badge {
@@ -450,7 +450,7 @@ export default {
 .theme-s .count-badge { background: #409eff; }
 .warn-badge { background: #f56c6c; }
 .count-badge.zero { background: #c8ccd4; }
-.btn-more { padding: 0; color: #667eea; font-weight: 600; }
+.btn-more { padding: 0; color: var(--color-primary); font-weight: 600; }
 
 /* 表格 */
 .warn-table >>> th.el-table__cell { background: #fafbfc; color: #606266; font-weight: 600; }
@@ -509,7 +509,7 @@ export default {
 .rank-main { flex: 1; min-width: 0; }
 .rank-name { font-size: 13px; font-weight: 500; color: #2d3748; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rank-price { margin-top: 2px; font-size: 12px; color: #f56c6c; font-weight: 600; }
-.rank-metric { flex-shrink: 0; font-size: 13px; font-weight: 700; color: #667eea; font-family: var(--font-mono); }
+.rank-metric { flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--color-primary); font-family: var(--font-mono); }
 .rank-metric i { margin-right: 4px; }
 
 .order-card { margin-bottom: 18px; }

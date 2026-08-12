@@ -309,7 +309,7 @@ export default {
 }
 .service-select >>> .el-input.is-focus .el-input__inner {
   background: #fff;
-  border-color: #667eea;
+  border-color: var(--color-primary);
   color: #2f3846;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
@@ -321,7 +321,7 @@ export default {
   font-size: 12px;
 }
 .service-select >>> .el-input.is-focus .el-select__caret {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .back-link {
   display: inline-flex;
@@ -371,7 +371,7 @@ export default {
   word-break: break-word;
 }
 .bubble-row.user .bubble {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   color: #fff;
   border-bottom-right-radius: 2px;
 }
@@ -418,7 +418,7 @@ export default {
 }
 .input-shell.is-focus {
   background: #fff;
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 .input-shell.is-disabled {
@@ -455,8 +455,8 @@ export default {
 }
 .upload-btn:hover,
 .upload-btn:focus {
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 .upload-btn.is-disabled,
 .upload-btn.is-disabled:hover {
@@ -469,7 +469,7 @@ export default {
   border-radius: 12px;
   padding: 0 20px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   transition: box-shadow 0.2s ease, transform 0.15s ease, opacity 0.2s ease;
 }
 .send-btn:hover:not(.is-disabled) {
@@ -478,7 +478,7 @@ export default {
 }
 .send-btn.is-disabled,
 .send-btn.is-disabled:hover {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   opacity: 0.45;
   transform: none;
   box-shadow: none;
@@ -504,7 +504,7 @@ export default {
   background: rgba(102, 126, 234, 0.08);
 }
 .service-select-dropdown .el-select-dropdown__item.selected {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
 }
 .service-select-dropdown .service-option {
@@ -517,6 +517,6 @@ export default {
   color: #8a93a5;
 }
 .service-select-dropdown .el-select-dropdown__item.selected .service-option i {
-  color: #667eea;
+  color: var(--color-primary);
 }
 </style>

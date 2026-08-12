@@ -137,14 +137,7 @@ import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount, getOrderB
 import { getOrderReviewedPIds } from '../../api/review';
 import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
 import AfterSaleApplyDialog from '../../components/AfterSaleApplyDialog.vue';
-
-const STATUS_MAP = {
-  '-1': { label: '已取消', type: 'info' },
-  '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待发货', type: 'primary' },
-  '3': { label: '已发货', type: '' },
-  '2': { label: '已完成', type: 'success' }
-};
+import { formatTime, formatAmount, ORDER_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 const STATUS_TABS = [
   { name: '0', label: '待支付' },
@@ -350,19 +343,8 @@ export default {
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
-    formatTime(time) {
-      if (!time) return '-';
-      const d = new Date(time);
-      if (isNaN(d.getTime())) return String(time);
-      const pad = n => (n < 10 ? '0' + n : n);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
+    formatAmount,
+    formatTime
   }
 };
 </script>
@@ -483,7 +465,7 @@ export default {
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .my-order-list .search-form .el-input__inner:focus {
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 .my-order-list .el-table {
@@ -515,7 +497,7 @@ export default {
   padding: 4px 6px;
 }
 .my-order-list .el-table .el-button--text:hover {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .my-order-list .status-tabs .el-tabs__header {
   margin: 0;
@@ -546,11 +528,11 @@ export default {
   transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 .my-order-list .status-tabs .el-tabs__item:hover {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .my-order-list .status-tabs .el-tabs__item.is-active {
   color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
 }
 .my-order-list .status-tabs .el-tabs__item.is-active .el-badge__content {

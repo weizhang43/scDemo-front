@@ -14,10 +14,6 @@
         <i class="el-icon-service" />
         客服
       </router-link>
-      <router-link to="/personal-work" class="customer-entry">
-        <i class="el-icon-notebook-2" />
-        个人工作
-      </router-link>
     </div>
     <div class="login-panel">
       <div class="panel-left">
@@ -304,7 +300,7 @@ export default {
   display: flex;
   flex-direction: column;
   padding: 36px 32px 28px;
-  background: linear-gradient(160deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   color: #fff;
 }
 .panel-left::before {

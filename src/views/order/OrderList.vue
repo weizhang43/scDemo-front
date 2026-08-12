@@ -1,5 +1,5 @@
 <template>
-  <div class="order-list">
+  <div class="order-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -35,7 +35,7 @@
         </el-form-item>
       </el-form>
 
-      <el-tabs v-model="activeStatus" class="status-tabs" @tab-click="handleTabChange">
+      <el-tabs v-model="activeStatus" class="status-tabs pill-tabs" @tab-click="handleTabChange">
         <el-tab-pane v-for="tab in statusTabs" :key="tab.name" :name="tab.name">
           <span slot="label" class="tab-label">
             {{ tab.label }}
@@ -165,14 +165,7 @@
 <script>
 import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount, shipOrder } from '../../api/order';
 import { downloadBlob } from '../../utils/export';
-
-const STATUS_MAP = {
-  '-1': { label: '取消', type: 'info' },
-  '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待发货', type: 'primary' },
-  '3': { label: '已发货', type: '' },
-  '2': { label: '已完成', type: 'success' }
-};
+import { formatTime, formatAmount, ORDER_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 const STATUS_TABS = [
   { name: '0', label: '待支付' },
@@ -354,12 +347,7 @@ export default {
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
+    formatAmount,
     openStatusDialog(row) {
       this.statusForm = {
         id: row.oid,
@@ -403,13 +391,7 @@ export default {
         })
         .catch(() => {});
     },
-    formatTime(time) {
-      if (!time) return '-';
-      const d = new Date(time);
-      if (isNaN(d.getTime())) return String(time);
-      const pad = n => (n < 10 ? '0' + n : n);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    },
+    formatTime,
     handleExport() {
       const params = {
         key: this.searchForm.key || '',
@@ -521,99 +503,7 @@ export default {
 </style>
 
 <style>
-.order-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.order-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.order-list .el-card__body {
-  padding: 20px 24px 12px;
-}
-.order-list .search-form .el-form-item__label {
-  color: #4a5568;
-  font-weight: 500;
-}
-.order-list .search-form .el-input__inner {
-  border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.order-list .search-form .el-input__inner:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
-}
-.order-list .el-table {
-  border-radius: 10px;
-  overflow: hidden;
-}
-.order-list .el-table th.el-table__cell {
-  background: #f5f7fb !important;
-  color: #4a5568;
-  font-weight: 600;
-  padding: 12px 0;
-}
-.order-list .el-table td.el-table__cell {
-  border-bottom: 1px solid #eef0f4;
-  padding: 12px 0;
-}
-.order-list .el-table--border,
-.order-list .el-table--group {
-  border: 1px solid #eef0f4;
-}
-.order-list .el-table--border th.el-table__cell,
-.order-list .el-table--border td.el-table__cell {
-  border-right: 1px solid #eef0f4;
-}
-.order-list .el-table__row:hover > td.el-table__cell {
-  background-color: #f0f4ff !important;
-}
-.order-list .el-table .el-button--text {
-  padding: 4px 6px;
-}
-.order-list .el-table .el-button--text:hover {
-  color: #667eea;
-}
-.order-list .status-tabs .el-tabs__header {
-  margin: 0;
-}
-.order-list .status-tabs .el-tabs__content {
-  display: none;
-}
-.order-list .status-tabs .el-tabs__nav-wrap::after {
-  display: none;
-}
-.order-list .status-tabs .el-tabs__active-bar {
-  display: none;
-}
-.order-list .status-tabs .el-tabs__nav {
-  display: inline-flex;
-  gap: 8px;
-  padding: 5px;
-  background: #f3f5fa;
-  border: 1px solid #eef0f4;
-  border-radius: 12px;
-}
-.order-list .status-tabs .el-tabs__item {
-  height: 34px;
-  line-height: 34px;
-  padding: 0 18px !important;
-  color: #6b7280;
-  border-radius: 9px;
-  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-.order-list .status-tabs .el-tabs__item:hover {
-  color: #667eea;
-}
-.order-list .status-tabs .el-tabs__item.is-active {
-  color: #fff;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
-}
+/* 页面特有：激活 tab 内徽标配色 */
 .order-list .status-tabs .el-tabs__item.is-active .el-badge__content {
   background: rgba(255, 255, 255, 0.28);
   color: #fff;

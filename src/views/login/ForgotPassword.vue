@@ -226,7 +226,7 @@ export default {
   border: 1px solid #cbd5e0; background: #fff; color: #4a5568;
   white-space: nowrap;
 }
-.code-btn:not(:disabled):hover { border-color: #667eea; color: #667eea; }
+.code-btn:not(:disabled):hover { border-color: var(--color-primary); color: var(--color-primary); }
 .code-btn.is-disabled { background: #f1f5f9; color: #a0aec0; }
 .action { margin-bottom: 8px; }
 .success-block { text-align: center; padding: 16px 0 8px; }

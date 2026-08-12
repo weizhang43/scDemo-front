@@ -199,22 +199,7 @@ import { getOrderReviewedPIds } from '../../api/review';
 import { getAfterSaleByOrder } from '../../api/aftersale';
 import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
 import AfterSaleApplyDialog from '../../components/AfterSaleApplyDialog.vue';
-
-const STATUS_MAP = {
-  '-1': { label: '取消', type: 'info' },
-  '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待发货', type: 'primary' },
-  '3': { label: '已发货', type: '' },
-  '2': { label: '已完成', type: 'success' }
-};
-
-const AFTERSALE_STATUS_MAP = {
-  '0': { label: '待审核', type: 'warning' },
-  '1': { label: '退款中', type: 'primary' },
-  '2': { label: '已退款', type: 'success' },
-  '3': { label: '已拒绝', type: 'danger' },
-  '4': { label: '已取消', type: 'info' }
-};
+import { formatTime, formatAmount, ORDER_STATUS_MAP as STATUS_MAP, AFTERSALE_STATUS_MAP } from '../../utils/format';
 
 export default {
   name: 'OrderDetail',
@@ -316,12 +301,7 @@ export default {
       const qty = Number(row && (row.quantity != null ? row.quantity : row.qty)) || 0;
       return price * qty;
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
+    formatAmount,
     fetchData() {
       const id = this.$route.params.id;
       if (!id) return;
@@ -357,13 +337,7 @@ export default {
     afterSaleTagType(status) {
       return (AFTERSALE_STATUS_MAP[status] || {}).type || 'info';
     },
-    formatTime(time) {
-      if (!time) return '-';
-      const d = new Date(time);
-      if (isNaN(d.getTime())) return String(time);
-      const pad = n => (n < 10 ? '0' + n : n);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
+    formatTime
   }
 };
 </script>
@@ -395,7 +369,7 @@ export default {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -432,7 +406,7 @@ export default {
   color: #4a5568;
 }
 .hero-person i {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .hero-time i {
   color: #9aa3b2;
@@ -498,10 +472,10 @@ export default {
   width: 3px;
   height: 16px;
   border-radius: 2px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
 }
 .section-title i {
-  color: #667eea;
+  color: var(--color-primary);
   font-size: 16px;
 }
 .section-count {

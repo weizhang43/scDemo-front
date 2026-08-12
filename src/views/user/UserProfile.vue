@@ -53,9 +53,9 @@ export default {
   color: #5a6478;
 }
 .user-profile .profile-tabs .el-tabs__item.is-active {
-  color: #667eea;
+  color: var(--color-primary);
 }
 .user-profile .profile-tabs .el-tabs__active-bar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
 }
 </style>

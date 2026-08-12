@@ -81,14 +81,7 @@
 
 <script>
 import { myAfterSaleList, cancelAfterSale } from '../../api/aftersale';
-
-const STATUS_MAP = {
-  '0': { label: '待审核', type: 'warning' },
-  '1': { label: '退款中', type: 'primary' },
-  '2': { label: '已退款', type: 'success' },
-  '3': { label: '已拒绝', type: 'danger' },
-  '4': { label: '已取消', type: 'info' }
-};
+import { formatTime, formatAmount, AFTERSALE_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 export default {
   name: 'MyAfterSaleList',
@@ -167,19 +160,8 @@ export default {
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
-    formatTime(time) {
-      if (!time) return '-';
-      const d = new Date(time);
-      if (isNaN(d.getTime())) return String(time);
-      const pad = n => (n < 10 ? '0' + n : n);
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
+    formatAmount,
+    formatTime
   }
 };
 </script>
@@ -251,6 +233,6 @@ export default {
   padding: 4px 6px;
 }
 .my-aftersale-list .el-table .el-button--text:hover {
-  color: #667eea;
+  color: var(--color-primary);
 }
 </style>

@@ -14,10 +14,6 @@
         <i class="el-icon-service" />
         客服
       </router-link>
-      <router-link to="/personal-work" class="customer-entry">
-        <i class="el-icon-notebook-2" />
-        个人工作
-      </router-link>
     </div>
 
     <div class="portal-body">

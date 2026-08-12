@@ -25,7 +25,7 @@
               </el-tag>
               <span v-if="isPending && expireTime" class="countdown" :class="{ expired: remainMs <= 0 }">
                 <i :class="remainMs <= 0 ? 'el-icon-warning' : 'el-icon-alarm-clock'"></i>
-                {{ remainMs <= 0 ? '支付已超时' : '剩余支付时间 ' + countdownText }}
+                {{ remainMs > 0 ? '剩余支付时间 ' + countdownText : '支付已超时' }}
               </span>
             </div>
           </div>
@@ -94,6 +94,7 @@
 import { getOrderById, updateOrderStatus } from '../../api/order';
 import { getMyTimeoutOrders } from '../../api/home';
 import { createPay, getPayStatus } from '../../api/pay';
+import { formatAmount } from '../../utils/format';
 
 const STATUS_MAP = {
   '-1': { label: '已取消', type: 'info' },
@@ -330,12 +331,7 @@ export default {
     statusTagType(status) {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
-    formatAmount(amount) {
-      if (amount === null || amount === undefined || amount === '') return '0.00';
-      const num = Number(amount);
-      if (isNaN(num)) return '0.00';
-      return num.toFixed(2);
-    },
+    formatAmount,
     formatTime(time) {
       if (!time) return '-';
       const d = new Date(String(time).replace(/-/g, '/'));
@@ -387,7 +383,7 @@ export default {
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-brand);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -493,7 +489,7 @@ export default {
   vertical-align: -1px;
 }
 .pay-method.is-checked {
-  border-color: #667eea;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
 }
 .pay-actions {
