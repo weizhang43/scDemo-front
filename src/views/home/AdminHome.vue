@@ -302,7 +302,7 @@ export default {
   gap: 16px;
   padding: 24px 28px;
   margin-bottom: 20px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   color: #fff;
   overflow: hidden;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, var(--color-primary) 100%);
@@ -342,7 +342,7 @@ export default {
 
 /* 卡片通用 */
 .card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.card-title { display: flex; align-items: center; gap: 6px; font-size: var(--font-card-title); font-weight: 600; }
 .accent-blue { color: #2a5298; }
 .header-meta { font-size: 12px; color: #909399; }
 
@@ -359,7 +359,7 @@ export default {
   margin-bottom: 20px;
 }
 .panel-card {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -377,7 +377,7 @@ export default {
   align-items: center;
   gap: 7px;
   padding: 12px 4px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #f7f8fc;
   border: 1px solid #eef0f5;
   font-size: 12px;
@@ -394,7 +394,7 @@ export default {
 
 /* 日志卡片 */
 .log-card {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }

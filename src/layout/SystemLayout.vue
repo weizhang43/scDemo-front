@@ -143,7 +143,7 @@ export default {
 .logo-icon {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #fff;
   object-fit: contain;
 }
@@ -282,5 +282,10 @@ export default {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   padding: 20px;
   overflow: auto;
+}
+@media (max-width: 768px) {
+  .layout-main {
+    padding: 12px;
+  }
 }
 </style>

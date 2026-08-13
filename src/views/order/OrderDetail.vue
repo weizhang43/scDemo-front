@@ -1,5 +1,5 @@
 <template>
-  <div class="order-detail">
+  <div class="order-detail detail-page">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -343,46 +343,11 @@ export default {
 </script>
 
 <style scoped>
-.order-detail {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .header-meta--id {
   font-family: var(--font-mono);
 }
 .detail-body {
   padding: 4px 0;
-}
-.detail-hero {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #f7f0ff 100%);
-  border-radius: 12px;
-  border: 1px solid #e6e9f5;
-}
-.hero-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: var(--gradient-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
-}
-.hero-icon i {
-  font-size: 28px;
-  color: #fff;
-}
-.hero-info {
-  flex: 1;
-  min-width: 0;
 }
 .hero-name {
   font-size: 20px;
@@ -392,10 +357,7 @@ export default {
   font-family: var(--font-mono);
 }
 .hero-sub {
-  display: flex;
-  align-items: center;
   gap: 18px;
-  flex-wrap: wrap;
 }
 .hero-person,
 .hero-time {
@@ -414,28 +376,11 @@ export default {
 .hero-time {
   font-variant-numeric: tabular-nums;
 }
-.detail-desc >>> .el-descriptions__label {
-  width: 120px;
-  background: #fafbfd;
-  color: #4a5568;
-  font-weight: 500;
-}
-.detail-desc >>> .el-descriptions__content {
-  color: #1f2733;
-}
-.desc-id {
-  font-family: var(--font-mono);
-  color: #4c5163;
-}
 .desc-no {
   font-family: var(--font-mono);
   color: #3b4a6b;
   font-weight: 600;
   letter-spacing: 0.3px;
-}
-.desc-icon {
-  color: #9aa3b2;
-  margin-right: 6px;
 }
 .desc-amount {
   color: var(--color-price);
@@ -484,11 +429,11 @@ export default {
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
 }
 .goods-table {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .cell-icon {
@@ -512,30 +457,5 @@ export default {
 }
 .goods-table >>> .el-table__row:hover > td.el-table__cell {
   background-color: #f0f4ff !important;
-}
-</style>
-
-<style>
-.order-detail .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.order-detail .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.order-detail .el-card__body {
-  padding: 20px 24px;
-}
-.order-detail .el-descriptions--border .el-descriptions__body {
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #eef0f4;
-}
-.order-detail .el-descriptions--border .el-descriptions__body {
-  border-collapse: separate;
 }
 </style>

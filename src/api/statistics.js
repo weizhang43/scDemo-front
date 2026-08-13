@@ -1,22 +1,26 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
-export function getProductTypeCount() {
+export function getProductTypeCount(params) {
   return request({
     url: '/product/statistics/typeCount',
-    method: 'get'
+    method: 'get',
+    params: withMerchantScope(params)
   });
 }
 
-export function getTypeSales() {
+export function getTypeSales(params) {
   return request({
     url: '/order/statistics/typeSales',
-    method: 'get'
+    method: 'get',
+    params: withMerchantScope(params)
   });
 }
 
-export function getMonthlySales() {
+export function getMonthlySales(params) {
   return request({
     url: '/order/statistics/monthlySales',
-    method: 'get'
+    method: 'get',
+    params: withMerchantScope(params)
   });
 }

@@ -232,7 +232,7 @@ export default {
   overflow-y: auto;
   padding: 10px 8px;
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #fafbfd;
 }
 .assign-tree-wrap >>> .el-tree {

@@ -189,7 +189,7 @@ export default {
 <style scoped>
 .image-uploader >>> .el-upload {
   border: 1px dashed #d9d9d9;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   position: relative;
   overflow: hidden;

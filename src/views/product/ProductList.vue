@@ -556,18 +556,12 @@ export default {
 </script>
 
 <style scoped>
-.product-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .card-header .header-actions {
   display: flex;
   gap: 8px;
 }
 .header-actions .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .header-actions .el-button:not(:disabled):hover {
@@ -624,7 +618,7 @@ export default {
   margin: 16px 0 4px;
 }
 .search-actions .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   min-width: 88px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
@@ -696,8 +690,8 @@ export default {
   overflow: visible;
 }
 .product-list .el-card__header {
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
+  border-top-left-radius: var(--radius-card);
+  border-top-right-radius: var(--radius-card);
   position: sticky;
   top: 0;
   z-index: 20;
@@ -706,7 +700,7 @@ export default {
   padding: 10px 0;
 }
 .product-list .el-table .el-tag--mini {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 0 8px;
   height: 22px;
   line-height: 20px;

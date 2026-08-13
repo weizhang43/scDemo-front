@@ -156,7 +156,7 @@ export default {
 .logo-icon {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #fff;
   object-fit: contain;
 }
@@ -267,5 +267,28 @@ export default {
 .layout-main {
   background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
   padding: 20px;
+}
+@media (max-width: 768px) {
+  .layout-main {
+    padding: 12px;
+  }
+  .header-inner {
+    padding: 0 12px;
+  }
+  .logo {
+    margin-right: 12px;
+  }
+  /* 菜单项过多时允许横向滚动，避免挤压右侧用户区 */
+  .nav-menu {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-menu::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-menu >>> .el-menu-item {
+    flex-shrink: 0;
+  }
 }
 </style>

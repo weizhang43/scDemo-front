@@ -161,7 +161,7 @@ export default {
 .review-row {
   padding: 14px 16px;
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   margin-bottom: 12px;
   background: #fff;
 }
@@ -213,7 +213,7 @@ export default {
 
 <style>
 .review-dialog {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 .review-dialog .el-dialog__header {

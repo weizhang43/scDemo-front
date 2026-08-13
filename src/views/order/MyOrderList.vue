@@ -1,5 +1,5 @@
 <template>
-  <div class="my-order-list">
+  <div class="my-order-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -32,7 +32,7 @@
         </el-form-item>
       </el-form>
 
-      <el-tabs v-model="activeStatus" class="status-tabs" @tab-click="handleTabChange">
+      <el-tabs v-model="activeStatus" class="status-tabs pill-tabs" @tab-click="handleTabChange">
         <el-tab-pane v-for="tab in statusTabs" :key="tab.name" :name="tab.name">
           <span slot="label" class="tab-label">
             {{ tab.label }}
@@ -350,18 +350,12 @@ export default {
 </script>
 
 <style scoped>
-.my-order-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .search-form {
   margin-bottom: 18px;
   padding: 18px 20px 2px;
   background: #fafbfd;
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
@@ -398,7 +392,7 @@ export default {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 .search-form .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .search-form .el-button:not(:disabled):hover {
@@ -442,100 +436,7 @@ export default {
 }</style>
 
 <style>
-.my-order-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.my-order-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.my-order-list .el-card__body {
-  padding: 20px 24px 12px;
-}
-.my-order-list .search-form .el-form-item__label {
-  color: #4a5568;
-  font-weight: 500;
-}
-.my-order-list .search-form .el-input__inner {
-  border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.my-order-list .search-form .el-input__inner:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
-}
-.my-order-list .el-table {
-  border-radius: 10px;
-  overflow: hidden;
-}
-.my-order-list .el-table th.el-table__cell {
-  background: #f5f7fb !important;
-  color: #4a5568;
-  font-weight: 600;
-  padding: 12px 0;
-}
-.my-order-list .el-table td.el-table__cell {
-  border-bottom: 1px solid #eef0f4;
-  padding: 12px 0;
-}
-.my-order-list .el-table--border,
-.my-order-list .el-table--group {
-  border: 1px solid #eef0f4;
-}
-.my-order-list .el-table--border th.el-table__cell,
-.my-order-list .el-table--border td.el-table__cell {
-  border-right: 1px solid #eef0f4;
-}
-.my-order-list .el-table__row:hover > td.el-table__cell {
-  background-color: #f0f4ff !important;
-}
-.my-order-list .el-table .el-button--text {
-  padding: 4px 6px;
-}
-.my-order-list .el-table .el-button--text:hover {
-  color: var(--color-primary);
-}
-.my-order-list .status-tabs .el-tabs__header {
-  margin: 0;
-}
-.my-order-list .status-tabs .el-tabs__content {
-  display: none;
-}
-.my-order-list .status-tabs .el-tabs__nav-wrap::after {
-  display: none;
-}
-.my-order-list .status-tabs .el-tabs__active-bar {
-  display: none;
-}
-.my-order-list .status-tabs .el-tabs__nav {
-  display: inline-flex;
-  gap: 8px;
-  padding: 5px;
-  background: #f3f5fa;
-  border: 1px solid #eef0f4;
-  border-radius: 12px;
-}
-.my-order-list .status-tabs .el-tabs__item {
-  height: 34px;
-  line-height: 34px;
-  padding: 0 18px !important;
-  color: #6b7280;
-  border-radius: 9px;
-  transition: color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-}
-.my-order-list .status-tabs .el-tabs__item:hover {
-  color: var(--color-primary);
-}
-.my-order-list .status-tabs .el-tabs__item.is-active {
-  color: #fff;
-  background: var(--gradient-brand);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.32);
-}
-.my-order-list .status-tabs .el-tabs__item.is-active .el-badge__content {
+.my-order-list .pill-tabs .el-tabs__item.is-active .el-badge__content {
   background: rgba(255, 255, 255, 0.28);
   color: #fff;
 }

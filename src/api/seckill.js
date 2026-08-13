@@ -1,11 +1,12 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 /** 秒杀活动分页列表，pId 非空时只看某个商品 */
 export function seckillPageQuery(params) {
   return request({
     url: '/product/seckill/pageQuery',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 

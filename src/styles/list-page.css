@@ -111,7 +111,7 @@
 
 .list-page .el-card {
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
   overflow: hidden;
 }
@@ -132,7 +132,7 @@
 .list-page .search-form .el-input__inner,
 .list-page .search-form .el-select .el-input__inner,
 .list-page .search-form .el-date-editor .el-range-input {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .list-page .search-form .el-input__inner:focus,
@@ -142,7 +142,7 @@
 }
 .list-page .search-form .el-date-editor--daterange.el-input__inner,
 .list-page .search-form .el-date-editor--daterange {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .list-page .search-form .el-date-editor--daterange.is-focus {
@@ -152,7 +152,7 @@
 
 /* 表格 */
 .list-page .el-table {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .list-page .el-table th.el-table__cell {

@@ -326,7 +326,7 @@ export default {
   gap: 16px;
   padding: 24px 28px;
   margin-bottom: 18px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   color: #fff;
   overflow: hidden;
   background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, var(--color-primary) 100%);
@@ -351,7 +351,7 @@ export default {
 /* 通用卡片 */
 .accent { color: var(--color-primary); }
 .panel-card {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
@@ -372,7 +372,7 @@ export default {
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #f7f8fc;
   border: 1px solid #eef0f5;
   cursor: pointer;
@@ -411,7 +411,7 @@ export default {
 }
 .warn-card {
   position: relative;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   border: none;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -476,7 +476,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 7px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 .rank-no {
   flex-shrink: 0;
@@ -495,7 +495,7 @@ export default {
 .rank-no.top-1 { background: linear-gradient(135deg, #f5b04c, #e8912a); }
 .rank-no.top-2 { background: linear-gradient(135deg, #b6bfd0, #98a3b8); }
 .rank-no.top-3 { background: linear-gradient(135deg, #d29a72, #b87a4f); }
-.rank-thumb { flex-shrink: 0; width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: #f3f5fa; }
+.rank-thumb { flex-shrink: 0; width: 38px; height: 38px; border-radius: var(--radius-sm); overflow: hidden; background: #f3f5fa; }
 .thumb-img { width: 100%; height: 100%; display: block; }
 .thumb-fallback {
   width: 100%;

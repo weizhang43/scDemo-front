@@ -1,5 +1,5 @@
 <template>
-  <div class="user-address" :class="{ 'is-embedded': self }">
+  <div class="user-address list-page" :class="{ 'is-embedded': self }">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -263,23 +263,11 @@ export default {
 </script>
 
 <style scoped>
-.user-address {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
-/* 嵌入个人主页时，整页背景与内边距由外层容器接管 */
-.user-address.is-embedded {
-  min-height: 0;
-  padding: 0;
-  background: none;
-}
 .header-meta {
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
 }
 .cell-strong {
@@ -300,20 +288,6 @@ export default {
 </style>
 
 <style>
-.user-address .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.user-address .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.user-address .el-card__body {
-  padding: 20px 24px;
-}
 /* 操作列按钮不换行，避免部分行被撑高导致行高错乱 */
 .user-address .el-table td.op-col .cell {
   white-space: nowrap;

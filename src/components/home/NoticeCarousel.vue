@@ -80,7 +80,7 @@ export default {
   background-size: cover;
   background-position: center;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: flex-end;
   overflow: hidden;

@@ -270,7 +270,7 @@ export default {
 .chat-mark {
   width: 34px;
   height: 34px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #fff;
   object-fit: contain;
 }
@@ -389,7 +389,7 @@ export default {
   width: 256px;
   height: 256px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: #f0f2f7;
 }
 .chat-input {
@@ -413,7 +413,7 @@ export default {
   padding: 8px;
   background: #f7f8fc;
   border: 1px solid #e4e8f2;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 .input-shell.is-focus {
@@ -447,7 +447,7 @@ export default {
   width: 36px;
   padding: 0;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 18px;
   color: #8a93a5;
   background: transparent;

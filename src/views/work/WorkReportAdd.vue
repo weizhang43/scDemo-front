@@ -1,5 +1,5 @@
 <template>
-  <div class="work-report-add">
+  <div class="work-report-add work-page">
     <div class="page-header">
       <div class="header-inner">
         <div class="header-title">
@@ -129,27 +129,4 @@ export default {
 </script>
 
 <style scoped>
-.work-report-add {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f3effb 0%, #ece9fb 50%, #f7f5fd 100%);
-}
-.page-header {
-  background: var(--gradient-brand);
-  color: #fff;
-  padding: 0 24px;
-}
-.header-inner {
-  max-width: 1000px;
-  margin: 0 auto;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.header-title { font-size: 18px; font-weight: 600; }
-.header-title i { margin-right: 6px; }
-.back-link { color: rgba(255, 255, 255, 0.9); text-decoration: none; font-size: 14px; cursor: pointer; }
-.back-link:hover { color: #fff; }
-.page-body { max-width: 1000px; margin: 24px auto; padding: 0 24px; }
-.editor-wrap { border: 1px solid #e4e7ed; border-radius: 4px; z-index: 1; }
 </style>

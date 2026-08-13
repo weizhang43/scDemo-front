@@ -1,5 +1,5 @@
 <template>
-  <div class="personal-work">
+  <div class="personal-work work-page">
     <div class="page-header">
       <div class="header-inner">
         <div class="header-title">
@@ -438,33 +438,14 @@ export default {
 </script>
 
 <style scoped>
-.personal-work {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #f3effb 0%, #ece9fb 50%, #f7f5fd 100%);
-}
-.page-header {
-  background: var(--gradient-brand);
-  color: #fff;
-  padding: 0 24px;
-}
-.header-inner {
+.header-inner,
+.page-body {
   max-width: 1500px;
-  margin: 0 auto;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
-.header-title { font-size: 18px; font-weight: 600; }
-.header-title i { margin-right: 6px; }
-.back-link { color: rgba(255, 255, 255, 0.9); text-decoration: none; font-size: 14px; }
-.back-link:hover { color: #fff; }
-.page-body { max-width: 1500px; margin: 24px auto; padding: 0 24px; }
 .toolbar { margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .toolbar-left { display: flex; align-items: center; gap: 12px; }
 .toolbar-date { color: #4a5568; font-size: 14px; font-weight: 600; }
 .toolbar-date i { margin-right: 4px; color: var(--color-primary); }
-.editor-wrap { border: 1px solid #e4e7ed; border-radius: 4px; z-index: 1; }
 .tip { margin-left: 12px; color: #909399; font-size: 12px; }
 .jobs-pane { height: calc(100vh - 220px); min-height: 480px; }
 </style>

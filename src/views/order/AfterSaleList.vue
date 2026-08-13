@@ -199,12 +199,6 @@ export default {
 </script>
 
 <style scoped>
-.aftersale-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .order-no {
   font-family: var(--font-mono);
   color: #3b4a6b;

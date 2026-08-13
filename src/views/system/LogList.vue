@@ -275,17 +275,11 @@ export default {
 </script>
 
 <style scoped>
-.log-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .header-meta {
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
 }
 .search-form {
@@ -293,7 +287,7 @@ export default {
   padding: 18px 20px 2px;
   background: #fafbfd;
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
@@ -309,7 +303,7 @@ export default {
   margin-left: 0 !important;
 }
 .search-form .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .cell-id {
   font-family: var(--font-mono);

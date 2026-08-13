@@ -1,0 +1,46 @@
+/* 工作台独立整页公共样式：根节点加 .work-page 类即生效。
+   内容区宽度默认 1000px，各页可自行覆盖 .header-inner / .page-body 的 max-width */
+
+.work-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f3effb 0%, #ece9fb 50%, #f7f5fd 100%);
+}
+.work-page .page-header {
+  background: var(--gradient-brand);
+  color: #fff;
+  padding: 0 24px;
+}
+.work-page .header-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.work-page .header-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+.work-page .header-title i {
+  margin-right: 6px;
+}
+.work-page .back-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+.work-page .back-link:hover {
+  color: #fff;
+}
+.work-page .page-body {
+  max-width: 1000px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+.work-page .editor-wrap {
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  z-index: 1;
+}

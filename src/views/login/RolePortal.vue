@@ -14,6 +14,10 @@
         <i class="el-icon-service" />
         客服
       </router-link>
+      <router-link to="/personal-work" class="customer-entry">
+        <i class="el-icon-notebook-2" />
+        个人工作
+      </router-link>
     </div>
 
     <div class="portal-body">
@@ -163,7 +167,7 @@ export default {
   width: 52px;
   height: 52px;
   flex-shrink: 0;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
   object-fit: contain;
@@ -197,7 +201,7 @@ export default {
   flex: 1 1 0;
   max-width: 280px;
   padding: 36px 26px 28px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: transparent;
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.45);

@@ -1,5 +1,5 @@
 <template>
-  <div class="my-aftersale-list">
+  <div class="my-aftersale-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -167,12 +167,6 @@ export default {
 </script>
 
 <style scoped>
-.my-aftersale-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .order-no {
   font-family: var(--font-mono);
   color: #3b4a6b;
@@ -197,42 +191,4 @@ export default {
 }
 </style>
 
-<style>
-.my-aftersale-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.my-aftersale-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.my-aftersale-list .el-card__body {
-  padding: 20px 24px 12px;
-}
-.my-aftersale-list .el-table {
-  border-radius: 10px;
-  overflow: hidden;
-}
-.my-aftersale-list .el-table th.el-table__cell {
-  background: #f5f7fb !important;
-  color: #4a5568;
-  font-weight: 600;
-  padding: 12px 0;
-}
-.my-aftersale-list .el-table td.el-table__cell {
-  border-bottom: 1px solid #eef0f4;
-  padding: 12px 0;
-}
-.my-aftersale-list .el-table__row:hover > td.el-table__cell {
-  background-color: #f0f4ff !important;
-}
-.my-aftersale-list .el-table .el-button--text {
-  padding: 4px 6px;
-}
-.my-aftersale-list .el-table .el-button--text:hover {
-  color: var(--color-primary);
-}
-</style>
+

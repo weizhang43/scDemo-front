@@ -287,14 +287,12 @@ export default {
   max-height: calc(100vh - 48px);
   overflow-y: auto;
   padding: 36px 36px 24px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.4);
 }
-.register-card::-webkit-scrollbar { width: 6px; }
-.register-card::-webkit-scrollbar-thumb { background: rgba(118, 75, 162, 0.3); border-radius: 3px; }
 .brand {
   text-align: center;
   margin-bottom: 28px;
@@ -303,7 +301,7 @@ export default {
   width: 56px;
   height: 56px;
   margin: 0 auto 14px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   display: block;
   object-fit: contain;
   background: #fff;
@@ -332,7 +330,7 @@ export default {
 }
 .code-btn {
   height: 44px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border: 1px solid #cbd5e0;
   background: #fff;
   color: #4a5568;

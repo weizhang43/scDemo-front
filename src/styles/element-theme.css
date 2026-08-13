@@ -168,3 +168,28 @@
 }
 
 /* 消息框主按钮跟随上面的 .el-button--primary 覆盖，无需单独处理 */
+
+/* 小屏兜底：所有固定 px 宽度的对话框收窄到视口内 */
+@media (max-width: 768px) {
+  .el-dialog {
+    width: 92% !important;
+    margin-top: 8vh !important;
+  }
+}
+
+/* 全局细滚动条（原先只有注册页局部定义，统一提升为全局） */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(118, 75, 162, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(118, 75, 162, 0.3) transparent;
+}

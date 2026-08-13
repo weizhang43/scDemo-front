@@ -48,19 +48,19 @@ const routes = [
     path: '/personal-work',
     name: 'PersonalWork',
     component: () => import('../views/work/PersonalWork.vue'),
-    meta: { requiresAuth: true, types: [1, 2, 3] }
+    meta: { public: true }
   },
   {
     path: '/work-report/add',
     name: 'WorkReportAdd',
     component: () => import('../views/work/WorkReportAdd.vue'),
-    meta: { requiresAuth: true, types: [1, 2, 3] }
+    meta: { public: true }
   },
   {
     path: '/work-report/:id',
     name: 'WorkReportDetail',
     component: () => import('../views/work/WorkReportDetail.vue'),
-    meta: { requiresAuth: true, types: [1, 2, 3] }
+    meta: { public: true }
   },
   {
     path: '/',

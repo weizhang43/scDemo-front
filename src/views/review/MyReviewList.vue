@@ -1,5 +1,5 @@
 <template>
-  <div class="my-review-list">
+  <div class="my-review-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -138,12 +138,6 @@ export default {
 </script>
 
 <style scoped>
-.my-review-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .cell-icon {
   color: #9aa3b2;
   margin-right: 6px;
@@ -170,20 +164,6 @@ export default {
 </style>
 
 <style>
-.my-review-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.my-review-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.my-review-list .el-card__body {
-  padding: 20px 24px;
-}
 .my-review-list .el-rate__icon {
   margin-right: 2px;
   font-size: 15px;

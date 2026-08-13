@@ -1,4 +1,5 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 export function applyAfterSale(payload) {
   return request({
@@ -36,7 +37,7 @@ export function queryAfterSale(params) {
   return request({
     url: '/order/aftersale/list',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 

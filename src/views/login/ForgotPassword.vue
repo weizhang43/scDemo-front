@@ -203,7 +203,7 @@ export default {
   width: 420px;
   max-width: calc(100vw - 32px);
   padding: 40px 36px 28px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
@@ -212,7 +212,7 @@ export default {
 .brand { text-align: center; margin-bottom: 20px; }
 .brand-mark {
   width: 56px; height: 56px; margin: 0 auto 14px;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   display: block; object-fit: contain; background: #fff;
   box-shadow: 0 8px 20px rgba(118, 75, 162, 0.4);
 }
@@ -222,7 +222,7 @@ export default {
 .code-row { display: flex; gap: 10px; }
 .code-row .el-input { flex: 1; }
 .code-btn {
-  height: 44px; border-radius: 10px;
+  height: 44px; border-radius: var(--radius-md);
   border: 1px solid #cbd5e0; background: #fff; color: #4a5568;
   white-space: nowrap;
 }

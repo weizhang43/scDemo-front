@@ -34,15 +34,6 @@ export default {
 };
 </script>
 
-<style scoped>
-.user-profile {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
-</style>
-
 <style>
 .user-profile .profile-tabs > .el-tabs__header {
   margin-bottom: 16px;

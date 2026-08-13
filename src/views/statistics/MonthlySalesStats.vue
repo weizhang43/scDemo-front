@@ -129,7 +129,7 @@ export default {
 <style scoped>
 .stats-page >>> .el-card {
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   box-shadow: 0 2px 12px var(--color-primary-light);
 }
 .header-meta {
@@ -137,7 +137,7 @@ export default {
   color: var(--color-primary);
   background: #eef0ff;
   padding: 2px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
 }
 .stats-chart {
   height: 380px;

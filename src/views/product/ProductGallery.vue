@@ -1,5 +1,5 @@
 <template>
-  <div class="product-gallery">
+  <div class="product-gallery list-page">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -423,12 +423,6 @@ export default {
 </script>
 
 <style scoped>
-.product-gallery {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .search-form {
   background: linear-gradient(180deg, #fafbff 0%, #f3f5fb 100%);
   border: 1px solid #e8ecf5;
@@ -475,7 +469,7 @@ export default {
 }
 .category-pill {
   padding: 5px 16px;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: #f3f5fa;
   border: 1px solid #eef0f4;
   color: #6b7280;
@@ -545,7 +539,7 @@ export default {
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: rgba(31, 41, 59, 0.55);
   backdrop-filter: blur(4px);
   color: #fff;
@@ -593,7 +587,7 @@ export default {
   padding-left: 0;
   padding-right: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
 }
 /* Element 给相邻按钮的 10px 左边距会挤坏等分布局 */
@@ -714,25 +708,11 @@ export default {
 </style>
 
 <style>
-.product-gallery .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.product-gallery .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.product-gallery .el-card__body {
-  padding: 20px 24px;
-}
 .product-gallery .goods-image .el-image__inner {
   object-fit: cover;
 }
 .product-gallery .sort-select .el-input__inner {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   border-color: #e8ecf5;
   background: #fafbff;
   color: #4a5568;

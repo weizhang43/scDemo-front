@@ -1,5 +1,5 @@
 <template>
-  <div class="seckill-zone">
+  <div class="seckill-zone list-page">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -276,12 +276,6 @@ export default {
 </script>
 
 <style scoped>
-.seckill-zone {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .seckill-card {
   background: #fff;
   border: 1px solid #eef0f4;
@@ -341,7 +335,7 @@ export default {
   top: 10px;
   left: 10px;
   padding: 2px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-size: 12px;
   font-weight: 600;
   color: #fff;
@@ -401,7 +395,7 @@ export default {
 }
 .grab-btn {
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .dialog-name {
   font-weight: 600;
@@ -420,20 +414,6 @@ export default {
 </style>
 
 <style>
-.seckill-zone .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.seckill-zone .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.seckill-zone .el-card__body {
-  padding: 20px 24px;
-}
 .seckill-zone .seckill-image .el-image__inner {
   object-fit: cover;
 }

@@ -1,10 +1,11 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 export function queryOrder(params) {
   return request({
     url: '/order/queryOrder',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 
@@ -12,7 +13,7 @@ export function orderStatusCount(params) {
   return request({
     url: '/order/statusCount',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 
@@ -77,7 +78,7 @@ export function exportOrder(params) {
   return request({
     url: '/order/export',
     method: 'get',
-    params,
+    params: withMerchantScope(params),
     responseType: 'blob'
   });
 }

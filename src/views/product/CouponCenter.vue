@@ -174,7 +174,7 @@ export default {
 .coupon-center { width: 100%; }
 .coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
 .coupon-item {
-  display: flex; align-items: center; border-radius: 10px; overflow: hidden;
+  display: flex; align-items: center; border-radius: var(--radius-md); overflow: hidden;
   background: var(--gradient-brand);
   color: #fff; padding: 16px; min-height: 92px;
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);

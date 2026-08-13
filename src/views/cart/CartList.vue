@@ -1,5 +1,5 @@
 <template>
-  <div class="cart-page">
+  <div class="cart-page list-page">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -354,10 +354,6 @@ export default {
 
 <style scoped>
 .cart-page {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
   animation: fadeInUp 0.35s ease;
 }
 .header-actions {
@@ -373,7 +369,7 @@ export default {
 .goods-thumb {
   width: 48px;
   height: 48px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
   background: #f3f5fa;
 }
@@ -392,6 +388,9 @@ export default {
   color: #1f2733;
   font-weight: 500;
   margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .goods-tags {
   display: flex;
@@ -476,20 +475,6 @@ export default {
 </style>
 
 <style>
-.cart-page .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.cart-page .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.cart-page .el-card__body {
-  padding: 20px 24px;
-}
 .cart-page .el-table .row-disabled {
   background: #fafafa;
 }

@@ -132,7 +132,7 @@ export default {
 
 <style>
 .aftersale-dialog {
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   overflow: hidden;
 }
 .aftersale-dialog .el-dialog__header {

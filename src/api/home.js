@@ -1,10 +1,12 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 // 商品过期预警：三个月内即将过期
 export function getExpiringProducts() {
   return request({
     url: '/product/warning/expiring',
-    method: 'get'
+    method: 'get',
+    params: withMerchantScope()
   });
 }
 
@@ -13,7 +15,7 @@ export function getLowStockProducts(threshold) {
   return request({
     url: '/product/warning/lowStock',
     method: 'get',
-    params: threshold ? { threshold } : {}
+    params: withMerchantScope(threshold ? { threshold } : {})
   });
 }
 
@@ -21,7 +23,8 @@ export function getLowStockProducts(threshold) {
 export function getTimeoutOrders() {
   return request({
     url: '/order/warning/timeout',
-    method: 'get'
+    method: 'get',
+    params: withMerchantScope()
   });
 }
 

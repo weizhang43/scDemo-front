@@ -10,6 +10,10 @@
         <i class="el-icon-shopping-bag-1" />
         随便逛逛
       </router-link>
+      <router-link to="/personal-work" class="customer-entry">
+        <i class="el-icon-notebook-2" />
+        个人工作
+      </router-link>
       <router-link :to="{ path: '/customer', query: { from: 'login' } }" class="customer-entry">
         <i class="el-icon-service" />
         客服
@@ -323,7 +327,7 @@ export default {
   width: 52px;
   height: 52px;
   flex-shrink: 0;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.35);
   object-fit: contain;
@@ -363,7 +367,7 @@ export default {
   background-size: cover;
   background-position: center;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: flex-end;
   overflow: hidden;

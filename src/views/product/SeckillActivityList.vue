@@ -1,5 +1,5 @@
 <template>
-  <div class="seckill-list">
+  <div class="seckill-list list-page">
     <el-card>
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -148,12 +148,6 @@ export default {
 </script>
 
 <style scoped>
-.seckill-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .header-actions {
   display: flex;
   align-items: center;
@@ -164,7 +158,7 @@ export default {
   color: #8a93a4;
 }
 .header-actions .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .product-cell {
   display: flex;
@@ -219,36 +213,7 @@ export default {
 </style>
 
 <style>
-.seckill-list .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-}
-.seckill-list .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-  border-top-left-radius: 14px;
-  border-top-right-radius: 14px;
-}
-.seckill-list .el-card__body {
-  padding: 20px 24px 12px;
-}
-.seckill-list .el-table {
-  border-radius: 10px;
-  overflow: hidden;
-}
-.seckill-list .el-table th.el-table__cell {
-  background: #f5f7fb !important;
-  color: #4a5568;
-  font-weight: 600;
-  padding: 12px 0;
-}
 .seckill-list .el-table td.el-table__cell {
-  border-bottom: 1px solid #eef0f4;
   padding: 10px 0;
-}
-.seckill-list .el-table__row:hover > td.el-table__cell {
-  background-color: #f0f4ff !important;
 }
 </style>

@@ -1,4 +1,5 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 /** 管理端：发布券模板 */
 export function createCouponTemplate(data) {
@@ -14,7 +15,7 @@ export function queryCouponTemplate(params) {
   return request({
     url: '/product/coupon/template/pageQuery',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 

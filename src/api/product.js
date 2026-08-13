@@ -1,10 +1,11 @@
 import request from '../utils/request';
+import { withMerchantScope } from '../utils/merchant-scope';
 
 export function pageQuery(params) {
   return request({
     url: '/product/pageQuery',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 
@@ -69,7 +70,7 @@ export function promotionPageQuery(params) {
   return request({
     url: '/product/promotion/pageQuery',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 
@@ -94,7 +95,7 @@ export function exportProduct(params) {
   return request({
     url: '/product/export',
     method: 'get',
-    params,
+    params: withMerchantScope(params),
     responseType: 'blob'
   });
 }
@@ -103,7 +104,7 @@ export function exportProductAsync(params) {
   return request({
     url: '/product/export/async',
     method: 'get',
-    params
+    params: withMerchantScope(params)
   });
 }
 

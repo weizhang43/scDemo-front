@@ -1,5 +1,5 @@
 <template>
-  <div class="product-detail">
+  <div class="product-detail detail-page">
     <el-card v-loading="loading">
       <div slot="header" class="card-header">
         <div class="header-left">
@@ -148,12 +148,6 @@ export default {
 </script>
 
 <style scoped>
-.product-detail {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .header-actions {
   display: flex;
   align-items: center;
@@ -173,35 +167,12 @@ export default {
     transform: translateY(0);
   }
 }
-.detail-hero {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #f7f0ff 100%);
-  border-radius: 12px;
-  border: 1px solid #e6e9f5;
-}
 .hero-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  background: var(--gradient-brand);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .detail-hero:hover .hero-icon {
   transform: translateY(-2px);
   box-shadow: 0 10px 22px rgba(102, 126, 234, 0.38);
-}
-.hero-icon i {
-  font-size: 28px;
-  color: #fff;
 }
 .hero-image-wrap {
   flex-shrink: 0;
@@ -213,24 +184,6 @@ export default {
   border: 1px solid #e6e9f5;
   object-fit: cover;
   display: block;
-}
-.hero-info {
-  flex: 1;
-  min-width: 0;
-}
-.hero-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1f2733;
-  margin-bottom: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.hero-sub {
-  display: flex;
-  align-items: center;
-  gap: 12px;
 }
 .hero-price {
   font-size: 18px;
@@ -244,23 +197,6 @@ export default {
   text-decoration: line-through;
   font-variant-numeric: tabular-nums;
 }
-.detail-desc >>> .el-descriptions__label {
-  width: 120px;
-  background: #fafbfd;
-  color: #4a5568;
-  font-weight: 500;
-}
-.detail-desc >>> .el-descriptions__content {
-  color: #1f2733;
-}
-.desc-id {
-  font-family: var(--font-mono);
-  color: #4c5163;
-}
-.desc-icon {
-  color: #9aa3b2;
-  margin-right: 6px;
-}
 .stock-low {
   color: #e6a23c;
   font-weight: 600;
@@ -269,44 +205,5 @@ export default {
   margin-left: 8px;
   font-size: 12px;
   color: #e6a23c;
-}
-@media (max-width: 768px) {
-  .product-detail {
-    padding: 12px;
-  }
-  .detail-hero {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px;
-    gap: 14px;
-  }
-  .hero-name {
-    white-space: normal;
-  }
-}
-</style>
-
-<style>
-.product-detail .el-card {
-  border: none;
-  border-radius: 14px;
-  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
-  overflow: hidden;
-}
-.product-detail .el-card__header {
-  padding: 18px 24px;
-  background: #fff;
-  border-bottom: 1px solid #eef0f4;
-}
-.product-detail .el-card__body {
-  padding: 20px 24px;
-}
-.product-detail .el-descriptions--border .el-descriptions__body {
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid #eef0f4;
-}
-.product-detail .el-descriptions--border .el-descriptions__body {
-  border-collapse: separate;
 }
 </style>

@@ -1,0 +1,119 @@
+/* 详情类页面公共样式：页面根节点加 .detail-page 类即生效。
+   页面各自的 <style> 只保留与此不同的页面特有规则 */
+
+.detail-page .el-card {
+  border: none;
+  border-radius: var(--radius-card);
+  box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
+  overflow: hidden;
+}
+.detail-page .el-card__header {
+  padding: 18px 24px;
+  background: #fff;
+  border-bottom: 1px solid #eef0f4;
+}
+.detail-page .el-card__body {
+  padding: 20px 24px;
+}
+.detail-page .el-descriptions--border .el-descriptions__body {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid #eef0f4;
+  border-collapse: separate;
+}
+
+/* 顶部 hero 区（图标/图片 + 名称 + 标签行） */
+.detail-page .detail-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f7f0ff 100%);
+  border-radius: 12px;
+  border: 1px solid #e6e9f5;
+}
+.detail-page .hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-card);
+  background: var(--gradient-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+.detail-page .hero-icon i {
+  font-size: 28px;
+  color: #fff;
+}
+.detail-page .hero-info {
+  flex: 1;
+  min-width: 0;
+}
+.detail-page .hero-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2733;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail-page .hero-sub {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 描述表 */
+.detail-page .detail-desc .el-descriptions__label {
+  width: 120px;
+  background: #fafbfd;
+  color: #4a5568;
+  font-weight: 500;
+}
+.detail-page .detail-desc .el-descriptions__content {
+  color: #1f2733;
+}
+.detail-page .desc-icon {
+  color: #9aa3b2;
+  margin-right: 6px;
+}
+.detail-page .desc-id {
+  font-family: var(--font-mono);
+  color: #4c5163;
+}
+
+/* 小屏适配 */
+@media (max-width: 768px) {
+  .detail-page .el-card__header {
+    padding: 14px 16px;
+  }
+  .detail-page .el-card__body {
+    padding: 16px;
+  }
+  .detail-page .detail-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 14px;
+  }
+  .detail-page .hero-name {
+    white-space: normal;
+  }
+  /* column=2 的描述表改单列堆叠 */
+  .detail-page .detail-desc .el-descriptions-row {
+    display: block;
+  }
+  .detail-page .detail-desc .el-descriptions-row > .el-descriptions-item__cell {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .detail-page .detail-desc .el-descriptions__label {
+    width: auto;
+  }
+}

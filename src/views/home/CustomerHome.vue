@@ -220,7 +220,7 @@
             </div>
             <span class="rank-metric sales"><i class="el-icon-shopping-cart-full" />{{ item.salesCount }}</span>
           </div>
-          <div v-if="!loadingSales && !salesRank.length" class="empty-box"><i class="el-icon-info" /> 暂无销量数据</div>
+          <el-empty v-if="!loadingSales && !salesRank.length" description="暂无销量数据" :image-size="60" />
         </div>
       </el-card>
 
@@ -248,7 +248,7 @@
             </div>
             <span class="rank-metric likes"><i class="el-icon-star-on" />{{ item.likeCount == null ? 0 : item.likeCount }}</span>
           </div>
-          <div v-if="!loadingLikes && !likeRank.length" class="empty-box"><i class="el-icon-info" /> 暂无好评数据</div>
+          <el-empty v-if="!loadingLikes && !likeRank.length" description="暂无好评数据" :image-size="60" />
         </div>
       </el-card>
     </div>
@@ -542,7 +542,7 @@ export default {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #f7f8fc;
   cursor: pointer;
   transition: background-color 0.18s ease;
@@ -559,14 +559,12 @@ export default {
 /* 区块卡片 */
 .section-card { margin-bottom: 16px; }
 .card-header { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 15px; font-weight: 700; color: var(--text-title); letter-spacing: 0.3px; }
+.card-title { font-size: var(--font-card-title); font-weight: 600; color: var(--text-title); letter-spacing: 0.3px; }
 .card-title i { margin-right: 6px; }
 .card-sub-inline { font-size: 12px; color: #8a93a4; }
 .accent-purple { color: var(--color-primary-dark); }
 .btn-more { padding: 0; color: var(--color-primary); font-weight: 600; }
 .btn-more:hover, .btn-more:focus { color: #8497f2; }
-.empty-box { padding: 26px 0; text-align: center; color: #a0a8b8; font-size: 13px; }
-.empty-box i { margin-right: 5px; color: #67c23a; }
 
 /* 秒杀 */
 .seckill-title i { color: #f56c6c; }
@@ -581,13 +579,13 @@ export default {
 }
 .seckill-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(245, 108, 108, 0.16); }
 .seckill-item.disabled { filter: grayscale(0.6); opacity: 0.75; }
-.seckill-thumb { position: relative; height: 110px; border-radius: 8px; overflow: hidden; background: #f3f5fa; }
+.seckill-thumb { position: relative; height: 110px; border-radius: var(--radius-sm); overflow: hidden; background: #f3f5fa; }
 .phase-tag {
   position: absolute;
   top: 6px;
   left: 6px;
   padding: 1px 8px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 10px;
   font-weight: 700;
   color: #fff;
@@ -622,7 +620,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   color: #fff;
   background: var(--gradient-brand);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
@@ -651,7 +649,7 @@ export default {
   align-items: center;
   gap: 10px;
   padding: 8px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: background 0.18s ease, transform 0.18s ease;
 }
@@ -673,7 +671,7 @@ export default {
 .rank-no.top-1 { background: linear-gradient(135deg, #f5b04c, #e8912a); }
 .rank-no.top-2 { background: linear-gradient(135deg, #b6bfd0, #98a3b8); }
 .rank-no.top-3 { background: linear-gradient(135deg, #d29a72, #b87a4f); }
-.rank-thumb { flex-shrink: 0; width: 40px; height: 40px; border-radius: 8px; overflow: hidden; background: #f3f5fa; }
+.rank-thumb { flex-shrink: 0; width: 40px; height: 40px; border-radius: var(--radius-sm); overflow: hidden; background: #f3f5fa; }
 .thumb-img { width: 100%; height: 100%; display: block; }
 .thumb-fallback {
   width: 100%;
@@ -742,7 +740,7 @@ export default {
   top: 6px;
   left: 6px;
   padding: 1px 7px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 10px;
   font-weight: 700;
   color: #fff;

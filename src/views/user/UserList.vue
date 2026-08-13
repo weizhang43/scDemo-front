@@ -419,18 +419,12 @@ export default {
 </script>
 
 <style scoped>
-.user-list {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .search-form {
   margin-bottom: 18px;
   padding: 18px 20px 2px;
   background: #fafbfd;
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
@@ -446,7 +440,7 @@ export default {
   margin-left: 0 !important;
 }
 .search-form .el-button {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 .cell-id {
   font-family: var(--font-mono);
@@ -487,7 +481,7 @@ export default {
   margin: 0 !important;
   padding: 12px 14px;
   border: 1px solid #e6e9f0;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: #fafbfd;
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
 }

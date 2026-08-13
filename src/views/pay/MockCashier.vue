@@ -134,12 +134,6 @@ export default {
 </script>
 
 <style scoped>
-.mock-cashier {
-  min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
-}
 .cashier-banner {
   display: flex;
   align-items: center;
@@ -147,7 +141,7 @@ export default {
   max-width: 560px;
   margin: 0 auto 16px;
   padding: 20px 24px;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   background: var(--gradient-brand);
   color: #fff;
   box-shadow: 0 6px 24px rgba(102, 126, 234, 0.35);
@@ -169,7 +163,7 @@ export default {
   max-width: 560px;
   margin: 0 auto;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
 }
 .amount-block {

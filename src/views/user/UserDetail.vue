@@ -274,10 +274,6 @@ export default {
 
 <style scoped>
 .user-detail {
-  min-height: 100vh;
-  padding: 24px;
-  background: linear-gradient(180deg, #f5f7fb 0%, #eef1f7 100%);
-  box-sizing: border-box;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -286,12 +282,7 @@ export default {
   width: 100%;
   max-width: 920px;
 }
-/* 嵌入个人主页时，整页背景与内边距由外层容器接管 */
-.user-detail.is-embedded {
-  min-height: 0;
-  padding: 0;
-  background: none;
-}
+/* 嵌入个人主页时占满外层容器宽度 */
 .user-detail.is-embedded > .el-card {
   max-width: none;
 }
@@ -299,7 +290,7 @@ export default {
   color: #5a6478;
   font-weight: 500;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
 .btn-back:hover,
@@ -311,7 +302,7 @@ export default {
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
   font-family: var(--font-mono);
 }
@@ -399,7 +390,7 @@ export default {
   font-family: var(--font-mono);
   background: #fff;
   padding: 2px 10px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   display: inline-block;
 }
 .profile-form {
@@ -438,7 +429,7 @@ export default {
 .form-actions >>> .btn-save {
   min-width: 120px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 22px;
   font-weight: 600;
   background: var(--gradient-brand);
@@ -457,7 +448,7 @@ export default {
 }
 .form-actions >>> .btn-reset {
   min-width: 96px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   padding: 10px 22px;
   color: #5a6478;
   border-color: #dcdfe6;
@@ -474,7 +465,7 @@ export default {
 <style>
 .user-detail .el-card {
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-card);
   box-shadow: 0 6px 24px rgba(31, 41, 59, 0.06);
   overflow: hidden;
 }
@@ -494,7 +485,7 @@ export default {
   font-weight: 500;
 }
 .user-detail .profile-form .el-input__inner {
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .user-detail .profile-form .el-input__inner:hover {
@@ -508,12 +499,5 @@ export default {
   background: #f7f8fc;
   border-color: #e8ebf2;
   color: #8a93a4;
-}
-.user-detail .profile-form .el-radio__input.is-checked .el-radio__inner {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-}
-.user-detail .profile-form .el-radio__input.is-checked + .el-radio__label {
-  color: var(--color-primary);
 }
 </style>

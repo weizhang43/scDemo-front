@@ -153,7 +153,7 @@ export default {
   font-weight: 500;
   background: #f3f5fa;
   padding: 3px 8px;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   line-height: 1.4;
 }
 .avg-rate {
@@ -162,7 +162,7 @@ export default {
 }
 .review-items {
   border: 1px solid #eef0f4;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 .review-item {

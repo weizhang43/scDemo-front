@@ -5,6 +5,8 @@ import './styles/variables.css';
 import './styles/element-theme.css';
 import './styles/auth.css';
 import './styles/list-page.css';
+import './styles/detail-page.css';
+import './styles/work-page.css';
 import App from './App.vue';
 import router from './router';
 import store from './store';
