@@ -24,6 +24,35 @@
         empty-text="暂无售后工单"
       >
         <el-table-column type="index" label="序号" width="70" align="center" :index="indexMethod" />
+        <el-table-column type="expand">
+          <template slot-scope="scope">
+            <div class="expand-detail">
+              <div class="detail-row">
+                <span class="detail-label">申请原因：</span>
+                <span class="detail-text">{{ scope.row.reason || '-' }}</span>
+              </div>
+              <div v-if="scope.row.status === 3 && scope.row.rejectReason" class="detail-row">
+                <span class="detail-label">拒绝原因：</span>
+                <span class="detail-text reject-text">{{ scope.row.rejectReason }}</span>
+              </div>
+              <div v-if="imageList(scope.row.images).length" class="detail-row">
+                <span class="detail-label">凭证图片：</span>
+                <el-image
+                  v-for="(img, idx) in imageList(scope.row.images)"
+                  :key="idx"
+                  :src="img"
+                  fit="cover"
+                  class="evidence-image"
+                  :preview-src-list="imageList(scope.row.images)"
+                />
+              </div>
+              <div v-else class="detail-row">
+                <span class="detail-label">凭证图片：</span>
+                <span class="detail-text muted">未上传</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="订单编号" min-width="170" align="center">
           <template slot-scope="scope">
             <span class="order-no">{{ scope.row.orderNo || '#' + scope.row.oId }}</span>
@@ -186,6 +215,10 @@ export default {
     goOrder(oId) {
       this.$router.push(`/order/${oId}`);
     },
+    imageList(images) {
+      if (!images) return [];
+      return String(images).split(',').filter(u => !!u);
+    },
     statusText(status) {
       return (STATUS_MAP[status] || {}).label || '未知';
     },
@@ -226,5 +259,36 @@ export default {
 }
 .btn-approve:hover {
   color: #529b2e !important;
+}
+.expand-detail {
+  padding: 8px 24px;
+}
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+.detail-label {
+  color: #8a93a4;
+  flex-shrink: 0;
+}
+.detail-text {
+  color: #4a5568;
+  word-break: break-word;
+}
+.detail-text.muted {
+  color: #b3bac6;
+}
+.reject-text {
+  color: #f56c6c;
+}
+.evidence-image {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: 1px solid #eef0f4;
+  cursor: pointer;
 }
 </style>

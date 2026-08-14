@@ -38,6 +38,21 @@
             </span>
           </template>
         </el-table-column>
+        <el-table-column label="评价图片" width="150" align="center">
+          <template slot-scope="scope">
+            <div v-if="imageList(scope.row.images).length" class="cell-images">
+              <el-image
+                v-for="(img, idx) in imageList(scope.row.images)"
+                :key="idx"
+                :src="img"
+                fit="cover"
+                class="cell-image"
+                :preview-src-list="imageList(scope.row.images)"
+              />
+            </div>
+            <span v-else class="cell-muted">-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="评价时间" width="180" align="center">
           <template slot-scope="scope">
             <i class="el-icon-time cell-icon"></i>
@@ -117,6 +132,10 @@ export default {
     indexMethod(index) {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
     },
+    imageList(images) {
+      if (!images) return [];
+      return String(images).split(',').filter(u => !!u);
+    },
     goProduct(pId) {
       this.$router.push(`/product-buy/${pId}`);
     },
@@ -160,6 +179,18 @@ export default {
 }
 .row-rate {
   line-height: 1;
+}
+.cell-images {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.cell-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #eef0f4;
+  cursor: pointer;
 }
 </style>
 

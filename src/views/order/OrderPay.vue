@@ -94,14 +94,7 @@
 import { getOrderById, updateOrderStatus } from '../../api/order';
 import { getMyTimeoutOrders } from '../../api/home';
 import { createPay, getPayStatus } from '../../api/pay';
-import { formatAmount } from '../../utils/format';
-
-const STATUS_MAP = {
-  '-1': { label: '已取消', type: 'info' },
-  '0': { label: '待支付', type: 'warning' },
-  '1': { label: '待签收', type: 'primary' },
-  '2': { label: '已完成', type: 'success' }
-};
+import { formatAmount, ORDER_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 const PAY_METHODS = [
   { value: 'alipay', label: '支付宝', icon: 'el-icon-wallet', color: '#1677ff' },

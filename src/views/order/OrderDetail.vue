@@ -60,6 +60,15 @@
           </el-button>
         </div>
 
+        <div v-if="isMerchant && (canShip || canCancel)" class="merchant-action-row">
+          <el-button v-if="canShip" type="primary" size="small" icon="el-icon-truck" @click="openShipDialog">
+            发 货
+          </el-button>
+          <el-button v-if="canCancel" type="danger" plain size="small" icon="el-icon-close" @click="handleCancelOrder">
+            取消订单
+          </el-button>
+        </div>
+
         <div v-if="afterSale" class="goods-section">
           <div class="section-title">
             <i class="el-icon-refresh-left"></i>
@@ -79,6 +88,16 @@
             </el-descriptions-item>
             <el-descriptions-item v-if="afterSale.status === 3" label="拒绝原因" :span="2">
               {{ afterSale.rejectReason || '-' }}
+            </el-descriptions-item>
+            <el-descriptions-item v-if="afterSaleImages.length" label="凭证图片" :span="2">
+              <el-image
+                v-for="(img, idx) in afterSaleImages"
+                :key="idx"
+                :src="img"
+                fit="cover"
+                class="evidence-image"
+                :preview-src-list="afterSaleImages"
+              />
             </el-descriptions-item>
             <el-descriptions-item label="申请时间" :span="2">
               <i class="el-icon-time desc-icon"></i>{{ formatTime(afterSale.createTime) }}
@@ -189,11 +208,29 @@
       :refund-amount="order && order.orderAmount"
       @submitted="loadAfterSale"
     />
+
+    <el-dialog title="订单发货" :visible.sync="shipDialogVisible" width="480px" :close-on-click-modal="false">
+      <el-form ref="shipForm" :model="shipForm" :rules="shipRules" label-width="90px">
+        <el-form-item label="订单编号">
+          <span class="desc-no">{{ (order && order.orderNo) || '-' }}</span>
+        </el-form-item>
+        <el-form-item label="快递公司" prop="shippingCompany">
+          <el-input v-model="shipForm.shippingCompany" placeholder="请输入快递公司" maxlength="64" />
+        </el-form-item>
+        <el-form-item label="快递单号" prop="trackingNo">
+          <el-input v-model="shipForm.trackingNo" placeholder="请输入快递单号" maxlength="64" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="shipDialogVisible = false">取 消</el-button>
+        <el-button type="primary" :loading="shipSubmitting" @click="confirmShip">确认发货</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getOrderById } from '../../api/order';
+import { getOrderById, updateOrderStatus, shipOrder } from '../../api/order';
 import { likeProduct, getMyLikedProducts } from '../../api/product';
 import { getOrderReviewedPIds } from '../../api/review';
 import { getAfterSaleByOrder } from '../../api/aftersale';
@@ -214,7 +251,17 @@ export default {
       reviewVisible: false,
       reviewItems: [],
       afterSale: null,
-      afterSaleVisible: false
+      afterSaleVisible: false,
+      shipDialogVisible: false,
+      shipSubmitting: false,
+      shipForm: {
+        shippingCompany: '',
+        trackingNo: ''
+      },
+      shipRules: {
+        shippingCompany: [{ required: true, message: '请输入快递公司', trigger: 'blur' }],
+        trackingNo: [{ required: true, message: '请输入快递单号', trigger: 'blur' }]
+      }
     };
   },
   computed: {
@@ -225,6 +272,21 @@ export default {
     },
     isCustomer() {
       return this.$store.getters.userType === 2;
+    },
+    isMerchant() {
+      return this.$store.getters.userType === 1;
+    },
+    canShip() {
+      return Number((this.order || {}).orderStatus) === 1;
+    },
+    canCancel() {
+      const status = Number((this.order || {}).orderStatus);
+      return status === 0 || status === 1;
+    },
+    afterSaleImages() {
+      const images = (this.afterSale || {}).images;
+      if (!images) return [];
+      return String(images).split(',').filter(u => !!u);
     },
     canReview() {
       return this.isCustomer && Number((this.order || {}).orderStatus) === 2;
@@ -295,6 +357,42 @@ export default {
     openReview(row) {
       this.reviewItems = [{ pId: row.pId, pName: row.pName }];
       this.reviewVisible = true;
+    },
+    openShipDialog() {
+      this.shipForm = { shippingCompany: '', trackingNo: '' };
+      this.shipDialogVisible = true;
+      this.$nextTick(() => {
+        if (this.$refs.shipForm) this.$refs.shipForm.clearValidate();
+      });
+    },
+    confirmShip() {
+      this.$refs.shipForm.validate(valid => {
+        if (!valid) return;
+        this.shipSubmitting = true;
+        shipOrder(this.order.oid, this.shipForm.shippingCompany.trim(), this.shipForm.trackingNo.trim())
+          .then(() => {
+            this.$message.success('发货成功');
+            this.shipDialogVisible = false;
+            this.fetchData();
+          })
+          .catch(() => {})
+          .finally(() => {
+            this.shipSubmitting = false;
+          });
+      });
+    },
+    handleCancelOrder() {
+      this.$confirm('是否确认取消该订单？取消后将回补库存。', '操作确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => updateOrderStatus(this.order.oid, -1))
+        .then(() => {
+          this.$message.success('订单已取消');
+          this.fetchData();
+        })
+        .catch(() => {});
     },
     subtotal(row) {
       const price = Number(row && row.price) || 0;
@@ -395,6 +493,19 @@ export default {
 .aftersale-apply-row {
   margin-top: 14px;
   text-align: right;
+}
+.merchant-action-row {
+  margin-top: 14px;
+  text-align: right;
+}
+.evidence-image {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: 1px solid #eef0f4;
+  margin-right: 8px;
+  cursor: pointer;
+  vertical-align: middle;
 }
 .section-title {
   display: flex;

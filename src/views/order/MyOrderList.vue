@@ -58,6 +58,22 @@
             <span class="order-no">{{ scope.row.orderNo || '-' }}</span>
           </template>
         </el-table-column>
+        <el-table-column label="商品" min-width="240" align="left">
+          <template slot-scope="scope">
+            <div v-if="(scope.row.orderItems || []).length" class="item-cards">
+              <div v-for="it in scope.row.orderItems" :key="it.id" class="item-card" @click="goProduct(it.pId)">
+                <el-image :src="it.imageUrl || ''" fit="cover" class="item-thumb">
+                  <div slot="error" class="item-thumb-fallback"><i class="el-icon-picture-outline"></i></div>
+                </el-image>
+                <div class="item-info">
+                  <div class="item-name" :title="it.pName">{{ it.pName || ('商品 #' + it.pId) }}</div>
+                  <div class="item-meta">¥{{ formatAmount(it.price) }} × {{ it.quantity }}</div>
+                </div>
+              </div>
+            </div>
+            <span v-else class="cell-text">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="下单时间" min-width="200" align="center">
           <template slot-scope="scope">
             <i class="el-icon-time cell-icon"></i>
@@ -75,11 +91,14 @@
             <span class="cell-amount">¥{{ formatAmount(scope.row.orderAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="orderStatus" label="订单状态" width="120" align="center">
+        <el-table-column prop="orderStatus" label="订单状态" width="130" align="center">
           <template slot-scope="scope">
             <el-tag :type="statusTagType(scope.row.orderStatus)" size="small" effect="light">
               {{ statusText(scope.row.orderStatus) }}
             </el-tag>
+            <div v-if="scope.row.orderStatus == 0 && expireMap[scope.row.oid]" class="pay-countdown">
+              <countdown-text :expire-time="expireMap[scope.row.oid]" expired-text="即将取消" />
+            </div>
             <div v-if="afterSaleTag(scope.row)" class="aftersale-flag">
               <el-tag :type="afterSaleTag(scope.row).type" size="mini" effect="plain">
                 {{ afterSaleTag(scope.row).label }}
@@ -94,6 +113,7 @@
             <el-button v-if="scope.row.orderStatus == 3" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
             <el-button v-if="scope.row.orderStatus == 2" type="text" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
             <el-button v-if="canApplyAfterSale(scope.row)" type="text" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
+            <el-button v-if="canRebuy(scope.row)" type="text" icon="el-icon-shopping-cart-2" :loading="rebuyLoadingId === scope.row.oid" @click="handleRebuy(scope.row)">再次购买</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="text-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
             <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
@@ -135,8 +155,11 @@
 <script>
 import { queryOrder, updateOrderStatus, deleteOrder, orderStatusCount, getOrderById } from '../../api/order';
 import { getOrderReviewedPIds } from '../../api/review';
+import { getMyTimeoutOrders } from '../../api/home';
+import { addToCart } from '../../api/cart';
 import OrderReviewDialog from '../../components/OrderReviewDialog.vue';
 import AfterSaleApplyDialog from '../../components/AfterSaleApplyDialog.vue';
+import CountdownText from '../../components/home/CountdownText.vue';
 import { formatTime, formatAmount, ORDER_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
 const STATUS_TABS = [
@@ -160,7 +183,7 @@ const AFTER_SALE_TAG = {
 
 export default {
   name: 'MyOrderList',
-  components: { OrderReviewDialog, AfterSaleApplyDialog },
+  components: { OrderReviewDialog, AfterSaleApplyDialog, CountdownText },
   data() {
     return {
       searchForm: {
@@ -177,6 +200,8 @@ export default {
       reviewOId: null,
       reviewItems: [],
       reviewedPIds: [],
+      rebuyLoadingId: null,
+      expireMap: {},
       afterSaleVisible: false,
       afterSaleOId: null,
       afterSaleOrderNo: '',
@@ -213,10 +238,27 @@ export default {
           const page = res.daoResult || {};
           this.tableData = page.records || [];
           this.pagination.total = page.total || 0;
+          if (Number(this.activeStatus) === 0 && this.tableData.length) {
+            this.fetchExpireMap();
+          }
         })
         .catch(() => {})
         .finally(() => {
           this.loading = false;
+        });
+    },
+    /** 到期时间取服务端算好的 expireTime，倒计时是辅助信息，取不到不影响主流程 */
+    fetchExpireMap() {
+      getMyTimeoutOrders()
+        .then(res => {
+          const map = {};
+          (res.dataList || []).forEach(r => {
+            if (r.expireTime) map[r.oid] = r.expireTime;
+          });
+          this.expireMap = map;
+        })
+        .catch(() => {
+          this.expireMap = {};
         });
     },
     fetchStatusCount() {
@@ -334,6 +376,40 @@ export default {
       this.afterSaleAmount = row.orderAmount;
       this.afterSaleVisible = true;
     },
+    canRebuy(row) {
+      return (row.orderStatus == 2 || row.orderStatus == -1) && (row.orderItems || []).length > 0;
+    },
+    /** 再次购买：整单商品逐项加入购物车（下架/超限的跳过），完成后跳购物车 */
+    handleRebuy(row) {
+      if (this.rebuyLoadingId) return;
+      this.rebuyLoadingId = row.oid;
+      const items = row.orderItems || [];
+      let ok = 0;
+      items
+        .reduce(
+          (chain, it) =>
+            chain.then(() =>
+              addToCart({ pId: it.pId, quantity: it.quantity || 1 })
+                .then(() => {
+                  ok += 1;
+                })
+                .catch(() => {})
+            ),
+          Promise.resolve()
+        )
+        .then(() => {
+          this.rebuyLoadingId = null;
+          if (ok > 0) {
+            this.$message.success(`已将 ${ok} 件商品加入购物车`);
+            this.$router.push('/cart');
+          } else {
+            this.$message.warning('商品已下架或不可购买，加入购物车失败');
+          }
+        });
+    },
+    goProduct(pId) {
+      if (pId) this.$router.push(`/product-buy/${pId}`);
+    },
     goGallery() {
       this.$router.push('/gallery');
     },
@@ -433,6 +509,58 @@ export default {
 }
 .aftersale-flag {
   margin-top: 4px;
+}
+.pay-countdown {
+  margin-top: 4px;
+  font-size: 12px;
+}
+.item-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0;
+}
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.item-thumb {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid #eef0f4;
+  flex-shrink: 0;
+}
+.item-thumb-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c0c4cc;
+  background: #f5f7fa;
+}
+.item-info {
+  min-width: 0;
+  text-align: left;
+}
+.item-name {
+  font-size: 13px;
+  color: #1f2733;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
+}
+.item-name:hover {
+  color: var(--color-primary);
+}
+.item-meta {
+  font-size: 12px;
+  color: #9aa3b2;
+  font-variant-numeric: tabular-nums;
 }</style>
 
 <style>

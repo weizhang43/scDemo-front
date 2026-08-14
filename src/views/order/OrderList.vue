@@ -95,7 +95,6 @@
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
             <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-truck" @click="openShipDialog(scope.row)">发货</el-button>
-            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-circle-check" class="btn-success" @click="updateOrderStatus(scope.row.oid,2)">完成订单</el-button>
             <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="text-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
           </template>
         </el-table-column>
@@ -131,39 +130,12 @@
           <el-button type="primary" :loading="shipSubmitting" @click="confirmShip">确认发货</el-button>
         </div>
       </el-dialog>
-
-      <el-dialog title="更新订单状态" :visible.sync="statusDialogVisible" width="480px" :close-on-click-modal="false">
-        <el-form :model="statusForm" label-width="90px">
-          <el-form-item label="订单编号">
-            <span class="order-no">{{ statusForm.orderNo || '-' }}</span>
-          </el-form-item>
-          <el-form-item label="当前状态">
-            <el-tag :type="statusTagType(statusForm.currentStatus)" size="small" effect="light">
-              {{ statusText(statusForm.currentStatus) }}
-            </el-tag>
-          </el-form-item>
-          <el-form-item label="新状态">
-            <el-select v-model="statusForm.newStatus" placeholder="请选择订单状态" style="width: 100%;">
-              <el-option
-                v-for="item in statusOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
-        </el-form>
-        <div slot="footer">
-          <el-button @click="statusDialogVisible = false">取 消</el-button>
-          <el-button type="primary" :loading="statusSubmitting" @click="confirmUpdateStatus">确 定</el-button>
-        </div>
-      </el-dialog>
     </el-card>
   </div>
 </template>
 
 <script>
-import { queryOrder, updateOrderStatus, deleteOrder, exportOrder, orderStatusCount, shipOrder } from '../../api/order';
+import { queryOrder, updateOrderStatus, exportOrder, orderStatusCount, shipOrder } from '../../api/order';
 import { downloadBlob } from '../../utils/export';
 import { formatTime, formatAmount, ORDER_STATUS_MAP as STATUS_MAP } from '../../utils/format';
 
@@ -175,16 +147,21 @@ const STATUS_TABS = [
   { name: '-1', label: '已取消' }
 ];
 
+/** 商家最关心待发货，默认落在该页签 */
+const DEFAULT_STATUS = '1';
+
 export default {
   name: 'OrderList',
   data() {
+    const queryStatus = String(this.$route.query.status || '');
+    const activeStatus = STATUS_TABS.some(t => t.name === queryStatus) ? queryStatus : DEFAULT_STATUS;
     return {
       searchForm: {
         key: '',
         orderNo: '',
         dateRange: []
       },
-      activeStatus: '0',
+      activeStatus,
       statusTabs: STATUS_TABS,
       statusCounts: {},
       tableData: [],
@@ -194,8 +171,6 @@ export default {
         pageSize: 10,
         total: 0
       },
-      statusDialogVisible: false,
-      statusSubmitting: false,
       exporting: false,
       shipDialogVisible: false,
       shipSubmitting: false,
@@ -208,26 +183,21 @@ export default {
       shipRules: {
         shippingCompany: [{ required: true, message: '请输入快递公司', trigger: 'blur' }],
         trackingNo: [{ required: true, message: '请输入快递单号', trigger: 'blur' }]
-      },
-      statusForm: {
-        id: null,
-        orderNo: '',
-        currentStatus: null,
-        newStatus: null
       }
     };
-  },
-  computed: {
-    statusOptions() {
-      return Object.keys(STATUS_MAP).map(k => ({
-        value: Number(k),
-        label: STATUS_MAP[k].label
-      }));
-    }
   },
   created() {
     this.fetchData();
     this.fetchStatusCount();
+  },
+  watch: {
+    '$route.query.status'(val) {
+      const status = String(val || '');
+      if (STATUS_TABS.some(t => t.name === status) && status !== this.activeStatus) {
+        this.activeStatus = status;
+        this.handleTabChange();
+      }
+    }
   },
   methods: {
     buildFilterParams() {
@@ -294,8 +264,7 @@ export default {
       return (this.pagination.pageNo - 1) * this.pagination.pageSize + index + 1;
     },
     updateOrderStatus(id,status){
-      let msg = status===-1 ? "是否确认取消订单？":"是否确认完成订单？";
-      this.$confirm(msg, '操作确认', {
+      this.$confirm('是否确认取消订单？取消后将回补库存。', '操作确认', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -348,56 +317,11 @@ export default {
       return (STATUS_MAP[status] || {}).type || 'info';
     },
     formatAmount,
-    openStatusDialog(row) {
-      this.statusForm = {
-        id: row.oid,
-        orderNo: row.orderNo,
-        currentStatus: row.orderStatus,
-        newStatus: row.orderStatus
-      };
-      this.statusDialogVisible = true;
-    },
-    confirmUpdateStatus() {
-      if (this.statusForm.newStatus === null || this.statusForm.newStatus === undefined) {
-        this.$message.warning('请选择订单状态');
-        return;
-      }
-      this.statusSubmitting = true;
-      updateOrderStatus(this.statusForm.id, this.statusForm.newStatus)
-        .then(() => {
-          this.$message.success('状态更新成功');
-          this.statusDialogVisible = false;
-          this.fetchData();
-        })
-        .catch(() => {})
-        .finally(() => {
-          this.statusSubmitting = false;
-        });
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除订单 ${row.orderNo || '#' + row.oid} 吗？此操作不可恢复。`, '删除确认', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => deleteOrder(row.oid))
-        .then(() => {
-          this.$message.success('删除成功');
-          if (this.tableData.length === 1 && this.pagination.pageNo > 1) {
-            this.pagination.pageNo -= 1;
-          }
-          this.fetchData();
-          this.fetchStatusCount();
-        })
-        .catch(() => {});
-    },
     formatTime,
     handleExport() {
       const params = {
-        key: this.searchForm.key || '',
-        orderNo: this.searchForm.orderNo || '',
-        createTimeStart: (this.searchForm.dateRange && this.searchForm.dateRange[0]) || '',
-        createTimeEnd: (this.searchForm.dateRange && this.searchForm.dateRange[1]) || ''
+        ...this.buildFilterParams(),
+        orderStatus: Number(this.activeStatus)
       };
       this.exporting = true;
       exportOrder(params)

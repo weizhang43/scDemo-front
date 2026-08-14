@@ -24,6 +24,36 @@
         empty-text="暂无售后记录"
       >
         <el-table-column type="index" label="序号" width="70" align="center" :index="indexMethod" />
+        <el-table-column type="expand">
+          <template slot-scope="scope">
+            <div class="expand-detail">
+              <el-steps :active="progressOf(scope.row).active" :process-status="progressOf(scope.row).processStatus" align-center class="progress-steps">
+                <el-step
+                  v-for="(step, idx) in progressOf(scope.row).steps"
+                  :key="idx"
+                  :title="step.title"
+                  :description="step.desc"
+                  :status="step.status"
+                />
+              </el-steps>
+              <div v-if="scope.row.status === 3 && scope.row.rejectReason" class="reject-box">
+                <i class="el-icon-warning"></i>
+                <span>商家拒绝原因：{{ scope.row.rejectReason }}</span>
+              </div>
+              <div v-if="imageList(scope.row.images).length" class="evidence-box">
+                <span class="evidence-label">凭证图片：</span>
+                <el-image
+                  v-for="(img, idx) in imageList(scope.row.images)"
+                  :key="idx"
+                  :src="img"
+                  fit="cover"
+                  class="evidence-image"
+                  :preview-src-list="imageList(scope.row.images)"
+                />
+              </div>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="订单编号" min-width="170" align="center">
           <template slot-scope="scope">
             <span class="order-no">{{ scope.row.orderNo || '#' + scope.row.oId }}</span>
@@ -154,6 +184,44 @@ export default {
     goOrder(oId) {
       this.$router.push(`/order/${oId}`);
     },
+    imageList(images) {
+      if (!images) return [];
+      return String(images).split(',').filter(u => !!u);
+    },
+    /** 售后进度：0 待审核 / 1 退款中 / 2 已退款 走三步正向流；3 拒绝、4 撤销为终态 */
+    progressOf(row) {
+      const t = time => formatTime(time);
+      if (row.status === 4) {
+        return {
+          active: 2,
+          processStatus: 'finish',
+          steps: [
+            { title: '提交申请', desc: t(row.createTime) },
+            { title: '已撤销', desc: '', status: 'finish' }
+          ]
+        };
+      }
+      if (row.status === 3) {
+        return {
+          active: 2,
+          processStatus: 'error',
+          steps: [
+            { title: '提交申请', desc: t(row.createTime) },
+            { title: '商家已拒绝', desc: t(row.auditTime), status: 'error' }
+          ]
+        };
+      }
+      const active = row.status === 2 ? 3 : row.status === 1 ? 2 : 1;
+      return {
+        active,
+        processStatus: 'process',
+        steps: [
+          { title: '提交申请', desc: t(row.createTime) },
+          { title: row.status === 0 ? '商家审核中' : '商家已同意', desc: row.auditTime ? t(row.auditTime) : '等待商家处理' },
+          { title: row.status === 2 ? '退款完成' : '退款处理中', desc: row.refundTime ? t(row.refundTime) : '' }
+        ]
+      };
+    },
     statusText(status) {
       return (STATUS_MAP[status] || {}).label || '未知';
     },
@@ -188,6 +256,45 @@ export default {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
+}
+.expand-detail {
+  padding: 12px 24px;
+}
+.progress-steps {
+  margin-bottom: 8px;
+}
+.progress-steps >>> .el-step__description {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.reject-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: #fef0f0;
+  border: 1px solid #fde2e2;
+  border-radius: var(--radius-md);
+  color: #f56c6c;
+  font-size: 13px;
+}
+.evidence-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.evidence-label {
+  font-size: 13px;
+  color: #4a5568;
+}
+.evidence-image {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  border: 1px solid #eef0f4;
+  cursor: pointer;
 }
 </style>
 

@@ -29,6 +29,16 @@
           <div class="review-content" :class="{ 'is-empty': !item.content }">
             {{ item.content || '该用户没有填写评价内容' }}
           </div>
+          <div v-if="imageList(item.images).length" class="review-images">
+            <el-image
+              v-for="(img, idx) in imageList(item.images)"
+              :key="idx"
+              :src="img"
+              fit="cover"
+              class="review-image"
+              :preview-src-list="imageList(item.images)"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -104,6 +114,10 @@ export default {
     avatarText(name) {
       if (!name) return 'U';
       return String(name).charAt(0).toUpperCase();
+    },
+    imageList(images) {
+      if (!images) return [];
+      return String(images).split(',').filter(u => !!u);
     },
     formatTime(time) {
       if (!time) return '-';
@@ -234,6 +248,18 @@ export default {
 .review-content.is-empty {
   color: #b3bac6;
   font-style: italic;
+}
+.review-images {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.review-image {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-md);
+  border: 1px solid #eef0f4;
+  cursor: pointer;
 }
 .review-pager {
   display: flex;

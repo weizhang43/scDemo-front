@@ -9,7 +9,7 @@
       <div class="hero-stats">
         <MetricCard icon="el-icon-money" label="今日销售额" :value="overview.todayGmv" prefix="¥" />
         <MetricCard icon="el-icon-s-order" label="今日订单" :value="overview.todayOrderCount" />
-        <MetricCard icon="el-icon-box" label="待发货" :value="overview.pendingShipCount" to="/orders"
+        <MetricCard icon="el-icon-box" label="待发货" :value="overview.pendingShipCount" to="/orders?status=1"
                     :warn="overview.pendingShipCount > 0" />
         <MetricCard icon="el-icon-service" label="待处理售后" :value="overview.pendingAfterSaleCount" to="/aftersale"
                     :warn="overview.pendingAfterSaleCount > 0" />
@@ -31,7 +31,7 @@
           <span class="card-title"><i class="el-icon-s-claim accent" /> 待办事项</span>
         </div>
         <div class="todo-list">
-          <div class="todo-item" @click="go('/orders')">
+          <div class="todo-item" @click="go('/orders?status=1')">
             <i class="el-icon-box todo-ico ship" />
             <div class="todo-main">
               <div class="todo-title">待发货订单</div>
@@ -52,7 +52,7 @@
             </div>
             <span class="todo-count" :class="{ zero: !overview.pendingAfterSaleCount }">{{ overview.pendingAfterSaleCount }}</span>
           </div>
-          <div class="todo-item" @click="go('/orders')">
+          <div class="todo-item" @click="go('/orders?status=0')">
             <i class="el-icon-time todo-ico unpaid" />
             <div class="todo-main">
               <div class="todo-title">待付款订单</div>

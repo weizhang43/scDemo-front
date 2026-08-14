@@ -29,6 +29,24 @@
             show-word-limit
             placeholder="说说这件商品怎么样吧（选填）"
           />
+          <div class="row-upload">
+            <el-upload
+              :key="item.pId + '-' + resetKey"
+              action="/product/image/upload"
+              list-type="picture-card"
+              :headers="uploadHeaders"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              :limit="IMAGES_MAX"
+              :before-upload="beforeImageUpload"
+              :on-success="(res, file, fileList) => handleImageSuccess(item.pId, res, file, fileList)"
+              :on-error="handleImageError"
+              :on-remove="(file, fileList) => handleImageRemove(item.pId, fileList)"
+              :on-exceed="handleImageExceed"
+            >
+              <i class="el-icon-plus"></i>
+            </el-upload>
+            <div class="upload-tip">最多上传 {{ IMAGES_MAX }} 张图片（选填）</div>
+          </div>
         </template>
         <div v-else class="row-tip">该商品在此订单中已评价过，不能重复评价</div>
       </div>
@@ -49,8 +67,11 @@
 
 <script>
 import { submitReview } from '../api/review';
+import { getToken } from '../utils/auth';
 
 const RATE_TEXTS = ['很差', '较差', '一般', '满意', '非常满意'];
+const IMAGES_MAX = 3;
+const IMAGE_SIZE_LIMIT_MB = 5;
 
 export default {
   name: 'OrderReviewDialog',
@@ -76,11 +97,17 @@ export default {
   data() {
     return {
       RATE_TEXTS,
+      IMAGES_MAX,
       forms: {},
+      resetKey: 0,
       submitting: false
     };
   },
   computed: {
+    uploadHeaders() {
+      const token = getToken();
+      return token ? { Authorization: 'Bearer ' + token } : {};
+    },
     hasRated() {
       return this.pendingItems.length > 0;
     },
@@ -103,12 +130,44 @@ export default {
     resetForms() {
       const forms = {};
       this.items.forEach(it => {
-        forms[it.pId] = { rating: 0, content: '' };
+        forms[it.pId] = { rating: 0, content: '', images: [] };
       });
       this.forms = forms;
+      this.resetKey += 1;
     },
     isReviewed(pId) {
       return this.reviewedPIds.indexOf(Number(pId)) > -1;
+    },
+    beforeImageUpload(file) {
+      if (file.size > IMAGE_SIZE_LIMIT_MB * 1024 * 1024) {
+        this.$message.error(`图片大小不能超过 ${IMAGE_SIZE_LIMIT_MB}MB`);
+        return false;
+      }
+      return true;
+    },
+    handleImageSuccess(pId, res, file, fileList) {
+      const url = res && res.daoResult;
+      if (!url) {
+        this.$message.error((res && res.msg) || '图片上传失败');
+        const idx = fileList.indexOf(file);
+        if (idx > -1) fileList.splice(idx, 1);
+        return;
+      }
+      this.syncImages(pId, fileList);
+    },
+    handleImageError() {
+      this.$message.error('图片上传失败，请重试');
+    },
+    handleImageRemove(pId, fileList) {
+      this.syncImages(pId, fileList);
+    },
+    syncImages(pId, fileList) {
+      this.forms[pId].images = fileList
+        .map(f => f.response && f.response.daoResult)
+        .filter(u => !!u);
+    },
+    handleImageExceed() {
+      this.$message.warning(`每条评价最多上传 ${IMAGES_MAX} 张图片`);
     },
     handleClose() {
       this.$emit('update:visible', false);
@@ -130,7 +189,8 @@ export default {
                 oId: Number(this.oId),
                 pId: Number(it.pId),
                 rating: this.forms[it.pId].rating,
-                content: this.forms[it.pId].content
+                content: this.forms[it.pId].content,
+                images: this.forms[it.pId].images
               })
                 .then(() => {
                   ok += 1;
@@ -197,6 +257,23 @@ export default {
 .row-tip {
   font-size: 13px;
   color: #9aa3b2;
+}
+.row-upload {
+  margin-top: 10px;
+}
+.row-upload >>> .el-upload--picture-card {
+  width: 72px;
+  height: 72px;
+  line-height: 76px;
+}
+.row-upload >>> .el-upload-list--picture-card .el-upload-list__item {
+  width: 72px;
+  height: 72px;
+}
+.upload-tip {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a93a4;
 }
 .form-tip {
   display: flex;
