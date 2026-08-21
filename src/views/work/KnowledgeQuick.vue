@@ -4,7 +4,7 @@
       <div class="toolbar-left">
         <el-radio-group v-model="mode" size="small" @change="handleModeChange">
           <el-radio-button label="recite"><i class="el-icon-reading" /> 背题模式</el-radio-button>
-          <el-radio-button label="quiz"><i class="el-icon-edit-outline" /> 做题模式</el-radio-button>
+          <el-radio-button label="quiz"><i class="el-icon-edit-outline" /> 答题模式</el-radio-button>
         </el-radio-group>
         <el-select
           v-model="filterTag"

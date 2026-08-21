@@ -57,6 +57,12 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/jobs',
+    name: 'JobSchedulerPage',
+    component: () => import('../views/work/JobSchedulerPage.vue'),
+    meta: { public: true }
+  },
+  {
     path: '/work-report/add',
     name: 'WorkReportAdd',
     component: () => import('../views/work/WorkReportAdd.vue'),
