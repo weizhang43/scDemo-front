@@ -16,7 +16,15 @@
       </router-link>
       <router-link to="/personal-work" class="customer-entry">
         <i class="el-icon-notebook-2" />
-        个人工作
+        个人空间
+      </router-link>
+      <router-link to="/knowledge" class="customer-entry">
+        <i class="el-icon-collection-tag" />
+        知识速记
+      </router-link>
+      <router-link to="/jobs" class="customer-entry">
+        <i class="el-icon-alarm-clock" />
+        定时任务
       </router-link>
     </div>
 
@@ -122,30 +130,41 @@ export default {
 }
 .top-nav {
   position: absolute;
-  top: 24px;
-  right: 32px;
+  top: 20px;
+  right: 28px;
   z-index: 2;
   display: flex;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  max-width: calc(100vw - 48px);
 }
 .customer-entry {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
+  gap: 5px;
+  padding: 7px 14px;
   border-radius: 999px;
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  letter-spacing: 0.5px;
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(8px);
-  transition: background 0.2s, transform 0.15s;
+  background: transparent;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
 }
+.customer-entry i { font-size: 15px; }
 .customer-entry:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-1px);
 }
 .portal-body {
@@ -276,7 +295,8 @@ export default {
   .top-nav {
     position: static;
     justify-content: center;
-    padding-top: 20px;
+    margin-bottom: 12px;
+    padding: 6px;
     flex-wrap: wrap;
   }
 }

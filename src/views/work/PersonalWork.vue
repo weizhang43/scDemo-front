@@ -4,7 +4,7 @@
       <div class="header-inner">
         <div class="header-title">
           <i class="el-icon-notebook-2" />
-          个人工作
+          个人空间
         </div>
         <router-link to="/login" class="back-link">
           <i class="el-icon-back" />
@@ -19,7 +19,6 @@
           <el-tab-pane label="工作日报" name="daily" />
           <el-tab-pane label="工作周报" name="weekly" />
           <el-tab-pane label="学习计划" name="study" />
-          <el-tab-pane label="定时任务" name="jobs" />
         </el-tabs>
 
         <div v-if="activeTab === 'daily' || activeTab === 'weekly'">
@@ -70,8 +69,7 @@
           />
         </div>
 
-        <div v-else-if="activeTab === 'study'">
-          <div class="toolbar">
+        <div v-else-if="activeTab === 'study'">          <div class="toolbar">
             <div class="toolbar-left">
               <span class="toolbar-date"><i class="el-icon-date" /> {{ todayText }}</span>
               <el-date-picker
@@ -143,11 +141,6 @@
             @current-change="handlePlanPageChange"
           />
         </div>
-
-        <div v-else-if="activeTab === 'jobs'" class="jobs-pane">
-          <!-- v-if 惰性渲染，避免未进入该 tab 就加载 xxl-job iframe -->
-          <JobScheduler v-if="jobsVisited" />
-        </div>
       </el-card>
     </div>
 
@@ -192,11 +185,10 @@ import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import '@wangeditor/editor/dist/css/style.css';
 import { getReportPage, deleteReport, sendReport } from '../../api/workReport';
 import { getPlanPage, getPlanDetail, addPlan, updatePlan, deletePlan, completePlan } from '../../api/studyPlan';
-import JobScheduler from '../system/JobScheduler.vue';
 
 export default {
   name: 'PersonalWork',
-  components: { Editor, Toolbar, JobScheduler },
+  components: { Editor, Toolbar },
   data() {
     return {
       // 周五默认显示周报，其他日期默认显示日报
@@ -209,7 +201,6 @@ export default {
       planTableData: [],
       planTotal: 0,
       planQuery: { pageNum: 1, pageSize: 10, scope: 'future', planDate: '' },
-      jobsVisited: false,
       planDialogVisible: false,
       planDialogTitle: '发布计划',
       planSaving: false,
@@ -259,10 +250,6 @@ export default {
         .finally(() => { this.loading = false; });
     },
     handleTabClick() {
-      if (this.activeTab === 'jobs') {
-        this.jobsVisited = true;
-        return;
-      }
       if (this.activeTab === 'study') {
         this.planQuery.pageNum = 1;
         this.fetchPlanList();
@@ -447,7 +434,6 @@ export default {
 .toolbar-date { color: #4a5568; font-size: 14px; font-weight: 600; }
 .toolbar-date i { margin-right: 4px; color: var(--color-primary); }
 .tip { margin-left: 12px; color: #909399; font-size: 12px; }
-.jobs-pane { height: calc(100vh - 220px); min-height: 480px; }
 </style>
 
 <style>

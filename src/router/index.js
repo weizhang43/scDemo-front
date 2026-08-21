@@ -51,6 +51,12 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/knowledge',
+    name: 'KnowledgePage',
+    component: () => import('../views/work/KnowledgePage.vue'),
+    meta: { public: true }
+  },
+  {
     path: '/work-report/add',
     name: 'WorkReportAdd',
     component: () => import('../views/work/WorkReportAdd.vue'),

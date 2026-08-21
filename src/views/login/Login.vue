@@ -12,7 +12,7 @@
       </router-link>
       <router-link to="/personal-work" class="customer-entry">
         <i class="el-icon-notebook-2" />
-        个人工作
+        个人空间
       </router-link>
       <router-link :to="{ path: '/customer', query: { from: 'login' } }" class="customer-entry">
         <i class="el-icon-service" />
