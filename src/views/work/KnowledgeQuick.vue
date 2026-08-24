@@ -33,6 +33,9 @@
     </div>
 
     <div v-if="current" class="knowledge-card" :class="{ 'is-favorite': isFavorite }" v-loading="loading">
+      <div class="countdown-ring" v-if="countdownActive && mode === 'recite'" :style="{ '--progress': countdown / 600 }" title="倒计时">
+        <span class="countdown-text">{{ countdown }}</span>
+      </div>
       <div class="question">
         <div class="section-label">
           <i class="el-icon-question" /> 题干
@@ -179,7 +182,10 @@ export default {
         tag: [{ required: true, message: '请选择标签', trigger: 'change' }],
         question: [{ required: true, message: '请输入题干', trigger: 'blur' }],
         answer: [{ required: true, message: '请输入答案', trigger: 'blur' }]
-      }
+      },
+      countdown: 600,
+      countdownTimer: null,
+      countdownActive: false
     };
   },
   computed: {
@@ -189,6 +195,9 @@ export default {
   },
   created() {
     this.restore();
+  },
+  beforeDestroy() {
+    this.clearCountdown();
   },
   methods: {
     // 恢复上次浏览位置；记录的题已被忽略或不存在时回退到下一题
@@ -222,6 +231,11 @@ export default {
     handleModeChange(mode) {
       localStorage.setItem('knowledge-mode', mode);
       this.answerVisible = mode === 'recite';
+      if (mode === 'recite') {
+        this.startCountdown();
+      } else {
+        this.clearCountdown();
+      }
     },
     querySearch(keyword, cb) {
       if (!keyword || !keyword.trim()) {
@@ -279,7 +293,33 @@ export default {
         localStorage.setItem('knowledge-current-id', this.current.id);
         this.fetchNotes();
         this.recordView();
+        if (this.mode === 'recite') {
+          this.startCountdown();
+        } else {
+          this.clearCountdown();
+        }
+      } else {
+        this.clearCountdown();
       }
+    },
+    startCountdown() {
+      this.clearCountdown();
+      this.countdown = 600;
+      this.countdownActive = true;
+      this.countdownTimer = setInterval(() => {
+        this.countdown--;
+        if (this.countdown <= 0) {
+          this.clearCountdown();
+          this.handleNext();
+        }
+      }, 1000);
+    },
+    clearCountdown() {
+      if (this.countdownTimer) {
+        clearInterval(this.countdownTimer);
+        this.countdownTimer = null;
+      }
+      this.countdownActive = false;
     },
     // 每次刷到题目即记录查看进度，与查看答案按钮解耦，保证两种模式都统计
     recordView() {
@@ -368,6 +408,7 @@ export default {
 .toolbar-date { color: #4a5568; font-size: 14px; font-weight: 600; }
 .toolbar-date i { margin-right: 4px; color: var(--color-primary); }
 .knowledge-card {
+  position: relative;
   border: 1px solid #e4e7ed; border-radius: 10px; padding: 24px 28px;
   background: linear-gradient(180deg, #fdfefe 0%, #f8fafc 100%);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04); transition: border-color .2s;
@@ -375,7 +416,44 @@ export default {
 .knowledge-card:hover { border-color: #c0c4cc; }
 .knowledge-card.is-favorite { border-color: #f56c6c; background: linear-gradient(180deg, #fff7f7 0%, #fff1f1 100%); }
 .knowledge-card.is-favorite:hover { border-color: #f56c6c; }
-.section-label { font-size: 13px; color: #909399; margin-bottom: 8px; letter-spacing: 1px; }
+.card-header {
+    margin-bottom: 16px;
+  }
+  .countdown-ring {
+    position: absolute;
+    top: 24px;
+    right: 28px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-primary, #409eff) calc(var(--progress) * 360deg), #eef1f6 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
+    transition: background 0.2s linear;
+  }
+  .countdown-ring::before {
+    content: '';
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .countdown-text {
+    position: relative;
+    z-index: 1;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-primary, #409eff);
+    line-height: 1;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .section-label { font-size: 13px; color: #909399; margin-bottom: 8px; letter-spacing: 1px; }
 .section-label i { margin-right: 4px; }
 .question { margin-bottom: 0; }
 .question-text { font-size: 17px; font-weight: 600; color: #303133; line-height: 1.7; }
