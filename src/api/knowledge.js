@@ -9,38 +9,39 @@ export function addKnowledge(data) {
   });
 }
 
-// 下一题，currentId 为当前题 id，首次不传；tag 为标签筛选
-export function getNextKnowledge(currentId, tag) {
+// 下一题，currentId 为当前题 id，首次不传；tag 为标签筛选；type 为类型筛选
+export function getNextKnowledge(currentId, tag, type) {
   return request({
     url: '/user/knowledge/next',
     method: 'get',
-    params: { currentId, tag }
+    params: { currentId, tag, type }
   });
 }
 
-// 按关键字搜索题干（自动补全），tag 为标签筛选
-export function searchKnowledge(keyword, tag) {
+// 按关键字搜索题干（自动补全），tag 为标签筛选；type 为类型筛选
+export function searchKnowledge(keyword, tag, type) {
   return request({
     url: '/user/knowledge/search',
     method: 'get',
-    params: { keyword, tag }
+    params: { keyword, tag, type }
   });
 }
 
 // 按 id 取题，用于恢复上次浏览位置
-export function getKnowledgeById(id) {
+export function getKnowledgeById(id, type) {
   return request({
     url: `/user/knowledge/${id}`,
-    method: 'get'
+    method: 'get',
+    params: { type }
   });
 }
 
-// 上一题，currentId 为当前题 id；tag 为标签筛选
-export function getPrevKnowledge(currentId, tag) {
+// 上一题，currentId 为当前题 id；tag 为标签筛选；type 为类型筛选
+export function getPrevKnowledge(currentId, tag, type) {
   return request({
     url: '/user/knowledge/prev',
     method: 'get',
-    params: { currentId, tag }
+    params: { currentId, tag, type }
   });
 }
 

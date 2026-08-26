@@ -7,6 +7,16 @@
           <el-radio-button label="quiz"><i class="el-icon-edit-outline" /> 答题模式</el-radio-button>
         </el-radio-group>
         <el-select
+          v-model="filterType"
+          size="small"
+          class="type-filter"
+          placeholder="全部类型"
+          clearable
+          @change="handleTypeFilterChange"
+        >
+          <el-option v-for="t in TYPES" :key="t.value" :label="t.label" :value="t.value" />
+        </el-select>
+        <el-select
           v-model="filterTag"
           size="small"
           class="tag-filter"
@@ -51,8 +61,8 @@
         <transition name="el-fade-in">
           <div v-if="answerVisible" class="rich-text" v-html="boldAnswer(current.answer)" />
         </transition>
-        <div v-if="!answerVisible" class="answer-hidden">
-          <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">查看答案</el-button>
+        <div class="answer-hidden">
+          <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">{{answerVisible?'隐藏答案':'查看答案'}}</el-button>
         </div>
       </div>
 
@@ -156,6 +166,11 @@ export default {
   name: 'KnowledgeQuick',
   data() {
     return {
+      TYPES: [
+        { value: 'favorite', label: '已收藏' },
+        { value: 'note', label: '已添加笔记' },
+        { value: 'ignored', label: '已忽略' }
+      ],
       TAGS: [
         { value: 1, label: 'Java基础与核心特性', type: '' },
         { value: 2, label: '集合框架与数据结构', type: 'success' },
@@ -168,6 +183,7 @@ export default {
       loading: false,
       current: null,
       mode: localStorage.getItem('knowledge-mode') || 'quiz',
+      filterType: '',
       filterTag: null,
       searchKeyword: '',
       answerVisible: false,
@@ -242,7 +258,7 @@ export default {
         cb([]);
         return;
       }
-      searchKnowledge(keyword.trim(), this.filterTag)
+      searchKnowledge(keyword.trim(), this.filterTag, this.filterType)
         .then(res => {
           const list = (res.dataList || []).map(k => ({ id: k.id, label: plainText(k.question) }));
           cb(list);
@@ -251,7 +267,7 @@ export default {
     },
     handleSearchSelect(item) {
       if (!item.id) return;
-      getKnowledgeById(item.id).then(res => {
+      getKnowledgeById(item.id, this.filterType).then(res => {
         if (res.daoResult) {
           this.loading = true;
           this.applyCurrent(res.daoResult);
@@ -260,11 +276,11 @@ export default {
       });
     },
     fetchNext(currentId) {
-      this.fetch(getNextKnowledge, currentId, this.filterTag);
+      this.fetch(getNextKnowledge, currentId, this.filterTag, this.filterType);
     },
-    fetch(api, currentId, tag) {
+    fetch(api, currentId, tag, type) {
       this.loading = true;
-      api(currentId, tag)
+      api(currentId, tag, type)
         .then(res => {
           this.applyCurrent(res.daoResult);
         })
@@ -277,6 +293,10 @@ export default {
     tagType(tag) {
       const t = this.TAGS.find(x => x.value === tag);
       return t ? t.type : '';
+    },
+    // 切换类型后从头开始刷该类型的题
+    handleTypeFilterChange() {
+      this.fetchNext();
     },
     // 切换标签后从头开始刷该标签的题
     handleTagFilterChange() {
@@ -292,7 +312,9 @@ export default {
       if (this.current) {
         localStorage.setItem('knowledge-current-id', this.current.id);
         this.fetchNotes();
-        this.recordView();
+        if (this.filterType !== 'ignored') {
+          this.recordView();
+        }
         if (this.mode === 'recite') {
           this.startCountdown();
         } else {
@@ -329,7 +351,7 @@ export default {
       });
     },
     handleShowAnswer() {
-      this.answerVisible = true;
+      this.answerVisible = !this.answerVisible;
     },
     handleFavorite() {
       favoriteKnowledge(this.current.id).then(res => {
@@ -350,7 +372,7 @@ export default {
       this.fetchNext(this.current ? this.current.id : undefined);
     },
     handlePrev() {
-      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag);
+      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.filterType);
     },
     handleSaveNote() {
       if (!this.noteContent.trim()) {
@@ -403,6 +425,7 @@ export default {
 .knowledge-pane .toolbar { margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .toolbar-left { display: flex; align-items: center; gap: 12px; }
 .tag-filter { width: 170px; }
+.type-filter { width: 130px; }
 .question-tag { margin-left: 8px; }
 .search-input { width: 420px; }
 .toolbar-date { color: #4a5568; font-size: 14px; font-weight: 600; }
