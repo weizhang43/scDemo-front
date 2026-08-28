@@ -45,6 +45,15 @@ export function getPrevKnowledge(currentId, tag, type) {
   });
 }
 
+// 随机一题，tag 为标签筛选；type 为类型筛选
+export function getRandomKnowledge(tag, type) {
+  return request({
+    url: '/user/knowledge/random',
+    method: 'get',
+    params: { tag, type }
+  });
+}
+
 // 查看答案，同时记录查看进度
 export function viewKnowledge(id) {
   return request({
@@ -83,5 +92,22 @@ export function getKnowledgeNotes(id) {
   return request({
     url: `/user/knowledge/${id}/notes`,
     method: 'get'
+  });
+}
+
+// 编辑笔记
+export function updateKnowledgeNote(noteId, data) {
+  return request({
+    url: `/user/knowledge/note/${noteId}`,
+    method: 'put',
+    data
+  });
+}
+
+// 删除笔记
+export function deleteKnowledgeNote(noteId) {
+  return request({
+    url: `/user/knowledge/note/${noteId}`,
+    method: 'delete'
   });
 }

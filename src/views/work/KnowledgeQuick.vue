@@ -7,6 +7,15 @@
           <el-radio-button label="quiz"><i class="el-icon-edit-outline" /> 答题模式</el-radio-button>
         </el-radio-group>
         <el-select
+          v-model="practiceScope"
+          size="small"
+          class="scope-filter"
+          placeholder="刷题范围"
+          @change="handlePracticeScopeChange"
+        >
+          <el-option v-for="s in SCOPES" :key="s.value" :label="s.label" :value="s.value" />
+        </el-select>
+<!--        <el-select
           v-model="filterType"
           size="small"
           class="type-filter"
@@ -15,7 +24,7 @@
           @change="handleTypeFilterChange"
         >
           <el-option v-for="t in TYPES" :key="t.value" :label="t.label" :value="t.value" />
-        </el-select>
+        </el-select>-->
         <el-select
           v-model="filterTag"
           size="small"
@@ -85,6 +94,7 @@
           <el-button type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
         </div>
         <div class="actions-right">
+          <span class="shortcut-tip">快捷键：Space 答案 · ←/→ 切题 · F 收藏 · N 笔记</span>
           <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
           <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
         </div>
@@ -104,10 +114,15 @@
 
       <div v-if="notes.length" class="note-list">
         <div class="note-list-header">
-          <i class="el-icon-edit-outline" /> 我的笔记
-          <span class="note-count">{{ notes.length }}</span>
+          <div class="note-title">
+            <i class="el-icon-edit-outline" /> 我的笔记
+            <span class="note-count">{{ notes.length }}</span>
+          </div>
+          <el-button type="text" size="mini" :icon="notesCollapsed ? 'el-icon-arrow-down' : 'el-icon-arrow-up'" @click="notesCollapsed = !notesCollapsed">
+            {{ notesCollapsed ? '展开' : '收起' }}
+          </el-button>
         </div>
-        <el-timeline class="note-timeline">
+        <el-timeline v-show="!notesCollapsed" class="note-timeline">
           <el-timeline-item
             v-for="note in notes"
             :key="note.id"
@@ -115,7 +130,23 @@
             placement="top"
             color="var(--color-primary, #409eff)"
           >
-            <div class="note-item">{{ note.content }}</div>
+            <div class="note-item" :class="{ 'is-important': note.important === 1 }">
+              <div v-if="editingNoteId === note.id" class="note-editing">
+                <el-input v-model="editingNoteContent" type="textarea" :rows="3" maxlength="1000" show-word-limit />
+                <div class="note-edit-actions">
+                  <el-button size="mini" @click="cancelEditNote">取消</el-button>
+                  <el-button type="primary" size="mini" :loading="noteSaving" @click="saveEditNote(note)">保存</el-button>
+                </div>
+              </div>
+              <template v-else>
+                <div class="note-content">{{ note.content }}</div>
+                <div class="note-actions">
+                  <el-button size="mini" type="text" :icon="note.important === 1 ? 'el-icon-star-on' : 'el-icon-star-off'" @click="toggleNoteImportant(note)">{{ note.important === 1 ? '取消重点' : '标为重点' }}</el-button>
+                  <el-button size="mini" type="text" icon="el-icon-edit" @click="startEditNote(note)">编辑</el-button>
+                  <el-button size="mini" type="text" class="note-delete" icon="el-icon-delete" @click="deleteNote(note)">删除</el-button>
+                </div>
+              </template>
+            </div>
           </el-timeline-item>
         </el-timeline>
       </div>
@@ -148,7 +179,7 @@
 </template>
 
 <script>
-import { addKnowledge, getNextKnowledge, getPrevKnowledge, getKnowledgeById, viewKnowledge, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, searchKnowledge } from '../../api/knowledge';
+import { addKnowledge, getNextKnowledge, getPrevKnowledge, getRandomKnowledge, getKnowledgeById, viewKnowledge, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, updateKnowledgeNote, deleteKnowledgeNote, searchKnowledge } from '../../api/knowledge';
 
 function plainText(html) {
   if (!html) return '';
@@ -166,6 +197,12 @@ export default {
   name: 'KnowledgeQuick',
   data() {
     return {
+      SCOPES: [
+        { value: 'all', label: '顺序刷题' },
+        { value: 'random', label: '随机刷题' },
+        { value: 'favorite', label: '只刷收藏' },
+        { value: 'note', label: '只刷笔记题' }
+      ],
       TYPES: [
         { value: 'favorite', label: '已收藏' },
         { value: 'note', label: '已添加笔记' },
@@ -183,13 +220,17 @@ export default {
       loading: false,
       current: null,
       mode: localStorage.getItem('knowledge-mode') || 'quiz',
+      practiceScope: localStorage.getItem('knowledge-practice-scope') || 'all',
       filterType: '',
       filterTag: null,
       searchKeyword: '',
       answerVisible: false,
       notes: [],
+      notesCollapsed: false,
       noteInputVisible: false,
       noteContent: '',
+      editingNoteId: null,
+      editingNoteContent: '',
       noteSaving: false,
       addVisible: false,
       addSaving: false,
@@ -211,9 +252,11 @@ export default {
   },
   created() {
     this.restore();
+    window.addEventListener('keydown', this.handleShortcut);
   },
   beforeDestroy() {
     this.clearCountdown();
+    window.removeEventListener('keydown', this.handleShortcut);
   },
   methods: {
     // 恢复上次浏览位置；记录的题已被忽略或不存在时回退到下一题
@@ -223,7 +266,7 @@ export default {
         this.fetchNext();
         return;
       }
-      getKnowledgeById(savedId).then(res => {
+      getKnowledgeById(savedId, this.activeFilterType()).then(res => {
         if (res.daoResult) {
           this.applyCurrent(res.daoResult);
         } else {
@@ -253,12 +296,37 @@ export default {
         this.clearCountdown();
       }
     },
+    shouldSkipShortcut(event) {
+      const tagName = event.target && event.target.tagName;
+      return this.addVisible || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) || event.target.isContentEditable;
+    },
+    handleShortcut(event) {
+      if (this.shouldSkipShortcut(event) || !this.current) return;
+      if (event.code === 'Space') {
+        event.preventDefault();
+        this.handleShowAnswer();
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        this.handlePrev();
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        this.handleNext();
+      }
+      if (event.key.toLowerCase() === 'f') {
+        this.handleFavorite();
+      }
+      if (event.key.toLowerCase() === 'n') {
+        this.noteInputVisible = true;
+      }
+    },
     querySearch(keyword, cb) {
       if (!keyword || !keyword.trim()) {
         cb([]);
         return;
       }
-      searchKnowledge(keyword.trim(), this.filterTag, this.filterType)
+      searchKnowledge(keyword.trim(), this.filterTag, this.activeFilterType())
         .then(res => {
           const list = (res.dataList || []).map(k => ({ id: k.id, label: plainText(k.question) }));
           cb(list);
@@ -267,7 +335,7 @@ export default {
     },
     handleSearchSelect(item) {
       if (!item.id) return;
-      getKnowledgeById(item.id, this.filterType).then(res => {
+      getKnowledgeById(item.id, this.activeFilterType()).then(res => {
         if (res.daoResult) {
           this.loading = true;
           this.applyCurrent(res.daoResult);
@@ -276,7 +344,23 @@ export default {
       });
     },
     fetchNext(currentId) {
-      this.fetch(getNextKnowledge, currentId, this.filterTag, this.filterType);
+      if (this.practiceScope === 'random') {
+        this.fetchRandom();
+        return;
+      }
+      this.fetch(getNextKnowledge, currentId, this.filterTag, this.activeFilterType());
+    },
+    fetchRandom() {
+      this.loading = true;
+      getRandomKnowledge(this.filterTag, this.activeFilterType())
+        .then(res => {
+          this.applyCurrent(res.daoResult);
+        })
+        .finally(() => { this.loading = false; });
+    },
+    activeFilterType() {
+      return this.practiceScope === 'favorite' || this.practiceScope === 'note'
+        ? this.practiceScope : this.filterType;
     },
     fetch(api, currentId, tag, type) {
       this.loading = true;
@@ -298,6 +382,13 @@ export default {
     handleTypeFilterChange() {
       this.fetchNext();
     },
+    handlePracticeScopeChange(scope) {
+      localStorage.setItem('knowledge-practice-scope', scope);
+      if (scope === 'favorite' || scope === 'note') {
+        this.filterType = '';
+      }
+      this.fetchNext();
+    },
     // 切换标签后从头开始刷该标签的题
     handleTagFilterChange() {
       this.fetchNext();
@@ -307,12 +398,15 @@ export default {
       // 背题模式切题后直接显示答案，做题模式隐藏
       this.answerVisible = this.mode === 'recite';
       this.notes = [];
+      this.notesCollapsed = false;
       this.noteInputVisible = false;
       this.noteContent = '';
+      this.editingNoteId = null;
+      this.editingNoteContent = '';
       if (this.current) {
         localStorage.setItem('knowledge-current-id', this.current.id);
         this.fetchNotes();
-        if (this.filterType !== 'ignored') {
+        if (this.activeFilterType() !== 'ignored') {
           this.recordView();
         }
         if (this.mode === 'recite') {
@@ -372,7 +466,7 @@ export default {
       this.fetchNext(this.current ? this.current.id : undefined);
     },
     handlePrev() {
-      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.filterType);
+      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.activeFilterType());
     },
     handleSaveNote() {
       if (!this.noteContent.trim()) {
@@ -388,6 +482,44 @@ export default {
           this.fetchNotes();
         })
         .finally(() => { this.noteSaving = false; });
+    },
+    startEditNote(note) {
+      this.editingNoteId = note.id;
+      this.editingNoteContent = note.content;
+    },
+    cancelEditNote() {
+      this.editingNoteId = null;
+      this.editingNoteContent = '';
+    },
+    saveEditNote(note) {
+      if (!this.editingNoteContent.trim()) {
+        this.$message.warning('请输入笔记内容');
+        return;
+      }
+      this.noteSaving = true;
+      updateKnowledgeNote(note.id, { content: this.editingNoteContent.trim() })
+        .then(() => {
+          this.$message.success('笔记已更新');
+          this.cancelEditNote();
+          this.fetchNotes();
+        })
+        .finally(() => { this.noteSaving = false; });
+    },
+    toggleNoteImportant(note) {
+      updateKnowledgeNote(note.id, { important: note.important === 1 ? 0 : 1 })
+        .then(() => {
+          this.$message.success(note.important === 1 ? '已取消重点' : '已标为重点');
+          this.fetchNotes();
+        });
+    },
+    deleteNote(note) {
+      this.$confirm('确认删除这条笔记？', '提示', { type: 'warning' })
+        .then(() => deleteKnowledgeNote(note.id))
+        .then(() => {
+          this.$message.success('笔记已删除');
+          this.fetchNotes();
+        })
+        .catch(() => {});
     },
     fetchNotes() {
       if (!this.current) return;
@@ -425,6 +557,7 @@ export default {
 .knowledge-pane .toolbar { margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .toolbar-left { display: flex; align-items: center; gap: 12px; }
 .tag-filter { width: 170px; }
+.scope-filter { width: 120px; }
 .type-filter { width: 130px; }
 .question-tag { margin-left: 8px; }
 .search-input { width: 420px; }
@@ -496,13 +629,15 @@ export default {
 .meta-item i { margin-right: 3px; }
 .actions { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
 .actions-left, .actions-right { display: flex; align-items: center; }
+.shortcut-tip { margin-right: 10px; color: #a8b0c0; font-size: 12px; }
 .note-input { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 .note-list { margin-top: 22px; }
 .note-list-header {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   font-size: 13px; color: #909399; letter-spacing: 1px; margin-bottom: 12px;
   padding-bottom: 8px; border-bottom: 1px dashed #e4e7ed;
 }
+.note-title { display: flex; align-items: center; gap: 6px; }
 .note-list-header i { font-size: 15px; }
 .note-count {
   display: inline-flex; align-items: center; justify-content: center;
@@ -518,5 +653,12 @@ export default {
   transition: box-shadow .2s, border-color .2s;
 }
 .note-item:hover { border-color: var(--color-primary, #409eff); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); }
+.note-item.is-important { border-color: #e6a23c; background: #fffaf0; }
+.note-content { margin-bottom: 8px; }
+.note-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.note-actions .el-button { padding: 0; }
+.note-delete { color: #f56c6c; }
+.note-editing { display: flex; flex-direction: column; gap: 8px; }
+.note-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .empty-tip { text-align: center; color: #909399; padding: 40px 0; }
 </style>
