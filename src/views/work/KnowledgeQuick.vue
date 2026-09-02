@@ -62,7 +62,7 @@
 
       <div class="answer">
         <div class="section-label answer-header">
-          <div><i class="el-icon-document" /> 答案</div>
+          <div class="answer-title"><i class="el-icon-document" /> 答案</div>
           <div class="answer-actions">
             <span class="answer-hint">先查看答案，再决定收藏、记录或忽略</span>
             <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">{{ answerVisible ? '隐藏答案' : '查看答案' }}</el-button>
@@ -543,18 +543,23 @@ export default {
 .qa-divider { margin: 16px 0; }
 .qa-divider >>> .el-divider__text { background-color: transparent; }
 .answer { min-height: 60px; }
-.answer-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.answer-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.answer-hint { color: #a8b0c0; font-size: 12px; white-space: nowrap; }
+.answer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.answer-title { padding-top: 6px; }
+.answer-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.answer-hint { color: #a8b0c0; font-size: 12px; line-height: 1.5; text-align: right; }
 .answer .rich-text { color: #4a5568; line-height: 1.8; }
 .is-favorite .question .rich-text,
 .is-favorite .answer .rich-text { color: inherit; }
 .rich-text >>> p { margin: 0 0 8px; }
 .rich-text >>> p:last-child { margin-bottom: 0; }
-.actions { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
-.action-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.action-group-primary { flex: 1 1 auto; }
-.action-group-nav { margin-left: auto; }
+.actions {
+  display: flex; flex-direction: column; align-items: stretch; gap: 12px; margin-top: 22px;
+  padding: 14px 16px; border: 1px solid #ebeef5; border-radius: 8px; background: #fff;
+}
+.action-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.action-group-primary { flex: none; width: 100%; }
+.action-group-nav { justify-content: flex-end; margin-left: 0; padding-top: 12px; border-top: 1px solid #f0f2f5; }
+.actions .el-button { min-width: 104px; }
 .note-input { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 .note-list { margin-top: 22px; }
 .note-list-header {
@@ -586,4 +591,15 @@ export default {
 .note-editing { display: flex; flex-direction: column; gap: 8px; }
 .note-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .empty-tip { text-align: center; color: #909399; padding: 40px 0; }
+
+@media (max-width: 768px) {
+  .answer-header { flex-direction: column; gap: 8px; }
+  .answer-title { padding-top: 0; }
+  .answer-actions { align-items: stretch; width: 100%; }
+  .answer-hint { text-align: left; }
+  .answer-actions .el-button { align-self: flex-start; }
+  .actions { padding: 12px; }
+  .action-group-nav { justify-content: stretch; }
+  .action-group-nav .el-button { flex: 1; }
+}
 </style>
