@@ -100,41 +100,47 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--gradient-topbar);
+  background:
+    radial-gradient(circle at 16% 18%, rgba(71, 109, 191, 0.32), transparent 32%),
+    radial-gradient(circle at 86% 82%, rgba(106, 76, 178, 0.28), transparent 36%),
+    linear-gradient(135deg, #0d1b33 0%, #142b4b 48%, #202c63 100%);
   overflow: hidden;
 }
 .bg-decorations {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 48%, rgba(255,255,255,.055) 48.1%, transparent 48.4%),
+    linear-gradient(25deg, transparent 0 68%, rgba(255,255,255,.04) 68.1%, transparent 68.35%);
 }
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.5;
+  filter: blur(78px);
+  opacity: 0.38;
 }
 .blob-1 {
   width: 320px;
   height: 320px;
-  background: #7f9cf0;
-  top: -80px;
-  left: -60px;
+  background: #5279d8;
+  top: -110px;
+  left: -90px;
 }
 .blob-2 {
   width: 380px;
   height: 380px;
-  background: #9b6cff;
-  bottom: -120px;
-  right: -80px;
+  background: #7954c6;
+  bottom: -160px;
+  right: -110px;
 }
 .blob-3 {
   width: 240px;
   height: 240px;
-  background: #2dd4bf;
-  top: 40%;
-  right: 20%;
-  opacity: 0.25;
+  background: #25b7ab;
+  top: 42%;
+  right: 18%;
+  opacity: 0.16;
 }
 .top-nav {
   position: absolute;
