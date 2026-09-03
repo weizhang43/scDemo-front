@@ -59,7 +59,8 @@
           class="register-form auth-form"
           @submit.native.prevent="handleRegister"
         >
-          <div class="section-label"><i class="el-icon-user" /> 基本信息</div>
+          <div class="register-scroll">
+            <div class="section-label"><i class="el-icon-user" /> 基本信息</div>
           <div class="form-grid">
             <el-form-item label="用户名" prop="uName" class="field">
               <el-input v-model="registerForm.uName" placeholder="请输入用户名" prefix-icon="el-icon-user" />
@@ -127,6 +128,7 @@
                 <el-radio-button :label="0"><i class="el-icon-lock" /> 保密</el-radio-button>
               </el-radio-group>
             </el-form-item>
+          </div>
           </div>
           <el-form-item class="action">
             <el-button
@@ -281,6 +283,10 @@ export default {
 </script>
 
 <style scoped>
+/deep/ .auth-form .el-input__inner{
+  height: 35px !important;
+  line-height: 35px !important;
+}
 .register-container {
   position: relative;
   min-height: 100vh;
@@ -465,7 +471,7 @@ export default {
   backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .login-link {
   position: absolute;
@@ -508,6 +514,14 @@ export default {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+}
+.register-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-right: -8px;
 }
 .register-form >>> .el-form-item {
   margin-bottom: 0;
@@ -552,11 +566,9 @@ export default {
   margin-top: 12px;
   flex-shrink: 0;
 }
-.full-row .date-field {
-  flex: 1;
-}
+.full-row .date-field,
 .full-row .code-field {
-  flex: 1.35;
+  flex: 1;
 }
 .radio-row {
   display: flex;
@@ -585,26 +597,40 @@ export default {
   flex: 1;
 }
 .code-btn {
-  height: 40px;
+  flex: 0 0 116px;
+  height: 35px;
+  padding: 0 12px;
   border-radius: var(--radius-sm);
-  border: 1px solid #cbd5e0;
-  background: #fff;
-  color: #4a5568;
+  border: 1px solid rgba(102, 126, 234, 0.45);
+  background: rgba(102, 126, 234, 0.08);
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.2s;
 }
 .code-btn:not(:disabled):hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: rgba(102, 126, 234, 0.14);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
+}
+.code-btn:not(:disabled):active {
+  transform: translateY(0);
 }
 .code-btn.is-disabled {
-  background: #f1f5f9;
+  border-color: #e2e8f0;
+  background: #f8fafc;
   color: #a0aec0;
 }
 .action {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   margin-top: auto;
-  padding-top: 20px;
+  padding: 20px 0 4px;
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.94);
 }
 .register-form .auth-submit-btn {
   width: 100%;

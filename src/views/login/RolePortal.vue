@@ -44,8 +44,13 @@
           v-for="role in roles"
           :key="role.key"
           class="role-card"
+          role="button"
+          tabindex="0"
+          :aria-label="`${role.label}登录入口`"
           :style="{ '--accent': role.accent, '--accent-soft': role.accentSoft }"
           @click="goLogin(role)"
+          @keyup.enter="goLogin(role)"
+          @keyup.space.prevent="goLogin(role)"
         >
           <div class="role-icon">
             <i :class="role.icon" />
@@ -73,9 +78,12 @@ import { ROLES } from '../../router/menuConfig';
 export default {
   name: 'RolePortal',
   data() {
-    return {
-      roles: ROLES
-    };
+    return {};
+  },
+  computed: {
+    roles() {
+      return ROLES;
+    }
   },
   methods: {
     goLogin(role) {
@@ -167,6 +175,10 @@ export default {
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-1px);
 }
+.customer-entry:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
 .portal-body {
   position: relative;
   z-index: 1;
@@ -233,6 +245,10 @@ export default {
   background: rgba(255, 255, 255, 0.12);
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.32);
 }
+.role-card:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
 .role-icon {
   width: 68px;
   height: 68px;
@@ -283,6 +299,9 @@ export default {
   text-decoration: underline;
 }
 @media (max-width: 768px) {
+  .portal-container {
+    flex-direction: column;
+  }
   .role-cards {
     flex-direction: column;
     align-items: center;

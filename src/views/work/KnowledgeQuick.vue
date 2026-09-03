@@ -221,7 +221,7 @@ export default {
       searchKeyword: '',
       answerVisible: false,
       notes: [],
-      notesCollapsed: false,
+      notesCollapsed: true,
       noteInputVisible: false,
       noteContent: '',
       editingNoteId: null,
@@ -279,6 +279,7 @@ export default {
     handleModeChange(mode) {
       localStorage.setItem('knowledge-mode', mode);
       this.answerVisible = mode === 'recite';
+      this.notesCollapsed = mode === 'quiz';
     },
     shouldSkipShortcut(event) {
       const tagName = event.target && event.target.tagName;
@@ -379,7 +380,7 @@ export default {
       this.current = knowledge || null;
       this.answerVisible = this.mode === 'recite';
       this.notes = [];
-      this.notesCollapsed = false;
+      this.notesCollapsed = this.mode === 'quiz';
       this.noteInputVisible = false;
       this.noteContent = '';
       this.editingNoteId = null;
