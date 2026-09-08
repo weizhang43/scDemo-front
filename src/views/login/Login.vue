@@ -1,5 +1,5 @@
 <template>
-  <div class="login-container">
+  <div :class="['login-container', `login-container--${role.key}`]">
     <div class="bg-decorations" aria-hidden="true">
       <span class="grid-line grid-line--one" />
       <span class="grid-line grid-line--two" />
@@ -142,4 +142,25 @@ export default {
 
 <style>
 .login-container .notice-carousel .el-carousel__indicators--outside button { background-color:rgba(255,255,255,.45); }.login-container .notice-carousel .el-carousel__indicator.is-active button { background-color:#e7a14c; }
+.login-container--customer { background:linear-gradient(135deg,#083b4a 0%,#0d6570 48%,#159a91 100%); }
+.login-container--customer .bg-decorations { background:radial-gradient(circle at 8% 8%,rgba(93,231,207,.24),transparent 31%),radial-gradient(circle at 92% 92%,rgba(54,149,224,.25),transparent 38%); }
+.login-container--customer .panel-left { background:linear-gradient(155deg,#073342 0%,#0b5360 100%); }
+.login-container--customer .panel-left .left-kicker,
+.login-container--customer .panel-left .message-label { color:#72e2d0; }
+.login-container--customer .panel-left .left-message h1 em { color:#70e1d0; }
+.login-container--customer .panel-right { --accent:#0f9b8e; --accent-soft:rgba(15,155,142,.13); }
+.login-container--customer .panel-right:before { background:#0f9b8e; }
+.login-container--customer .role-badge { color:#087a70; background:rgba(15,155,142,.12); }
+.login-container--customer .link--forgot { color:#087a70; }
+.login-container--customer .auth-link { color:#087a70; }
+.login-container--customer .auth-link:hover,
+.login-container--customer .auth-link:focus { color:#056158; }
+.login-container--customer .form-privacy { color:#849b9e; }
+.login-container--customer .panel-right .auth-submit-btn { box-shadow:0 10px 20px rgba(15,155,142,.2); }
+.login-container--customer .panel-right .auth-submit-btn:hover,
+.login-container--customer .panel-right .auth-submit-btn:focus { box-shadow:0 12px 24px rgba(15,155,142,.28); }
+@media (max-width:768px) {
+  .login-container--customer .panel-right { background:#fbfffe; }
+  .login-container--customer .top-nav { background:rgba(4,58,70,.35); }
+}
 </style>

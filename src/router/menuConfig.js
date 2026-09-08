@@ -76,7 +76,7 @@ export const MENUS = [
   { path: '/notices', label: '通知管理', icon: 'el-icon-bell', types: [3] },
   { path: '/logs', label: '日志管理', icon: 'el-icon-document', types: [3] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [1, 2, 3] },
-  { path: '/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
+  { path: '/admin/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
 ];
 
 // 本次改动前登录的会话，localStorage 里的 sc_user 没有 uType，按管理员兜底避免空菜单

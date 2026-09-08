@@ -218,7 +218,7 @@ const routes = [
         meta: { requiresAuth: true, types: [2] }
       },
       {
-        path: 'jobs',
+        path: 'admin/jobs',
         name: 'JobScheduler',
         component: () => import('../views/system/JobScheduler.vue'),
         meta: { requiresAuth: true, types: [3] }
