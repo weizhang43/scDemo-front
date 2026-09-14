@@ -1,5 +1,5 @@
 <template>
-  <div class="work-page">
+  <div class="work-page" :class="{ 'knowledge-mobile-page': mobile }">
     <div class="page-header">
       <div class="header-inner">
         <div class="header-title">
@@ -14,7 +14,7 @@
     </div>
     <div class="page-body">
       <el-card>
-        <KnowledgeQuick />
+        <KnowledgeQuick :mobile="mobile" />
       </el-card>
     </div>
   </div>
@@ -25,7 +25,13 @@ import KnowledgeQuick from './KnowledgeQuick.vue';
 
 export default {
   name: 'KnowledgePage',
-  components: { KnowledgeQuick }
+  components: { KnowledgeQuick },
+  props: {
+    mobile: {
+      type: Boolean,
+      default: false
+    }
+  }
 };
 </script>
 
@@ -33,5 +39,24 @@ export default {
 .header-inner,
 .page-body {
   max-width: 1500px;
+}
+
+@media (max-width: 768px) {
+  .knowledge-mobile-page .page-header {
+    padding: 0 12px;
+  }
+  .knowledge-mobile-page .header-inner {
+    height: 50px;
+  }
+  .knowledge-mobile-page .header-title {
+    font-size: 16px;
+  }
+  .knowledge-mobile-page .page-body {
+    margin: 12px auto;
+    padding: 0 12px;
+  }
+  .knowledge-mobile-page >>> .el-card__body {
+    padding: 12px;
+  }
 }
 </style>

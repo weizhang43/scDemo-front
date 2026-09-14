@@ -57,6 +57,13 @@ const routes = [
     meta: { public: true }
   },
   {
+    path: '/konwledage-mobile',
+    name: 'KnowledgeMobilePage',
+    component: () => import('../views/work/KnowledgePage.vue'),
+    props: { mobile: true },
+    meta: { public: true }
+  },
+  {
     path: '/jobs',
     name: 'JobSchedulerPage',
     component: () => import('../views/work/JobSchedulerPage.vue'),

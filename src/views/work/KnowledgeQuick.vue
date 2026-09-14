@@ -1,5 +1,5 @@
 <template>
-  <div class="knowledge-pane">
+  <div class="knowledge-pane" :class="{ 'knowledge-pane-mobile': mobile }">
     <div class="toolbar">
       <div class="toolbar-left">
         <el-radio-group v-model="mode" size="small" @change="handleModeChange">
@@ -38,21 +38,26 @@
           @select="handleSearchSelect"
         />
       </div>
-      <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">添加知识点</el-button>
+      <el-button v-if="!mobile" type="primary" size="small" icon="el-icon-plus" @click="openAdd">添加知识点</el-button>
     </div>
 
-    <div v-if="current" class="knowledge-card" :class="{ 'is-favorite': isFavorite }" v-loading="loading">
+    <div v-if="current" ref="knowledgeCard" class="knowledge-card" :class="{ 'is-favorite': isFavorite }" v-loading="loading"
+      @touchstart.passive="handleSwipeStart"
+      @touchmove.passive="handleSwipeMove"
+      @touchend="handleSwipeEnd"
+      @touchcancel="handleSwipeCancel">
       <div class="question">
         <div class="section-label question-header">
           <div class="question-title">
             <i class="el-icon-question" /> 题干
             <el-tag v-if="current.tag" size="small" :type="tagType(current.tag)" class="question-tag">{{ tagName(current.tag) }}</el-tag>
             <el-tag v-if="isFavorite" type="danger" size="small" effect="plain" class="favorite-tag">★ 已收藏</el-tag>
+            <el-button v-if="mobile" type="danger" plain size="mini" class="question-ignore" icon="el-icon-delete" circle @click="handleIgnore" title="忽略此题" />
           </div>
           <div class="question-meta">
             <span class="meta-item"><i class="el-icon-view" /> 已查看 {{ current.viewCount || 0 }} 次</span>
-            <span v-if="current.lastViewTime" class="meta-item"><i class="el-icon-time" /> 最后查看 {{ current.lastViewTime }}</span>
-            <span class="meta-item"><i class="el-icon-plus" /> 添加于 {{ current.addTime }}</span>
+            <span v-if="!mobile && current.lastViewTime" class="meta-item"><i class="el-icon-time" /> 最后查看 {{ current.lastViewTime }}</span>
+            <span v-if="!mobile" class="meta-item"><i class="el-icon-plus" /> 添加于 {{ current.addTime }}</span>
           </div>
         </div>
         <div class="rich-text question-text" v-html="current.question" />
@@ -61,16 +66,18 @@
       <el-divider class="qa-divider" />
 
       <div class="answer">
-        <div class="section-label answer-header">
+        <div v-if="!mobile" class="section-label answer-header">
           <div class="answer-title"><i class="el-icon-document" /> 答案</div>
           <div class="answer-actions">
             <span class="answer-hint">先查看答案，再决定收藏、记录或忽略</span>
             <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">{{ answerVisible ? '隐藏答案' : '查看答案' }}</el-button>
           </div>
         </div>
-        <transition name="el-fade-in">
-          <div v-if="answerVisible" class="rich-text" v-html="boldAnswer(current.answer)" />
-        </transition>
+        <el-collapse v-else v-model="answerPanel" class="answer-collapse">
+          <el-collapse-item :title="answerPanel ? '隐藏答案' : '查看答案'" name="answer">
+            <div class="rich-text answer-collapse-body" v-html="boldAnswer(current.answer)" />
+          </el-collapse-item>
+        </el-collapse>
       </div>
 
       <div class="actions">
@@ -82,11 +89,11 @@
             @click="handleFavorite"
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
           <el-button type="warning" size="small" icon="el-icon-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
-          <el-button type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
+          <el-button v-if="!mobile" type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
         </div>
         <div class="action-group action-group-nav">
-          <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
-          <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
+          <el-button v-if="!mobile" size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
+          <el-button v-if="!mobile" type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
         </div>
       </div>
 
@@ -146,7 +153,7 @@
       <p>暂无知识点，点击右上角"添加知识点"开始刷题</p>
     </div>
 
-    <el-dialog title="添加知识点" :visible.sync="addVisible" width="720px" top="6vh" :close-on-click-modal="false">
+    <el-dialog title="添加知识点" :visible.sync="addVisible" width="720px" top="6vh" :close-on-click-modal="false" :custom-class="mobile ? 'knowledge-mobile-dialog' : ''">
       <el-form ref="addForm" :model="addForm" :rules="addRules" label-width="70px">
         <el-form-item label="标签" prop="tag">
           <el-select v-model="addForm.tag" placeholder="请选择标签" style="width: 100%;">
@@ -185,6 +192,12 @@ function toHtml(text) {
 
 export default {
   name: 'KnowledgeQuick',
+  props: {
+    mobile: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
       SCOPES: [
@@ -214,6 +227,11 @@ export default {
       ],
       loading: false,
       current: null,
+      answerPanel: '',
+      swipeStartX: 0,
+      swipeStartY: 0,
+      swipeStartTime: 0,
+      swipeTracking: false,
       mode: localStorage.getItem('knowledge-mode') || 'quiz',
       practiceScope: localStorage.getItem('knowledge-practice-scope') || 'all',
       filterType: '',
@@ -279,6 +297,7 @@ export default {
     handleModeChange(mode) {
       localStorage.setItem('knowledge-mode', mode);
       this.answerVisible = mode === 'recite';
+      this.answerPanel = mode === 'recite' ? 'answer' : '';
       this.notesCollapsed = mode === 'quiz';
     },
     shouldSkipShortcut(event) {
@@ -379,6 +398,7 @@ export default {
     applyCurrent(knowledge) {
       this.current = knowledge || null;
       this.answerVisible = this.mode === 'recite';
+      this.answerPanel = this.mode === 'recite' ? 'answer' : '';
       this.notes = [];
       this.notesCollapsed = this.mode === 'quiz';
       this.noteInputVisible = false;
@@ -401,6 +421,46 @@ export default {
     },
     handleShowAnswer() {
       this.answerVisible = !this.answerVisible;
+    },
+    handleSwipeStart(event) {
+      if (!this.mobile || !this.current || !event.touches || event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      this.swipeStartX = touch.clientX;
+      this.swipeStartY = touch.clientY;
+      this.swipeStartTime = Date.now();
+      this.swipeTracking = true;
+    },
+    handleSwipeMove(event) {
+      if (!this.swipeTracking) return;
+      if (!event.touches || event.touches.length !== 1) {
+        this.swipeTracking = false;
+        return;
+      }
+      const dx = event.touches[0].clientX - this.swipeStartX;
+      const dy = event.touches[0].clientY - this.swipeStartY;
+      if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        event.preventDefault();
+      }
+    },
+    handleSwipeEnd(event) {
+      if (!this.swipeTracking) return;
+      this.swipeTracking = false;
+      if (!event.changedTouches || event.changedTouches.length !== 1) return;
+      const dx = event.changedTouches[0].clientX - this.swipeStartX;
+      const dy = event.changedTouches[0].clientY - this.swipeStartY;
+      const elapsed = Date.now() - this.swipeStartTime;
+      const THRESHOLD = 60;
+      if (Math.abs(dx) < THRESHOLD) return;
+      if (Math.abs(dx) <= Math.abs(dy) * 1.2) return;
+      if (elapsed > 800) return;
+      if (dx < 0) {
+        this.handleNext();
+      } else {
+        this.handlePrev();
+      }
+    },
+    handleSwipeCancel() {
+      this.swipeTracking = false;
     },
     handleFavorite() {
       favoriteKnowledge(this.current.id).then(res => {
@@ -594,13 +654,190 @@ export default {
 .empty-tip { text-align: center; color: #909399; padding: 40px 0; }
 
 @media (max-width: 768px) {
-  .answer-header { flex-direction: column; gap: 8px; }
-  .answer-title { padding-top: 0; }
-  .answer-actions { align-items: stretch; width: 100%; }
-  .answer-hint { text-align: left; }
-  .answer-actions .el-button { align-self: flex-start; }
-  .actions { padding: 12px; }
-  .action-group-nav { justify-content: stretch; }
-  .action-group-nav .el-button { flex: 1; }
+  .knowledge-pane-mobile .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .knowledge-pane-mobile .toolbar-left {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .knowledge-pane-mobile .toolbar-left > *,
+  .knowledge-pane-mobile .toolbar > .el-button {
+    width: 100%;
+  }
+  .knowledge-pane-mobile .toolbar-left >>> .el-radio-group {
+    display: flex;
+    width: 100%;
+  }
+  .knowledge-pane-mobile .toolbar-left >>> .el-radio-button {
+    flex: 1;
+  }
+  .knowledge-pane-mobile .toolbar-left >>> .el-radio-button__inner {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .knowledge-pane-mobile .scope-filter,
+  .knowledge-pane-mobile .tag-filter,
+  .knowledge-pane-mobile .search-input {
+    width: 100%;
+    min-width: 0;
+  }
+  .knowledge-pane-mobile .knowledge-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 16px 14px;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .knowledge-pane-mobile .question-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .knowledge-pane-mobile .question-title {
+    flex-wrap: wrap;
+    min-width: 0;
+    line-height: 1.8;
+  }
+  .knowledge-pane-mobile .question-meta {
+    width: 100%;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 4px 12px;
+    line-height: 1.5;
+  }
+  .knowledge-pane-mobile .question-text,
+  .knowledge-pane-mobile .rich-text {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .knowledge-pane-mobile .rich-text >>> img {
+    max-width: 100%;
+    height: auto;
+  }
+  .knowledge-pane-mobile .rich-text >>> table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  .knowledge-pane-mobile .rich-text >>> pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .knowledge-pane-mobile .answer-header {
+    display: none;
+  }
+  .knowledge-pane-mobile .answer {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-top: 0;
+    box-shadow: none;
+  }
+  .knowledge-pane-mobile .answer-collapse {
+    border: 1px solid #ebeef5;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.06);
+    overflow: hidden;
+  }
+  .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header {
+    height: 46px;
+    padding: 0 16px;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary, #303133);
+    letter-spacing: 0.5px;
+    transition: background-color .2s ease;
+  }
+  .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header:hover {
+    background-color: rgba(102, 126, 234, 0.04);
+  }
+  .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header.is-active {
+    color: var(--color-primary, #667eea);
+    border-bottom-color: #f0f2f5;
+  }
+  .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__wrap {
+    border-top: none;
+    background: linear-gradient(180deg, rgba(102, 126, 234, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+  }
+  .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__content {
+    padding: 0;
+  }
+  .knowledge-pane-mobile .answer-collapse-body {
+    padding: 14px 16px 18px;
+    color: #4a5568;
+    line-height: 1.85;
+    font-size: 15px;
+  }
+  .knowledge-pane-mobile .answer-collapse-body >>> p {
+    margin: 0 0 10px;
+  }
+  .knowledge-pane-mobile .answer-collapse-body >>> p:last-child {
+    margin-bottom: 0;
+  }
+  .knowledge-pane-mobile .answer-collapse-body >>> strong {
+    color: var(--text-primary, #303133);
+  }
+  .knowledge-pane-mobile .qa-divider {
+    display: none;
+  }
+  .knowledge-pane-mobile .actions .el-button {
+    min-width: 0;
+  }
+  .knowledge-pane-mobile .action-group-primary {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .knowledge-pane-mobile .action-group-primary .el-button {
+    flex: 1;
+    width: auto;
+  }
+  .knowledge-pane-mobile .question-ignore {
+    margin-left: auto;
+    color: #f56c6c;
+    border-color: rgba(245, 108, 108, 0.3);
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(245, 108, 108, 0.12);
+  }
+  .knowledge-pane-mobile .question-ignore:hover {
+    background: rgba(245, 108, 108, 0.06);
+  }
+  .knowledge-pane-mobile .action-group-nav {
+    justify-content: stretch;
+  }
+  .knowledge-pane-mobile .action-group-nav .el-button {
+    flex: 1;
+  }
+  .knowledge-pane-mobile .note-item,
+  .knowledge-pane-mobile .note-content {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .knowledge-pane-mobile .note-actions,
+  .knowledge-pane-mobile .note-edit-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog {
+    width: calc(100% - 24px) !important;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__body {
+    padding: 12px 16px;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__footer {
+    padding: 8px 16px 16px;
+  }
 }
 </style>
