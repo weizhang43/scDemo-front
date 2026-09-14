@@ -74,7 +74,7 @@
           </div>
         </div>
         <el-collapse v-else v-model="answerPanel" class="answer-collapse">
-          <el-collapse-item :title="answerPanel ? '隐藏答案' : '查看答案'" name="answer">
+          <el-collapse-item :title="answerExpanded ? '隐藏答案' : '查看答案'" name="answer">
             <div class="rich-text answer-collapse-body" v-html="boldAnswer(current.answer)" />
           </el-collapse-item>
         </el-collapse>
@@ -90,10 +90,6 @@
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
           <el-button type="warning" size="small" icon="el-icon-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
           <el-button v-if="!mobile" type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
-        </div>
-        <div class="action-group action-group-nav">
-          <el-button v-if="!mobile" size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
-          <el-button v-if="!mobile" type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
         </div>
       </div>
 
@@ -227,7 +223,7 @@ export default {
       ],
       loading: false,
       current: null,
-      answerPanel: '',
+      answerPanel: [],
       swipeStartX: 0,
       swipeStartY: 0,
       swipeStartTime: 0,
@@ -258,6 +254,11 @@ export default {
   computed: {
     isFavorite() {
       return !!this.current && this.current.status === 2;
+    },
+    answerExpanded() {
+      return Array.isArray(this.answerPanel)
+        ? this.answerPanel.indexOf('answer') !== -1
+        : this.answerPanel === 'answer';
     }
   },
   created() {
@@ -297,7 +298,7 @@ export default {
     handleModeChange(mode) {
       localStorage.setItem('knowledge-mode', mode);
       this.answerVisible = mode === 'recite';
-      this.answerPanel = mode === 'recite' ? 'answer' : '';
+      this.answerPanel = mode === 'recite' ? ['answer'] : [];
       this.notesCollapsed = mode === 'quiz';
     },
     shouldSkipShortcut(event) {
@@ -398,7 +399,7 @@ export default {
     applyCurrent(knowledge) {
       this.current = knowledge || null;
       this.answerVisible = this.mode === 'recite';
-      this.answerPanel = this.mode === 'recite' ? 'answer' : '';
+      this.answerPanel = this.mode === 'recite' ? ['answer'] : [];
       this.notes = [];
       this.notesCollapsed = this.mode === 'quiz';
       this.noteInputVisible = false;
@@ -528,7 +529,10 @@ export default {
         });
     },
     deleteNote(note) {
-      this.$confirm('确认删除这条笔记？', '提示', { type: 'warning' })
+      this.$confirm('确认删除这条笔记？', '删除笔记', {
+        type: 'warning',
+        customClass: this.mobile ? 'knowledge-delete-confirm knowledge-delete-confirm-mobile' : 'knowledge-delete-confirm'
+      })
         .then(() => deleteKnowledgeNote(note.id))
         .then(() => {
           this.$message.success('笔记已删除');
@@ -654,45 +658,60 @@ export default {
 .empty-tip { text-align: center; color: #909399; padding: 40px 0; }
 
 @media (max-width: 768px) {
+  .knowledge-pane-mobile {
+    width: 100%;
+  }
   .knowledge-pane-mobile .toolbar {
     align-items: stretch;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    margin-bottom: 10px;
   }
   .knowledge-pane-mobile .toolbar-left {
-    align-items: stretch;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
-  }
-  .knowledge-pane-mobile .toolbar-left > *,
-  .knowledge-pane-mobile .toolbar > .el-button {
-    width: 100%;
   }
   .knowledge-pane-mobile .toolbar-left >>> .el-radio-group {
     display: flex;
     width: 100%;
+    grid-column: 1 / -1;
   }
   .knowledge-pane-mobile .toolbar-left >>> .el-radio-button {
     flex: 1;
+    min-width: 0;
   }
   .knowledge-pane-mobile .toolbar-left >>> .el-radio-button__inner {
     width: 100%;
     box-sizing: border-box;
+    padding-right: 8px;
+    padding-left: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .knowledge-pane-mobile .scope-filter,
-  .knowledge-pane-mobile .tag-filter,
+  .knowledge-pane-mobile .tag-filter {
+    width: 100%;
+    min-width: 0;
+  }
   .knowledge-pane-mobile .search-input {
     width: 100%;
     min-width: 0;
+    grid-column: 1 / -1;
   }
   .knowledge-pane-mobile .knowledge-card {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
-    padding: 16px 14px;
+    padding: 16px 14px 14px;
+    border-color: #e8ecf3;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 16px rgba(31, 45, 77, 0.06);
     touch-action: pan-y;
-    user-select: none;
-    -webkit-user-select: none;
+    user-select: text;
+    -webkit-user-select: text;
   }
   .knowledge-pane-mobile .question-header {
     align-items: flex-start;
@@ -700,9 +719,26 @@ export default {
     gap: 8px;
   }
   .knowledge-pane-mobile .question-title {
+    width: 100%;
     flex-wrap: wrap;
     min-width: 0;
+    gap: 4px 6px;
     line-height: 1.8;
+  }
+  .knowledge-pane-mobile .question-title > i {
+    flex-shrink: 0;
+  }
+  .knowledge-pane-mobile .question-title >>> .el-tag {
+    max-width: calc(100% - 42px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .knowledge-pane-mobile .question-title .question-ignore {
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    margin-left: auto;
   }
   .knowledge-pane-mobile .question-meta {
     width: 100%;
@@ -717,6 +753,10 @@ export default {
     min-width: 0;
     overflow-wrap: anywhere;
     word-break: break-word;
+  }
+  .knowledge-pane-mobile .question-text {
+    font-size: 16px;
+    line-height: 1.75;
   }
   .knowledge-pane-mobile .rich-text >>> img {
     max-width: 100%;
@@ -744,9 +784,9 @@ export default {
   }
   .knowledge-pane-mobile .answer-collapse {
     border: 1px solid #ebeef5;
-    border-radius: 14px;
+    border-radius: 10px;
     background: #fff;
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.06);
+    box-shadow: none;
     overflow: hidden;
   }
   .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header {
@@ -754,8 +794,8 @@ export default {
     padding: 0 16px;
     background: transparent;
     border-bottom: 1px solid transparent;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--text-primary, #303133);
     letter-spacing: 0.5px;
     transition: background-color .2s ease;
@@ -794,15 +834,28 @@ export default {
   }
   .knowledge-pane-mobile .actions .el-button {
     min-width: 0;
+    min-height: 38px;
+    margin-left: 0;
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+  .knowledge-pane-mobile .actions {
+    margin-top: 16px;
+    padding: 10px;
+    gap: 10px;
+    border-color: #e8ecf3;
+    border-radius: 10px;
+    background: #f8fafc;
+    box-shadow: none;
   }
   .knowledge-pane-mobile .action-group-primary {
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: stretch;
     gap: 10px;
   }
   .knowledge-pane-mobile .action-group-primary .el-button {
-    flex: 1;
-    width: auto;
+    width: 100%;
   }
   .knowledge-pane-mobile .question-ignore {
     margin-left: auto;
@@ -815,10 +868,39 @@ export default {
     background: rgba(245, 108, 108, 0.06);
   }
   .knowledge-pane-mobile .action-group-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     justify-content: stretch;
+    gap: 10px;
   }
   .knowledge-pane-mobile .action-group-nav .el-button {
-    flex: 1;
+    width: 100%;
+  }
+  .knowledge-pane-mobile .note-input {
+    align-items: stretch;
+    margin-top: 12px;
+  }
+  .knowledge-pane-mobile .note-input .el-button {
+    width: 100%;
+  }
+  .knowledge-pane-mobile .note-list {
+    margin-top: 18px;
+  }
+  .knowledge-pane-mobile .note-timeline {
+    padding-left: 0;
+  }
+  .knowledge-pane-mobile .note-timeline >>> .el-timeline-item {
+    padding-bottom: 14px;
+  }
+  .knowledge-pane-mobile .note-timeline >>> .el-timeline-item__wrapper {
+    padding-left: 20px;
+  }
+  .knowledge-pane-mobile .note-timeline >>> .el-timeline-item__timestamp {
+    margin-bottom: 6px;
+  }
+  .knowledge-pane-mobile .note-item {
+    padding: 11px 12px;
+    border-radius: 8px;
   }
   .knowledge-pane-mobile .note-item,
   .knowledge-pane-mobile .note-content {
@@ -830,14 +912,164 @@ export default {
     flex-wrap: wrap;
     justify-content: flex-start;
   }
+  .knowledge-pane-mobile .note-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .knowledge-pane-mobile .note-actions .el-button {
+    min-height: 30px;
+    padding: 4px 2px;
+    line-height: 1.25;
+    white-space: normal;
+  }
   .knowledge-pane-mobile >>> .knowledge-mobile-dialog {
     width: calc(100% - 24px) !important;
+    max-width: 520px;
+    margin-top: 5vh !important;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__header {
+    padding: 16px 16px 12px;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__title {
+    font-size: 16px;
   }
   .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__body {
-    padding: 12px 16px;
+    max-height: calc(100vh - 220px);
+    padding: 0 16px 4px;
+    overflow-y: auto;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-form-item {
+    margin-bottom: 16px;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-form-item__label {
+    display: block;
+    float: none;
+    width: auto !important;
+    padding: 0 0 6px;
+    line-height: 20px;
+    text-align: left;
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-form-item__content {
+    margin-left: 0 !important;
   }
   .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__footer {
-    padding: 8px 16px 16px;
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom));
+  }
+  .knowledge-pane-mobile >>> .knowledge-mobile-dialog .el-dialog__footer .el-button {
+    min-width: 88px;
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  .knowledge-pane-mobile .toolbar-left >>> .el-radio-button__inner {
+    padding-right: 5px;
+    padding-left: 5px;
+    font-size: 12px;
+  }
+  .knowledge-pane-mobile .question-meta {
+    font-size: 11px;
+  }
+  .knowledge-pane-mobile .actions {
+    padding: 8px;
+  }
+  .knowledge-pane-mobile .actions .el-button {
+    padding-right: 5px;
+    padding-left: 5px;
+    font-size: 12px;
+  }
+}
+</style>
+
+<style>
+.knowledge-delete-confirm {
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  padding-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.knowledge-delete-confirm .el-message-box__header {
+  padding: 18px 20px 8px;
+}
+.knowledge-delete-confirm .el-message-box__title {
+  color: #303133;
+  font-size: 16px;
+  font-weight: 600;
+}
+.knowledge-delete-confirm .el-message-box__content {
+  padding: 12px 20px 8px;
+}
+.knowledge-delete-confirm .el-message-box__status {
+  top: 14px;
+  color: #e6a23c;
+}
+.knowledge-delete-confirm .el-message-box__message {
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.knowledge-delete-confirm .el-message-box__btns {
+  display: flex;
+  gap: 10px;
+  padding: 12px 20px 0;
+}
+.knowledge-delete-confirm .el-message-box__btns .el-button {
+  flex: 1;
+  min-width: 0;
+  margin-left: 0;
+  min-height: 36px;
+  border-radius: 6px;
+}
+.knowledge-delete-confirm .el-message-box__btns .el-button--primary {
+  order: 2;
+  background-color: #f56c6c;
+  border-color: #f56c6c;
+}
+.knowledge-delete-confirm .el-message-box__btns .el-button--primary:hover,
+.knowledge-delete-confirm .el-message-box__btns .el-button--primary:focus {
+  background-color: #f78989;
+  border-color: #f78989;
+}
+
+@media (max-width: 768px) {
+  .knowledge-delete-confirm-mobile {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+    margin-top: 0 !important;
+    padding-bottom: 12px;
+    border-radius: 14px;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__header {
+    padding: 18px 18px 6px;
+    text-align: center;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__title {
+    font-size: 16px;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__content {
+    padding: 10px 20px 8px;
+    text-align: center;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__status {
+    position: static;
+    display: block;
+    margin: 0 auto 8px;
+    transform: none;
+    font-size: 28px;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__message {
+    font-size: 14px;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__btns {
+    padding: 12px 18px 0;
+  }
+  .knowledge-delete-confirm-mobile .el-message-box__btns .el-button {
+    min-height: 40px;
+    font-size: 14px;
   }
 }
 </style>
