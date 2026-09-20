@@ -57,7 +57,7 @@ const routes = [
     meta: { public: true }
   },
   {
-    path: '/konwledage-mobile',
+    path: '/knowledge-mobile',
     name: 'KnowledgeMobilePage',
     component: () => import('../views/work/KnowledgePage.vue'),
     props: { mobile: true },

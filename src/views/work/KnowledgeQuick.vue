@@ -41,7 +41,7 @@
       <el-button v-if="!mobile" type="primary" size="small" icon="el-icon-plus" @click="openAdd">添加知识点</el-button>
     </div>
 
-    <div v-if="current" ref="knowledgeCard" class="knowledge-card" :class="{ 'is-favorite': isFavorite }" v-loading="loading"
+    <div v-if="current" ref="knowledgeCard" :class="['knowledge-card', { 'is-favorite': isFavorite }, pageTurnClass]" v-loading="loading"
       @touchstart.passive="handleSwipeStart"
       @touchmove.passive="handleSwipeMove"
       @touchend="handleSwipeEnd"
@@ -73,6 +73,9 @@
             <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">{{ answerVisible ? '隐藏答案' : '查看答案' }}</el-button>
           </div>
         </div>
+        <transition v-if="!mobile" name="el-fade-in">
+          <div v-if="answerVisible" class="rich-text" v-html="boldAnswer(current.answer)" />
+        </transition>
         <el-collapse v-else v-model="answerPanel" class="answer-collapse">
           <el-collapse-item :title="answerExpanded ? '隐藏答案' : '查看答案'" name="answer">
             <div class="rich-text answer-collapse-body" v-html="boldAnswer(current.answer)" />
@@ -90,6 +93,10 @@
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
           <el-button type="warning" size="small" icon="el-icon-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
           <el-button v-if="!mobile" type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
+        </div>
+        <div v-if="!mobile" class="action-group action-group-nav">
+          <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
+          <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
         </div>
       </div>
 
@@ -228,6 +235,8 @@ export default {
       swipeStartY: 0,
       swipeStartTime: 0,
       swipeTracking: false,
+      pageTurnClass: '',
+      pageTurnTimer: null,
       mode: localStorage.getItem('knowledge-mode') || 'quiz',
       practiceScope: localStorage.getItem('knowledge-practice-scope') || 'all',
       filterType: '',
@@ -267,6 +276,9 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleShortcut);
+    if (this.pageTurnTimer) {
+      clearTimeout(this.pageTurnTimer);
+    }
   },
   methods: {
     restore() {
@@ -350,14 +362,13 @@ export default {
     },
     fetchNext(currentId) {
       if (this.practiceScope === 'random') {
-        this.fetchRandom();
-        return;
+        return this.fetchRandom();
       }
-      this.fetch(getNextKnowledge, currentId, this.filterTag, this.activeFilterType());
+      return this.fetch(getNextKnowledge, currentId, this.filterTag, this.activeFilterType());
     },
     fetchRandom() {
       this.loading = true;
-      getRandomKnowledge(this.filterTag, this.activeFilterType())
+      return getRandomKnowledge(this.filterTag, this.activeFilterType())
         .then(res => {
           this.applyCurrent(res.daoResult);
         })
@@ -369,7 +380,7 @@ export default {
     },
     fetch(api, currentId, tag, type) {
       this.loading = true;
-      api(currentId, tag, type)
+      return api(currentId, tag, type)
         .then(res => {
           this.applyCurrent(res.daoResult);
         })
@@ -455,9 +466,9 @@ export default {
       if (Math.abs(dx) <= Math.abs(dy) * 1.2) return;
       if (elapsed > 800) return;
       if (dx < 0) {
-        this.handleNext();
+        this.startPageTurn('next');
       } else {
-        this.handlePrev();
+        this.startPageTurn('prev');
       }
     },
     handleSwipeCancel() {
@@ -483,6 +494,31 @@ export default {
     },
     handlePrev() {
       this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.activeFilterType());
+    },
+    startPageTurn(direction) {
+      if (!this.mobile || !this.current || this.loading || this.pageTurnClass) return;
+
+      const currentId = this.current.id;
+      const isNext = direction === 'next';
+      this.pageTurnClass = isNext ? 'page-turn-next-out' : 'page-turn-prev-out';
+      this.pageTurnTimer = setTimeout(() => {
+        this.pageTurnTimer = null;
+        const request = isNext
+          ? this.fetchNext(currentId)
+          : this.fetch(getPrevKnowledge, currentId, this.filterTag, this.activeFilterType());
+
+        Promise.resolve(request)
+          .then(() => {
+            this.pageTurnClass = isNext ? 'page-turn-next-in' : 'page-turn-prev-in';
+            this.pageTurnTimer = setTimeout(() => {
+              this.pageTurnClass = '';
+              this.pageTurnTimer = null;
+            }, 300);
+          })
+          .catch(() => {
+            this.pageTurnClass = '';
+          });
+      }, 280);
     },
     handleSaveNote() {
       if (!this.noteContent.trim()) {
@@ -712,6 +748,30 @@ export default {
     touch-action: pan-y;
     user-select: text;
     -webkit-user-select: text;
+  }
+  .knowledge-pane-mobile .knowledge-card.page-turn-next-out,
+  .knowledge-pane-mobile .knowledge-card.page-turn-prev-out,
+  .knowledge-pane-mobile .knowledge-card.page-turn-next-in,
+  .knowledge-pane-mobile .knowledge-card.page-turn-prev-in {
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+  .knowledge-pane-mobile .knowledge-card.page-turn-next-out {
+    transform-origin: left center;
+    animation: knowledge-page-turn-next-out 280ms cubic-bezier(.4, 0, .2, 1) both;
+  }
+  .knowledge-pane-mobile .knowledge-card.page-turn-prev-out {
+    transform-origin: right center;
+    animation: knowledge-page-turn-prev-out 280ms cubic-bezier(.4, 0, .2, 1) both;
+  }
+  .knowledge-pane-mobile .knowledge-card.page-turn-next-in {
+    transform-origin: right center;
+    animation: knowledge-page-turn-next-in 300ms cubic-bezier(.2, .8, .2, 1) both;
+  }
+  .knowledge-pane-mobile .knowledge-card.page-turn-prev-in {
+    transform-origin: left center;
+    animation: knowledge-page-turn-prev-in 300ms cubic-bezier(.2, .8, .2, 1) both;
   }
   .knowledge-pane-mobile .question-header {
     align-items: flex-start;
@@ -980,6 +1040,50 @@ export default {
     padding-right: 5px;
     padding-left: 5px;
     font-size: 12px;
+  }
+}
+
+@keyframes knowledge-page-turn-next-out {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateX(0);
+  }
+  100% {
+    opacity: .15;
+    transform: perspective(1200px) rotateY(-78deg) translateX(-18%);
+  }
+}
+
+@keyframes knowledge-page-turn-prev-out {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateX(0);
+  }
+  100% {
+    opacity: .15;
+    transform: perspective(1200px) rotateY(78deg) translateX(18%);
+  }
+}
+
+@keyframes knowledge-page-turn-next-in {
+  0% {
+    opacity: .15;
+    transform: perspective(1200px) rotateY(78deg) translateX(18%);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateX(0);
+  }
+}
+
+@keyframes knowledge-page-turn-prev-in {
+  0% {
+    opacity: .15;
+    transform: perspective(1200px) rotateY(-78deg) translateX(-18%);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateY(0deg) translateX(0);
   }
 }
 </style>
