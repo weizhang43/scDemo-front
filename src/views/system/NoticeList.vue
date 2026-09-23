@@ -13,7 +13,7 @@
             <el-option label="草稿" :value="0" />
           </el-select>
           <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">搜索</el-button>
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">发布通知</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">发布通知</el-button>
         </div>
       </div>
 
@@ -46,9 +46,9 @@
         <el-table-column label="操作" width="240">
           <template slot-scope="scope">
             <div class="table-actions">
-              <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-edit" class="action-edit" @click="openEdit(scope.row)">编辑</el-button>
               <el-button type="default" plain size="mini" :icon="scope.row.status === 1 ? 'el-icon-bottom' : 'el-icon-upload2'" @click="toggleStatus(scope.row)">{{ scope.row.status === 1 ? '下架' : '发布' }}</el-button>
-              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -101,7 +101,7 @@
             <img v-if="noticeForm.coverImage" :src="noticeForm.coverImage" class="cover-image" alt="封面">
             <i v-else class="el-icon-plus cover-uploader-icon" />
           </el-upload>
-          <el-button v-if="noticeForm.coverImage" type="danger" plain size="mini" icon="el-icon-delete" @click="noticeForm.coverImage = ''">移除</el-button>
+          <el-button v-if="noticeForm.coverImage" type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="noticeForm.coverImage = ''">移除</el-button>
         </el-form-item>
         <el-form-item label="内容">
           <div v-if="dialogVisible" class="editor-wrap">

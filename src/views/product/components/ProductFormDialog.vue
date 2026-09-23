@@ -54,7 +54,7 @@
           <img v-if="form.imageUrl" :src="form.imageUrl" class="uploaded-image" alt="商品图片">
           <i v-else class="el-icon-plus image-uploader-icon" />
         </el-upload>
-        <el-button v-if="form.imageUrl" type="danger" plain size="mini" icon="el-icon-delete" class="clear-image-btn" @click="form.imageUrl = ''">移除</el-button>
+        <el-button v-if="form.imageUrl" type="danger" plain size="mini" icon="el-icon-delete" class="clear-image-btn action-delete" @click="form.imageUrl = ''">移除</el-button>
       </el-form-item>
     </el-form>
     <div slot="footer">

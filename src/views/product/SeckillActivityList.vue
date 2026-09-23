@@ -8,7 +8,7 @@
         </div>
         <div class="header-actions">
           <span class="header-tip">在「商品管理」中选择商品即可发布新的秒杀活动</span>
-          <el-button type="primary" size="small" icon="el-icon-goods" @click="$router.push('/products')">去发布</el-button>
+          <el-button type="primary" size="small" icon="el-icon-goods" class="action-add" @click="$router.push('/products')">去发布</el-button>
         </div>
       </div>
 

@@ -8,7 +8,7 @@
         </div>
         <div class="header-actions">
           <el-button type="default" plain size="small" icon="el-icon-refresh" class="toolbar-action" @click="fetchList">刷新</el-button>
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">发布优惠券</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">发布优惠券</el-button>
         </div>
       </div>
 
@@ -124,7 +124,7 @@
       </el-form>
       <div slot="footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">发布</el-button>
+        <el-button type="primary" class="action-add" :loading="saving" @click="handleSave">发布</el-button>
       </div>
     </el-dialog>
   </div>

@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ tableData.length }} 个角色</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增角色</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">新增角色</el-button>
         </div>
       </div>
 
@@ -35,9 +35,9 @@
         <el-table-column label="操作" width="280">
           <template slot-scope="scope">
             <div class="table-actions">
-              <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-edit" class="action-edit" @click="openEdit(scope.row)">编辑</el-button>
               <el-button type="default" plain size="mini" icon="el-icon-set-up" @click="openAssign(scope.row)">授权</el-button>
-              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>

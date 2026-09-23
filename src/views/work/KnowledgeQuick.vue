@@ -38,7 +38,7 @@
           @select="handleSearchSelect"
         />
       </div>
-      <el-button v-if="!mobile" type="primary" size="small" icon="el-icon-plus" @click="openAdd">添加知识点</el-button>
+      <el-button v-if="!mobile" type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">添加知识点</el-button>
     </div>
 
     <div v-if="current" ref="knowledgeCard" :class="['knowledge-card', { 'is-favorite': isFavorite }, pageTurnClass]" v-loading="loading"
@@ -52,7 +52,7 @@
             <i class="el-icon-question" /> 题干
             <el-tag v-if="current.tag" size="small" :type="tagType(current.tag)" class="question-tag">{{ tagName(current.tag) }}</el-tag>
             <el-tag v-if="isFavorite" type="danger" size="small" effect="plain" class="favorite-tag">★ 已收藏</el-tag>
-            <el-button v-if="mobile" type="danger" plain size="mini" class="question-ignore" icon="el-icon-delete" circle @click="handleIgnore" title="忽略此题" />
+            <el-button v-if="mobile" type="danger" plain size="mini" class="question-ignore action-delete" icon="el-icon-delete" circle @click="handleIgnore" title="忽略此题" />
           </div>
           <div class="question-meta">
             <span class="meta-item"><i class="el-icon-view" /> 已查看 {{ current.viewCount || 0 }} 次</span>
@@ -91,7 +91,7 @@
             :icon="isFavorite ? 'el-icon-star-on' : 'el-icon-star-off'"
             @click="handleFavorite"
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
-          <el-button type="warning" size="small" icon="el-icon-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
+          <el-button type="warning" size="small" icon="el-icon-edit" class="action-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
           <el-button v-if="!mobile" type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
         </div>
         <div v-if="!mobile" class="action-group action-group-nav">
@@ -142,8 +142,8 @@
                 <div class="note-content">{{ note.content }}</div>
                 <div class="note-actions table-actions">
                   <el-button size="mini" type="warning" plain :icon="note.important === 1 ? 'el-icon-star-on' : 'el-icon-star-off'" @click="toggleNoteImportant(note)">{{ note.important === 1 ? '取消重点' : '标为重点' }}</el-button>
-                  <el-button size="mini" type="default" plain icon="el-icon-edit" @click="startEditNote(note)">编辑</el-button>
-                  <el-button size="mini" type="danger" plain icon="el-icon-delete" @click="deleteNote(note)">删除</el-button>
+                  <el-button size="mini" type="default" plain icon="el-icon-edit" class="action-edit" @click="startEditNote(note)">编辑</el-button>
+                  <el-button size="mini" type="danger" plain icon="el-icon-delete" class="action-delete" @click="deleteNote(note)">删除</el-button>
                 </div>
               </template>
             </div>

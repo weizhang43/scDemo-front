@@ -24,7 +24,7 @@
         <div v-if="activeTab === 'daily' || activeTab === 'weekly'">
           <div class="toolbar">
             <span class="toolbar-date"><i class="el-icon-date" /> {{ todayText }}</span>
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="goAdd">
+            <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="goAdd">
               {{ activeTab === 'daily' ? '添加日报' : '添加周报' }}
             </el-button>
           </div>
@@ -49,12 +49,18 @@
             <el-table-column prop="createName" label="生成人" width="120" />
             <el-table-column prop="createTime" label="生成时间" width="170" />
             <el-table-column prop="updateTime" label="修改时间" width="170" />
-            <el-table-column label="操作" width="200">
+            <el-table-column label="操作" width="130">
               <template slot-scope="scope">
-                <div class="table-actions">
-                  <el-button type="default" plain size="mini" icon="el-icon-edit" @click="goDetail(scope.row)">编辑</el-button>
-                  <el-button type="default" plain size="mini" icon="el-icon-s-promotion" @click="handleSend(scope.row)">发送</el-button>
-                  <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+                <div class="table-actions work-table-actions">
+                  <el-tooltip content="编辑" placement="top">
+                    <el-button type="default" plain size="mini" icon="el-icon-edit" class="action-edit" aria-label="编辑" @click="goDetail(scope.row)" />
+                  </el-tooltip>
+                  <el-tooltip content="发送" placement="top">
+                    <el-button type="default" plain size="mini" icon="el-icon-s-promotion" aria-label="发送" @click="handleSend(scope.row)" />
+                  </el-tooltip>
+                  <el-tooltip content="删除" placement="top">
+                    <el-button type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" aria-label="删除" @click="handleDelete(scope.row)" />
+                  </el-tooltip>
                 </div>
               </template>
             </el-table-column>
@@ -89,7 +95,7 @@
                 <el-radio-button label="all">全部</el-radio-button>
               </el-radio-group>
             </div>
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="openPlanAdd">发布计划</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openPlanAdd">发布计划</el-button>
           </div>
 
           <el-table
@@ -119,19 +125,18 @@
               </template>
             </el-table-column>
             <el-table-column prop="finishDate" label="完成日期" width="120" />
-            <el-table-column label="操作" width="200">
+            <el-table-column label="操作" width="130">
               <template slot-scope="scope">
-                <div class="table-actions">
-                  <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openPlanEdit(scope.row)">编辑</el-button>
-                  <el-button
-                    type="default"
-                    plain
-                    size="mini"
-                    icon="el-icon-circle-check"
-                    :disabled="scope.row.status === 2"
-                    @click="handleComplete(scope.row)"
-                  >完成</el-button>
-                  <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handlePlanDelete(scope.row)">删除</el-button>
+                <div class="table-actions work-table-actions">
+                  <el-tooltip content="编辑" placement="top">
+                    <el-button type="default" plain size="mini" icon="el-icon-edit" class="action-edit" aria-label="编辑" @click="openPlanEdit(scope.row)" />
+                  </el-tooltip>
+                  <el-tooltip content="完成" placement="top">
+                    <el-button type="default" plain size="mini" icon="el-icon-circle-check" aria-label="完成" :disabled="scope.row.status === 2" @click="handleComplete(scope.row)" />
+                  </el-tooltip>
+                  <el-tooltip content="删除" placement="top">
+                    <el-button type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" aria-label="删除" @click="handlePlanDelete(scope.row)" />
+                  </el-tooltip>
                 </div>
               </template>
             </el-table-column>
@@ -445,7 +450,24 @@ export default {
 <style>
 /* el-table 行由子组件渲染，scoped 选择器命中不到，故单独非 scoped 声明并用页面类名限定作用域 */
 /* stripe 会把背景色直接刷在隔行的 td 上盖住 tr，因此行着色必须落在 td 而不是 tr */
-.personal-work .el-table .row-finished > td.el-table__cell { background-color: #f0f9eb !important; }
+.personal-work .work-table-actions .el-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+}
+.personal-work .work-table-actions .action-edit { color: var(--color-action-edit); }
+.personal-work .work-table-actions .action-delete { color: var(--color-action-delete); }
+.personal-work .work-table-actions .el-button:not(.is-disabled):hover,
+.personal-work .work-table-actions .el-button:not(.is-disabled):focus { background: #f3f4f6; }
+.personal-work .work-table-actions .action-edit:not(.is-disabled):hover,
+.personal-work .work-table-actions .action-edit:not(.is-disabled):focus { background: var(--color-action-edit-light); color: var(--color-action-edit-hover); }
+.personal-work .work-table-actions .action-delete:not(.is-disabled):hover,
+.personal-work .work-table-actions .action-delete:not(.is-disabled):focus { background: var(--color-action-delete-light); color: var(--color-action-delete-hover); }
+.personal-work .work-table-actions .el-button.is-disabled { border: 0; background: transparent; }
+
 .personal-work .el-table .row-finished:hover > td.el-table__cell { background-color: #e1f3d8 !important; }
 .personal-work .el-table .row-expired > td.el-table__cell { background-color: #fff5f5 !important; color: #cf1322 !important; }
 .personal-work .el-table .row-expired:hover > td.el-table__cell { background-color: #ffe9e7 !important; }

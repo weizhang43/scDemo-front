@@ -9,7 +9,7 @@
           </span>
         </div>
         <div>
-          <el-button type="primary" icon="el-icon-plus" @click="openAdd">新增地址</el-button>
+          <el-button type="primary" icon="el-icon-plus" class="action-add" @click="openAdd">新增地址</el-button>
           <el-button v-if="!self" type="default" plain icon="el-icon-back" @click="goBack">返回</el-button>
         </div>
       </div>
@@ -56,7 +56,7 @@
         <el-table-column label="操作" width="260" align="center" class-name="op-col">
           <template slot-scope="scope">
             <div class="table-actions">
-              <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-edit" class="action-edit" @click="openEdit(scope.row)">编辑</el-button>
               <el-button
                 v-if="scope.row.isDefault !== 1"
                 type="default"
@@ -65,7 +65,7 @@
                 icon="el-icon-star-off"
                 @click="handleSetDefault(scope.row)"
               >设为默认</el-button>
-              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>

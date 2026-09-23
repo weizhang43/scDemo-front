@@ -33,7 +33,7 @@
             plain
             size="mini"
             icon="el-icon-delete"
-            class="btn-remove-avatar"
+            class="btn-remove-avatar action-delete"
             @click="handleRemoveAvatar"
           >移除头像</el-button>
           <div class="avatar-info">

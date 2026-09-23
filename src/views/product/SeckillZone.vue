@@ -75,7 +75,7 @@
               :value="addr.aId"
             />
           </el-select>
-          <el-button v-if="!addressList.length" type="warning" plain size="small" icon="el-icon-plus" @click="goAddress">暂无收货地址，去添加</el-button>
+          <el-button v-if="!addressList.length" type="warning" plain size="small" icon="el-icon-plus" class="action-add" @click="goAddress">暂无收货地址，去添加</el-button>
         </el-form-item>
       </el-form>
       <div slot="footer">

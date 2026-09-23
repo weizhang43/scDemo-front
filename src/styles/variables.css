@@ -14,6 +14,20 @@
   --color-danger: #f56c6c;
   --color-price: #d97706;
 
+  /* 操作语义色 */
+  --color-action-add: #16a34a;
+  --color-action-add-hover: #15803d;
+  --color-action-add-active: #166534;
+  --color-action-add-light: #f0fdf4;
+  --color-action-edit: #2563eb;
+  --color-action-edit-hover: #1d4ed8;
+  --color-action-edit-active: #1e40af;
+  --color-action-edit-light: #eff6ff;
+  --color-action-delete: #dc2626;
+  --color-action-delete-hover: #b91c1c;
+  --color-action-delete-active: #991b1b;
+  --color-action-delete-light: #fef2f2;
+
   /* 灰阶（文字） */
   --text-title: #1f2733;
   --text-primary: #303133;

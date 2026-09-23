@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ total }} 个权限节点</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd(null)">新增顶级权限</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd(null)">新增顶级权限</el-button>
           <el-button size="small" icon="el-icon-refresh" @click="fetchTree">刷新</el-button>
         </div>
       </div>
@@ -45,13 +45,13 @@
         class="context-menu"
         :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }"
       >
-        <li @click="onMenuAdd">
+        <li class="action-add-icon" @click="onMenuAdd">
           <i class="el-icon-plus" />新增子项
         </li>
-        <li @click="onMenuEdit">
+        <li class="action-edit-icon" @click="onMenuEdit">
           <i class="el-icon-edit" />编辑
         </li>
-        <li class="danger" @click="onMenuDelete">
+        <li class="danger action-delete-icon" @click="onMenuDelete">
           <i class="el-icon-delete" />删除
         </li>
       </ul>

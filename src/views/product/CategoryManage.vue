@@ -9,7 +9,7 @@
         </div>
         <div class="header-actions">
           <el-button type="default" plain size="mini" icon="el-icon-refresh" class="toolbar-action" @click="fetchTree">刷新</el-button>
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd(null)">新增一级分类</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd(null)">新增一级分类</el-button>
         </div>
       </div>
 
@@ -49,6 +49,7 @@
                   plain
                   size="mini"
                   icon="el-icon-plus"
+                  class="action-add"
                   aria-label="添加子分类"
                   @click="openAdd(s.row)"
                 />
@@ -59,6 +60,7 @@
                   plain
                   size="mini"
                   icon="el-icon-edit"
+                  class="action-edit"
                   aria-label="编辑"
                   @click="openEdit(s.row)"
                 />
@@ -69,6 +71,7 @@
                   plain
                   size="mini"
                   icon="el-icon-delete"
+                  class="action-delete"
                   aria-label="删除"
                   @click="handleDelete(s.row)"
                 />
@@ -256,14 +259,17 @@ export default {
 }
 .category-manage .category-actions .el-button:hover,
 .category-manage .category-actions .el-button:focus {
-  background: #eef2ff;
-  color: #667eea;
+  background: transparent;
 }
-.category-manage .category-actions .el-button--danger:hover,
-.category-manage .category-actions .el-button--danger:focus {
-  background: #fef0f0;
-  color: #f56c6c;
-}
+.category-manage .category-actions .action-add { color: var(--color-action-add); }
+.category-manage .category-actions .action-edit { color: var(--color-action-edit); }
+.category-manage .category-actions .action-delete { color: var(--color-action-delete); }
+.category-manage .category-actions .action-add:hover,
+.category-manage .category-actions .action-add:focus { background: var(--color-action-add-light); color: var(--color-action-add-hover); }
+.category-manage .category-actions .action-edit:hover,
+.category-manage .category-actions .action-edit:focus { background: var(--color-action-edit-light); color: var(--color-action-edit-hover); }
+.category-manage .category-actions .action-delete:hover,
+.category-manage .category-actions .action-delete:focus { background: var(--color-action-delete-light); color: var(--color-action-delete-hover); }
 .category-manage .tip { margin-left: 10px; color: #909399; font-size: 12px; }
 .category-manage >>> .el-dialog { border-radius: 14px; overflow: hidden; }
 .category-manage >>> .el-dialog__header { padding: 20px 24px 16px; border-bottom: 1px solid #edf0f5; }

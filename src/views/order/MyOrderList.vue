@@ -116,7 +116,7 @@
               <el-button v-if="canApplyAfterSale(scope.row)" type="default" plain size="mini" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
               <el-button v-if="canRebuy(scope.row)" type="default" plain size="mini" icon="el-icon-shopping-cart-2" :loading="rebuyLoadingId === scope.row.oid" @click="handleRebuy(scope.row)">再次购买</el-button>
               <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="danger" plain size="mini" icon="el-icon-close" @click="changeStatus(scope.row, -1)">取消</el-button>
-              <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="handleDelete(scope.row)">删除</el-button>
             </div>
           </template>
         </el-table-column>

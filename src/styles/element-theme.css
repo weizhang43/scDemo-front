@@ -50,6 +50,84 @@
   color: #fff;
 }
 
+/* 新增 / 编辑 / 删除等语义操作 */
+.action-add.el-button,
+.action-edit.el-button,
+.action-delete.el-button {
+  color: #fff;
+}
+.action-add.el-button {
+  background-color: var(--color-action-add);
+  border-color: var(--color-action-add);
+}
+.action-edit.el-button {
+  background-color: var(--color-action-edit);
+  border-color: var(--color-action-edit);
+}
+.action-delete.el-button {
+  background-color: var(--color-action-delete);
+  border-color: var(--color-action-delete);
+}
+.action-add.el-button:hover,
+.action-add.el-button:focus { background-color: var(--color-action-add-hover); border-color: var(--color-action-add-hover); }
+.action-edit.el-button:hover,
+.action-edit.el-button:focus { background-color: var(--color-action-edit-hover); border-color: var(--color-action-edit-hover); }
+.action-delete.el-button:hover,
+.action-delete.el-button:focus { background-color: var(--color-action-delete-hover); border-color: var(--color-action-delete-hover); }
+.action-add.el-button:active { background-color: var(--color-action-add-active); border-color: var(--color-action-add-active); }
+.action-edit.el-button:active { background-color: var(--color-action-edit-active); border-color: var(--color-action-edit-active); }
+.action-delete.el-button:active { background-color: var(--color-action-delete-active); border-color: var(--color-action-delete-active); }
+.action-add.el-button.is-plain,
+.action-edit.el-button.is-plain,
+.action-delete.el-button.is-plain {
+  background: transparent;
+}
+.action-add.el-button.is-plain { color: var(--color-action-add); border-color: var(--color-action-add); }
+.action-edit.el-button.is-plain { color: var(--color-action-edit); border-color: var(--color-action-edit); }
+.action-delete.el-button.is-plain { color: var(--color-action-delete); border-color: var(--color-action-delete); }
+.action-add.el-button.is-plain:hover,
+.action-add.el-button.is-plain:focus { color: #fff; background: var(--color-action-add); border-color: var(--color-action-add); }
+.action-edit.el-button.is-plain:hover,
+.action-edit.el-button.is-plain:focus { color: #fff; background: var(--color-action-edit); border-color: var(--color-action-edit); }
+.action-delete.el-button.is-plain:hover,
+.action-delete.el-button.is-plain:focus { color: #fff; background: var(--color-action-delete); border-color: var(--color-action-delete); }
+.action-add.el-button--text { color: var(--color-action-add); background: transparent; border-color: transparent; }
+.action-edit.el-button--text { color: var(--color-action-edit); background: transparent; border-color: transparent; }
+.action-delete.el-button--text { color: var(--color-action-delete); background: transparent; border-color: transparent; }
+.action-add.el-button--text:hover,
+.action-add.el-button--text:focus { color: var(--color-action-add-hover); background: var(--color-action-add-light); }
+.action-edit.el-button--text:hover,
+.action-edit.el-button--text:focus { color: var(--color-action-edit-hover); background: var(--color-action-edit-light); }
+.action-delete.el-button--text:hover,
+.action-delete.el-button--text:focus { color: var(--color-action-delete-hover); background: var(--color-action-delete-light); }
+.action-add.el-button.is-disabled,
+.action-add.el-button.is-disabled:hover,
+.action-add.el-button.is-disabled:focus,
+.action-edit.el-button.is-disabled,
+.action-edit.el-button.is-disabled:hover,
+.action-edit.el-button.is-disabled:focus,
+.action-delete.el-button.is-disabled,
+.action-delete.el-button.is-disabled:hover,
+.action-delete.el-button.is-disabled:focus {
+  color: #fff;
+  opacity: 0.55;
+}
+.action-add.el-button.is-disabled { background: var(--color-action-add); border-color: var(--color-action-add); }
+.action-edit.el-button.is-disabled { background: var(--color-action-edit); border-color: var(--color-action-edit); }
+.action-delete.el-button.is-disabled { background: var(--color-action-delete); border-color: var(--color-action-delete); }
+.action-add.el-button.is-plain.is-disabled,
+.action-edit.el-button.is-plain.is-disabled,
+.action-delete.el-button.is-plain.is-disabled {
+  background: transparent;
+}
+.action-add.el-button.is-plain.is-disabled { color: var(--color-action-add); }
+.action-edit.el-button.is-plain.is-disabled { color: var(--color-action-edit); }
+.action-delete.el-button.is-plain.is-disabled { color: var(--color-action-delete); }
+
+.action-add-icon { color: var(--color-action-add); }
+.action-edit-icon { color: var(--color-action-edit); }
+.action-delete-icon { color: var(--color-action-delete); }
+
 /* 链接 */
 .el-link.el-link--primary {
   color: var(--color-primary);

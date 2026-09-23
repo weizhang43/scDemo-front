@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ pagination.total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增商品</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">新增商品</el-button>
           <el-button type="info" size="small" icon="el-icon-download" :disabled="exporting" @click="handleExport">
             {{ exporting ? `导出中 ${exportProgress}%` : '导出' }}
           </el-button>
@@ -154,8 +154,8 @@
               <el-dropdown v-if="scope.row.isExpired !== 1" trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
                 <el-button type="default" plain size="mini" icon="el-icon-more">更多</el-button>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="edit" icon="el-icon-edit">编辑</el-dropdown-item>
-                  <el-dropdown-item command="restock" icon="el-icon-plus">补货</el-dropdown-item>
+                  <el-dropdown-item command="edit" icon="el-icon-edit" class="action-edit-icon">编辑</el-dropdown-item>
+                  <el-dropdown-item command="restock" icon="el-icon-plus" class="action-add-icon">补货</el-dropdown-item>
                   <el-dropdown-item command="shelf" divided :icon="scope.row.status === 0 ? 'el-icon-top' : 'el-icon-bottom'">
                     {{ scope.row.status === 0 ? '上架' : '下架' }}
                   </el-dropdown-item>

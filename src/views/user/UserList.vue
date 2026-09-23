@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ pagination.total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">新增用户</el-button>
+          <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="openAdd">新增用户</el-button>
           <el-button type="info" size="small" icon="el-icon-download" :loading="exporting" @click="handleExport">导出</el-button>
         </div>
       </div>
@@ -108,7 +108,7 @@
                 plain
                 size="mini"
                 icon="el-icon-delete"
-                @click="handleDelete(scope.row)"
+                class="action-delete"
               >删除</el-button>
             </div>
           </template>
