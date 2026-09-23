@@ -92,16 +92,29 @@
   font-family: var(--font-mono);
 }
 
-/* 危险文字按钮统一 */
-.el-button--text.text-danger,
-.el-button--text.btn-danger {
-  color: #f56c6c;
+
+/* 表格操作按钮统一布局 */
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
-.el-button--text.text-danger:hover,
-.el-button--text.text-danger:focus,
-.el-button--text.btn-danger:hover,
-.el-button--text.btn-danger:focus {
-  color: #f78989;
+.table-actions .el-button {
+  margin-left: 0 !important;
+}
+.icon-button {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+}
+.toolbar-action {
+  min-height: 30px;
+}
+.table-action--danger {
+  color: var(--color-danger) !important;
 }
 
 /* ============================================================

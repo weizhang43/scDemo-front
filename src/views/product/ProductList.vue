@@ -148,24 +148,26 @@
         </el-table-column>
         <el-table-column label="操作" width="150" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-view" @click="goDetail(scope.row.pId)">详情</el-button>
-            <!-- 过期商品只留详情：编辑/补货/上架/折扣/秒杀对已过期的货都没有意义 -->
-            <el-dropdown v-if="scope.row.isExpired !== 1" trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
-              <el-button type="text" icon="el-icon-more">更多</el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item command="edit" icon="el-icon-edit">编辑</el-dropdown-item>
-                <el-dropdown-item command="restock" icon="el-icon-plus">补货</el-dropdown-item>
-                <el-dropdown-item command="shelf" divided :icon="scope.row.status === 0 ? 'el-icon-top' : 'el-icon-bottom'">
-                  {{ scope.row.status === 0 ? '上架' : '下架' }}
-                </el-dropdown-item>
-                <el-dropdown-item command="promotion" icon="el-icon-price-tag">设折扣</el-dropdown-item>
-                <el-dropdown-item
-                  command="seckill"
-                  icon="el-icon-alarm-clock"
-                  :disabled="!canSeckill(scope.row)"
-                >发布秒杀</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-view" @click="goDetail(scope.row.pId)">详情</el-button>
+              <!-- 过期商品只留详情：编辑/补货/上架/折扣/秒杀对已过期的货都没有意义 -->
+              <el-dropdown v-if="scope.row.isExpired !== 1" trigger="click" @command="cmd => handleCommand(cmd, scope.row)">
+                <el-button type="default" plain size="mini" icon="el-icon-more">更多</el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="edit" icon="el-icon-edit">编辑</el-dropdown-item>
+                  <el-dropdown-item command="restock" icon="el-icon-plus">补货</el-dropdown-item>
+                  <el-dropdown-item command="shelf" divided :icon="scope.row.status === 0 ? 'el-icon-top' : 'el-icon-bottom'">
+                    {{ scope.row.status === 0 ? '上架' : '下架' }}
+                  </el-dropdown-item>
+                  <el-dropdown-item command="promotion" icon="el-icon-price-tag">设折扣</el-dropdown-item>
+                  <el-dropdown-item
+                    command="seckill"
+                    icon="el-icon-alarm-clock"
+                    :disabled="!canSeckill(scope.row)"
+                  >发布秒杀</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </template>
         </el-table-column>
       </el-table>

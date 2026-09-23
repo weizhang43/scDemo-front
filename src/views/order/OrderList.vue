@@ -93,9 +93,11 @@
         </el-table-column>
         <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-            <el-button v-if="scope.row.orderStatus == 1" type="text" icon="el-icon-truck" @click="openShipDialog(scope.row)">发货</el-button>
-            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-delete" class="text-danger" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
+              <el-button v-if="scope.row.orderStatus == 1" type="success" plain size="mini" icon="el-icon-truck" @click="openShipDialog(scope.row)">发货</el-button>
+              <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="danger" plain size="mini" icon="el-icon-close" @click="updateOrderStatus(scope.row.oid,-1)">取消订单</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>

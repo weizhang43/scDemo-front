@@ -7,8 +7,8 @@
           <span v-if="product" class="header-meta mono">ID #{{ product.pId }}</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" icon="el-icon-service" @click="goService">智能客服</el-button>
-          <el-button type="text" icon="el-icon-back" @click="goBack">返回列表</el-button>
+          <el-button type="default" plain icon="el-icon-service" @click="goService">智能客服</el-button>
+          <el-button type="default" plain icon="el-icon-back" @click="goBack">返回列表</el-button>
         </div>
       </div>
 
@@ -87,7 +87,7 @@
                   :value="addr.aId"
                 />
               </el-select>
-              <el-button v-if="!addressList.length" type="text" @click="goAddress">
+              <el-button v-if="!addressList.length" type="warning" plain size="small" icon="el-icon-plus" @click="goAddress">
                 暂无收货地址，去添加
               </el-button>
             </el-form-item>

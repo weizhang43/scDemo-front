@@ -108,14 +108,16 @@
         </el-table-column>
         <el-table-column label="操作" width="300" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-            <el-button v-if="scope.row.orderStatus == 0" type="text" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
-            <el-button v-if="scope.row.orderStatus == 3" type="text" icon="el-icon-circle-check" class="btn-success" @click="changeStatus(scope.row, 2)">确认收货</el-button>
-            <el-button v-if="scope.row.orderStatus == 2" type="text" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
-            <el-button v-if="canApplyAfterSale(scope.row)" type="text" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
-            <el-button v-if="canRebuy(scope.row)" type="text" icon="el-icon-shopping-cart-2" :loading="rebuyLoadingId === scope.row.oid" @click="handleRebuy(scope.row)">再次购买</el-button>
-            <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="text" icon="el-icon-close" class="text-danger" @click="changeStatus(scope.row, -1)">取消</el-button>
-            <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
+              <el-button v-if="scope.row.orderStatus == 0" type="primary" plain size="mini" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
+              <el-button v-if="scope.row.orderStatus == 3" type="success" plain size="mini" icon="el-icon-circle-check" @click="changeStatus(scope.row, 2)">确认收货</el-button>
+              <el-button v-if="scope.row.orderStatus == 2" type="default" plain size="mini" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
+              <el-button v-if="canApplyAfterSale(scope.row)" type="default" plain size="mini" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
+              <el-button v-if="canRebuy(scope.row)" type="default" plain size="mini" icon="el-icon-shopping-cart-2" :loading="rebuyLoadingId === scope.row.oid" @click="handleRebuy(scope.row)">再次购买</el-button>
+              <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="danger" plain size="mini" icon="el-icon-close" @click="changeStatus(scope.row, -1)">取消</el-button>
+              <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -500,12 +502,6 @@ export default {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
-}
-.btn-success {
-  color: #67c23a !important;
-}
-.btn-success:hover {
-  color: #529b2e !important;
 }
 .aftersale-flag {
   margin-top: 4px;

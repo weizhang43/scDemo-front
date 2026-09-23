@@ -98,16 +98,19 @@
         </el-table-column>
         <el-table-column label="操作" width="340" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-document" @click="goDetail(scope.row.uId)">详情</el-button>
-            <el-button type="text" icon="el-icon-location-outline" @click="goAddress(scope.row.uId)">收货地址</el-button>
-            <el-button type="text" icon="el-icon-s-check" @click="openRole(scope.row)">关联角色</el-button>
-            <el-button
-              v-if="$store.getters.hasPerm('user:delete')"
-              type="text"
-              icon="el-icon-delete"
-              class="danger-btn"
-              @click="handleDelete(scope.row)"
-            >删除</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goDetail(scope.row.uId)">详情</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-location-outline" @click="goAddress(scope.row.uId)">收货地址</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-s-check" @click="openRole(scope.row)">关联角色</el-button>
+              <el-button
+                v-if="$store.getters.hasPerm('user:delete')"
+                type="danger"
+                plain
+                size="mini"
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
+              >删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -458,13 +461,6 @@ export default {
 .cell-text {
   color: #4a5568;
   font-size: 13px;
-}
-.danger-btn {
-  color: #f56c6c;
-}
-.danger-btn:hover,
-.danger-btn:focus {
-  color: #f78989;
 }
 /* 关联角色弹框：整行可点的边框卡片 */
 .role-checkbox-group {

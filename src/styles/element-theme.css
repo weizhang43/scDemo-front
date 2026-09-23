@@ -1,6 +1,23 @@
 /* Element UI 主色由默认蓝 #409eff 统一为品牌紫 var(--color-primary)（无 sass-loader，用覆盖方式） */
 
 /* 按钮 */
+.el-button {
+  padding: 7px 13px;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.el-button--small {
+  padding: 6px 11px;
+  font-size: 12px;
+}
+.el-button--mini {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.el-button--text {
+  padding: 5px 9px;
+  font-size: 12px;
+}
 .el-button--primary {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
@@ -31,17 +48,6 @@
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: #fff;
-}
-.el-button--text {
-  color: var(--color-primary);
-}
-.el-button--text:hover,
-.el-button--text:focus {
-  color: #7d92ee;
-}
-.el-button--text.is-disabled,
-.el-button--text.is-disabled:hover {
-  color: #c0c4cc;
 }
 
 /* 链接 */

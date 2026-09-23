@@ -40,7 +40,7 @@
             :loading="submitting"
             @click="handleSimulate('FAIL')"
           >模拟支付失败</el-button>
-          <el-button type="text" @click="goBack">返回订单</el-button>
+          <el-button type="default" plain icon="el-icon-back" @click="goBack">返回订单</el-button>
         </div>
 
         <div v-else class="cashier-done">

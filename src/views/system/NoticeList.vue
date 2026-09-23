@@ -45,9 +45,11 @@
         <el-table-column prop="createTime" label="创建时间" width="160" />
         <el-table-column label="操作" width="240">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
-            <el-button type="text" @click="toggleStatus(scope.row)">{{ scope.row.status === 1 ? '下架' : '发布' }}</el-button>
-            <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
+              <el-button type="default" plain size="mini" :icon="scope.row.status === 1 ? 'el-icon-bottom' : 'el-icon-upload2'" @click="toggleStatus(scope.row)">{{ scope.row.status === 1 ? '下架' : '发布' }}</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -99,7 +101,7 @@
             <img v-if="noticeForm.coverImage" :src="noticeForm.coverImage" class="cover-image" alt="封面">
             <i v-else class="el-icon-plus cover-uploader-icon" />
           </el-upload>
-          <el-button v-if="noticeForm.coverImage" type="text" icon="el-icon-delete" @click="noticeForm.coverImage = ''">移除</el-button>
+          <el-button v-if="noticeForm.coverImage" type="danger" plain size="mini" icon="el-icon-delete" @click="noticeForm.coverImage = ''">移除</el-button>
         </el-form-item>
         <el-form-item label="内容">
           <div v-if="dialogVisible" class="editor-wrap">

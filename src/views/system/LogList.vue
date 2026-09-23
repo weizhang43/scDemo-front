@@ -106,9 +106,9 @@
             <span class="cell-text">{{ formatTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="80" align="center" fixed="right">
+        <el-table-column label="操作" width="90" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-view" @click="openDetail(scope.row)">详情</el-button>
+            <el-button type="default" plain size="mini" icon="el-icon-view" @click="openDetail(scope.row)">详情</el-button>
           </template>
         </el-table-column>
       </el-table>

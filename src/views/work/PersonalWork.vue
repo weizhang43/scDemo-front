@@ -51,9 +51,11 @@
             <el-table-column prop="updateTime" label="修改时间" width="170" />
             <el-table-column label="操作" width="200">
               <template slot-scope="scope">
-                <el-button type="text" icon="el-icon-edit" @click="goDetail(scope.row)">编辑</el-button>
-                <el-button type="text" icon="el-icon-s-promotion" @click="handleSend(scope.row)">发送</el-button>
-                <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+                <div class="table-actions">
+                  <el-button type="default" plain size="mini" icon="el-icon-edit" @click="goDetail(scope.row)">编辑</el-button>
+                  <el-button type="default" plain size="mini" icon="el-icon-s-promotion" @click="handleSend(scope.row)">发送</el-button>
+                  <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -119,14 +121,18 @@
             <el-table-column prop="finishDate" label="完成日期" width="120" />
             <el-table-column label="操作" width="200">
               <template slot-scope="scope">
-                <el-button type="text" icon="el-icon-edit" @click="openPlanEdit(scope.row)">编辑</el-button>
-                <el-button
-                  type="text"
-                  icon="el-icon-circle-check"
-                  :disabled="scope.row.status === 2"
-                  @click="handleComplete(scope.row)"
-                >完成</el-button>
-                <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handlePlanDelete(scope.row)">删除</el-button>
+                <div class="table-actions">
+                  <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openPlanEdit(scope.row)">编辑</el-button>
+                  <el-button
+                    type="default"
+                    plain
+                    size="mini"
+                    icon="el-icon-circle-check"
+                    :disabled="scope.row.status === 2"
+                    @click="handleComplete(scope.row)"
+                  >完成</el-button>
+                  <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handlePlanDelete(scope.row)">删除</el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>

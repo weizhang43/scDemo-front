@@ -8,7 +8,7 @@
           <span class="header-meta">两级分类，初始 7 条对应原商品类型</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" size="small" icon="el-icon-refresh" @click="fetchTree">刷新</el-button>
+          <el-button type="default" plain size="mini" icon="el-icon-refresh" class="toolbar-action" @click="fetchTree">刷新</el-button>
           <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd(null)">新增一级分类</el-button>
         </div>
       </div>
@@ -40,17 +40,39 @@
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="80" align="center" />
         <el-table-column prop="createTime" label="创建时间" width="170" align="center" />
-        <el-table-column label="操作" width="220" align="center">
+        <el-table-column label="操作" width="150" align="center">
           <template slot-scope="s">
-            <div class="table-actions">
-              <el-button
-                v-if="s.row.parentId === 0"
-                type="text"
-                size="mini"
-                @click="openAdd(s.row)"
-              >添加子分类</el-button>
-              <el-button type="text" size="mini" @click="openEdit(s.row)">编辑</el-button>
-              <el-button type="text" size="mini" class="text-danger" @click="handleDelete(s.row)">删除</el-button>
+            <div class="table-actions category-actions">
+              <el-tooltip v-if="s.row.parentId === 0" content="添加子分类" placement="top">
+                <el-button
+                  type="default"
+                  plain
+                  size="mini"
+                  icon="el-icon-plus"
+                  aria-label="添加子分类"
+                  @click="openAdd(s.row)"
+                />
+              </el-tooltip>
+              <el-tooltip content="编辑" placement="top">
+                <el-button
+                  type="default"
+                  plain
+                  size="mini"
+                  icon="el-icon-edit"
+                  aria-label="编辑"
+                  @click="openEdit(s.row)"
+                />
+              </el-tooltip>
+              <el-tooltip content="删除" placement="top">
+                <el-button
+                  type="danger"
+                  plain
+                  size="mini"
+                  icon="el-icon-delete"
+                  aria-label="删除"
+                  @click="handleDelete(s.row)"
+                />
+              </el-tooltip>
             </div>
           </template>
         </el-table-column>
@@ -71,8 +93,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+        <el-button icon="el-icon-close" @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" icon="el-icon-check" :loading="saving" @click="handleSave">保存</el-button>
       </div>
     </el-dialog>
   </div>
@@ -224,10 +246,24 @@ export default {
 .category-table .el-table__expand-icon { color: #667eea; font-size: 14px; }
 .category-table .category-name { color: #1f2937; font-weight: 600; }
 .category-table .level-tag { min-width: 44px; border-radius: 999px; padding: 0 9px; }
-.category-table .table-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; }
-.category-table .el-button--text { margin-left: 0; padding: 6px 8px; border-radius: 6px; transition: background 0.15s, color 0.15s; }
-.category-table .el-button--text:hover { background: #f0f3ff; }
-.category-table .el-button--text.text-danger:hover { background: #fff1f1; }
+.category-manage .category-actions .el-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+}
+.category-manage .category-actions .el-button:hover,
+.category-manage .category-actions .el-button:focus {
+  background: #eef2ff;
+  color: #667eea;
+}
+.category-manage .category-actions .el-button--danger:hover,
+.category-manage .category-actions .el-button--danger:focus {
+  background: #fef0f0;
+  color: #f56c6c;
+}
 .category-manage .tip { margin-left: 10px; color: #909399; font-size: 12px; }
 .category-manage >>> .el-dialog { border-radius: 14px; overflow: hidden; }
 .category-manage >>> .el-dialog__header { padding: 20px 24px 16px; border-bottom: 1px solid #edf0f5; }

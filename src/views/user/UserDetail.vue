@@ -6,7 +6,7 @@
           <span class="card-title">个人信息</span>
           <span v-if="form.uId" class="header-meta">用户ID #{{ form.uId }}</span>
         </div>
-        <el-button v-if="!self" type="text" size="small" icon="el-icon-back" class="btn-back" @click="goBack">返回</el-button>
+        <el-button v-if="!self" type="default" plain size="small" icon="el-icon-back" class="btn-back" @click="goBack">返回</el-button>
       </div>
 
       <div class="detail-body">
@@ -29,7 +29,9 @@
           </el-upload>
           <el-button
             v-if="form.avatar"
-            type="text"
+            type="danger"
+            plain
+            size="mini"
             icon="el-icon-delete"
             class="btn-remove-avatar"
             @click="handleRemoveAvatar"
@@ -289,7 +291,7 @@ export default {
 .btn-back {
   color: #5a6478;
   font-weight: 500;
-  padding: 6px 12px;
+  padding: 5px 9px;
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 }
@@ -366,9 +368,8 @@ export default {
 }
 .btn-remove-avatar {
   margin-top: 10px;
-  padding: 0;
   color: #8a93a4;
-  font-size: 13px;
+  font-size: 12px;
 }
 .btn-remove-avatar:hover,
 .btn-remove-avatar:focus {
@@ -427,10 +428,10 @@ export default {
   margin-left: 0;
 }
 .form-actions >>> .btn-save {
-  min-width: 120px;
+  min-width: 96px;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 10px 22px;
+  padding: 7px 14px;
   font-weight: 600;
   background: var(--gradient-brand);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
@@ -447,9 +448,9 @@ export default {
   box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
 }
 .form-actions >>> .btn-reset {
-  min-width: 96px;
+  min-width: 76px;
   border-radius: var(--radius-sm);
-  padding: 10px 22px;
+  padding: 7px 14px;
   color: #5a6478;
   border-color: #dcdfe6;
   transition: all 0.25s ease;

@@ -6,7 +6,7 @@
           <span class="card-title">订单详情</span>
           <span v-if="order" class="header-meta header-meta--id">订单 {{ order.orderNo || '#' + order.oid }}</span>
         </div>
-        <el-button type="text" icon="el-icon-back" @click="goBack">返回列表</el-button>
+        <el-button type="default" plain icon="el-icon-back" @click="goBack">返回列表</el-button>
       </div>
 
       <div v-if="order" class="detail-body">
@@ -164,25 +164,31 @@
               </template>
             </el-table-column>
             <!-- 点赞与评价是顾客专属动作，本路由商家也能进，故整列门控 -->
-            <el-table-column v-if="isCustomer" label="操作" width="170" align="center">
+            <el-table-column v-if="isCustomer" label="操作" width="210" align="center">
               <template slot-scope="scope">
-                <el-button
-                  v-if="liked(scope.row.pId)"
-                  type="text"
-                  icon="el-icon-thumb"
-                  disabled
-                >已赞</el-button>
-                <el-button
-                  v-else
-                  type="text"
-                  icon="el-icon-thumb"
-                  :loading="likingId === scope.row.pId"
-                  @click="handleLike(scope.row)"
-                >点赞</el-button>
-                <template v-if="canReview">
-                  <el-button v-if="reviewed(scope.row.pId)" type="text" icon="el-icon-star-on" disabled>已评价</el-button>
-                  <el-button v-else type="text" icon="el-icon-star-off" @click="openReview(scope.row)">评价</el-button>
-                </template>
+                <div class="table-actions">
+                  <el-button
+                    v-if="liked(scope.row.pId)"
+                    type="default"
+                    plain
+                    size="mini"
+                    icon="el-icon-thumb"
+                    disabled
+                  >已赞</el-button>
+                  <el-button
+                    v-else
+                    type="default"
+                    plain
+                    size="mini"
+                    icon="el-icon-thumb"
+                    :loading="likingId === scope.row.pId"
+                    @click="handleLike(scope.row)"
+                  >点赞</el-button>
+                  <template v-if="canReview">
+                    <el-button v-if="reviewed(scope.row.pId)" type="default" plain size="mini" icon="el-icon-star-on" disabled>已评价</el-button>
+                    <el-button v-else type="default" plain size="mini" icon="el-icon-star-off" @click="openReview(scope.row)">评价</el-button>
+                  </template>
+                </div>
               </template>
             </el-table-column>
           </el-table>

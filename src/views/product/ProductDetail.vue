@@ -7,8 +7,8 @@
           <span v-if="product" class="header-meta mono">ID #{{ product.pId }}</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" icon="el-icon-service" @click="goService">智能客服</el-button>
-          <el-button type="text" icon="el-icon-back" @click="goBack">返回列表</el-button>
+          <el-button type="default" plain icon="el-icon-service" @click="goService">智能客服</el-button>
+          <el-button type="default" plain icon="el-icon-back" @click="goBack">返回列表</el-button>
         </div>
       </div>
 

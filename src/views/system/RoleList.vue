@@ -34,9 +34,11 @@
         </el-table-column>
         <el-table-column label="操作" width="280">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
-            <el-button type="text" icon="el-icon-set-up" @click="openAssign(scope.row)">授权</el-button>
-            <el-button type="text" icon="el-icon-delete" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-edit" @click="openEdit(scope.row)">编辑</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-set-up" @click="openAssign(scope.row)">授权</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(scope.row)">删除</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>

@@ -90,13 +90,13 @@
         </el-table-column>
         <el-table-column label="操作" width="220" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-document" @click="goOrder(scope.row.oId)">查看订单</el-button>
-            <template v-if="scope.row.status === 0">
-              <el-button type="text" icon="el-icon-check" class="btn-approve"
-                         @click="handleApprove(scope.row)">同意</el-button>
-              <el-button type="text" icon="el-icon-close" class="text-danger"
-                         @click="handleReject(scope.row)">拒绝</el-button>
-            </template>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goOrder(scope.row.oId)">查看订单</el-button>
+              <template v-if="scope.row.status === 0">
+                <el-button type="success" plain size="mini" icon="el-icon-check" @click="handleApprove(scope.row)">同意</el-button>
+                <el-button type="danger" plain size="mini" icon="el-icon-close" @click="handleReject(scope.row)">拒绝</el-button>
+              </template>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -253,12 +253,6 @@ export default {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   font-family: var(--font-mono);
-}
-.btn-approve {
-  color: #67c23a !important;
-}
-.btn-approve:hover {
-  color: #529b2e !important;
 }
 .expand-detail {
   padding: 8px 24px;

@@ -59,10 +59,12 @@
             <span class="cell-time">{{ formatTime(scope.row.createTime) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" align="center" fixed="right">
+        <el-table-column label="操作" width="220" align="center" fixed="right">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-goods" @click="goProduct(scope.row.pId)">查看商品</el-button>
-            <el-button type="text" icon="el-icon-document" @click="goOrder(scope.row.oId)">查看订单</el-button>
+            <div class="table-actions">
+              <el-button type="default" plain size="mini" icon="el-icon-goods" @click="goProduct(scope.row.pId)">查看商品</el-button>
+              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goOrder(scope.row.oId)">查看订单</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>

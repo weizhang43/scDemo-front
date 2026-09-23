@@ -74,7 +74,7 @@
     <el-card v-if="seckills.length" class="section-card seckill-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title seckill-title"><i class="el-icon-alarm-clock" /> 限时秒杀</span>
-        <el-button type="text" size="mini" class="btn-more" @click="go('/seckill')">全部场次 <i class="el-icon-arrow-right" /></el-button>
+        <el-button type="default" plain size="mini" icon="el-icon-alarm-clock" class="btn-more" @click="go('/seckill')">全部场次</el-button>
       </div>
       <div class="seckill-row">
         <div
@@ -114,7 +114,7 @@
     <el-card v-if="coupons.length" class="section-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title"><i class="el-icon-s-ticket accent-purple" /> 领券专区</span>
-        <el-button type="text" size="mini" class="btn-more" @click="go('/coupons')">领券中心 <i class="el-icon-arrow-right" /></el-button>
+        <el-button type="default" plain size="mini" icon="el-icon-s-ticket" class="btn-more" @click="go('/coupons')">领券中心</el-button>
       </div>
       <div class="coupon-row">
         <div
@@ -160,7 +160,7 @@
     <el-card class="section-card newest-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title"><i class="el-icon-goods accent-purple" /> 新品推荐</span>
-        <el-button type="text" size="mini" class="btn-more" @click="go('/gallery')">更多商品 <i class="el-icon-arrow-right" /></el-button>
+        <el-button type="default" plain size="mini" icon="el-icon-goods" class="btn-more" @click="go('/gallery')">更多商品</el-button>
       </div>
       <el-row v-if="newest.length" :gutter="16" class="goods-row">
         <el-col v-for="item in newest" :key="item.pId" :md="6" :sm="12" :xs="12">
@@ -563,7 +563,7 @@ export default {
 .card-title i { margin-right: 6px; }
 .card-sub-inline { font-size: 12px; color: #8a93a4; }
 .accent-purple { color: var(--color-primary-dark); }
-.btn-more { padding: 0; color: var(--color-primary); font-weight: 600; }
+.btn-more { color: var(--color-primary); font-weight: 600; }
 .btn-more:hover, .btn-more:focus { color: #8497f2; }
 
 /* 秒杀 */

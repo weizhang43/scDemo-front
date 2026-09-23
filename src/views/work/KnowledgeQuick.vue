@@ -118,7 +118,7 @@
             <i class="el-icon-edit-outline" /> 我的笔记
             <span class="note-count">{{ notes.length }}</span>
           </div>
-          <el-button type="text" size="mini" :icon="notesCollapsed ? 'el-icon-arrow-down' : 'el-icon-arrow-up'" @click="notesCollapsed = !notesCollapsed">
+          <el-button type="default" plain size="mini" :icon="notesCollapsed ? 'el-icon-arrow-down' : 'el-icon-arrow-up'" @click="notesCollapsed = !notesCollapsed">
             {{ notesCollapsed ? '展开' : '收起' }}
           </el-button>
         </div>
@@ -140,10 +140,10 @@
               </div>
               <template v-else>
                 <div class="note-content">{{ note.content }}</div>
-                <div class="note-actions">
-                  <el-button size="mini" type="text" :icon="note.important === 1 ? 'el-icon-star-on' : 'el-icon-star-off'" @click="toggleNoteImportant(note)">{{ note.important === 1 ? '取消重点' : '标为重点' }}</el-button>
-                  <el-button size="mini" type="text" icon="el-icon-edit" @click="startEditNote(note)">编辑</el-button>
-                  <el-button size="mini" type="text" class="note-delete" icon="el-icon-delete" @click="deleteNote(note)">删除</el-button>
+                <div class="note-actions table-actions">
+                  <el-button size="mini" type="warning" plain :icon="note.important === 1 ? 'el-icon-star-on' : 'el-icon-star-off'" @click="toggleNoteImportant(note)">{{ note.important === 1 ? '取消重点' : '标为重点' }}</el-button>
+                  <el-button size="mini" type="default" plain icon="el-icon-edit" @click="startEditNote(note)">编辑</el-button>
+                  <el-button size="mini" type="danger" plain icon="el-icon-delete" @click="deleteNote(note)">删除</el-button>
                 </div>
               </template>
             </div>
@@ -660,7 +660,7 @@ export default {
 .action-group { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .action-group-primary { flex: none; width: 100%; }
 .action-group-nav { justify-content: flex-end; margin-left: 0; padding-top: 12px; border-top: 1px solid #f0f2f5; }
-.actions .el-button { min-width: 104px; }
+.actions .el-button { min-width: 90px; }
 .note-input { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 .note-list { margin-top: 22px; }
 .note-list-header {
@@ -687,8 +687,6 @@ export default {
 .note-item.is-important { border-color: #e6a23c; background: #fffaf0; }
 .note-content { margin-bottom: 8px; }
 .note-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
-.note-actions .el-button { padding: 0; }
-.note-delete { color: #f56c6c; }
 .note-editing { display: flex; flex-direction: column; gap: 8px; }
 .note-edit-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .empty-tip { text-align: center; color: #909399; padding: 40px 0; }
@@ -894,7 +892,7 @@ export default {
   }
   .knowledge-pane-mobile .actions .el-button {
     min-width: 0;
-    min-height: 38px;
+    min-height: 34px;
     margin-left: 0;
     padding-right: 8px;
     padding-left: 8px;
@@ -978,8 +976,8 @@ export default {
     gap: 4px;
   }
   .knowledge-pane-mobile .note-actions .el-button {
-    min-height: 30px;
-    padding: 4px 2px;
+    min-height: 28px;
+    padding: 3px 2px;
     line-height: 1.25;
     white-space: normal;
   }

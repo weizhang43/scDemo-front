@@ -222,7 +222,7 @@ export default {
 .code-row { display: flex; gap: 10px; }
 .code-row .el-input { flex: 1; }
 .code-btn {
-  height: 44px; border-radius: var(--radius-md);
+  height: 38px; border-radius: var(--radius-md);
   border: 1px solid #cbd5e0; background: #fff; color: #4a5568;
   white-space: nowrap;
 }

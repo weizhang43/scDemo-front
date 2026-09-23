@@ -55,9 +55,10 @@
           <template slot-scope="scope">
             <el-button
               v-if="cancelable(scope.row)"
-              type="text"
+              type="danger"
+              plain
+              size="mini"
               icon="el-icon-close"
-              class="text-danger"
               @click="handleCancel(scope.row)"
             >取消</el-button>
             <span v-else class="cell-muted">—</span>

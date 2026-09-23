@@ -7,8 +7,8 @@
           <span class="header-meta">共 {{ rows.length }} 种商品</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" icon="el-icon-goods" @click="goGallery">继续购物</el-button>
-          <el-button type="text" icon="el-icon-refresh" @click="fetchList">刷新</el-button>
+          <el-button type="default" plain icon="el-icon-goods" class="toolbar-action" @click="goGallery">继续购物</el-button>
+          <el-button type="default" plain icon="el-icon-refresh" class="toolbar-action" @click="fetchList">刷新</el-button>
         </div>
       </div>
 
@@ -43,7 +43,7 @@
                     </el-tag>
                     <template v-else-if="scope.row.exceedStock">
                       <el-tag type="warning" size="mini" effect="light">{{ scope.row.unavailableReason }}</el-tag>
-                      <el-button type="text" size="mini" @click="clampQuantity(scope.row)">
+                      <el-button type="warning" plain size="mini" icon="el-icon-edit" @click="clampQuantity(scope.row)">
                         调整为 {{ scope.row.stock }} 件
                       </el-button>
                     </template>
@@ -79,9 +79,9 @@
               <span class="price-now">¥ {{ lineTotal(scope.row) }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="90">
+          <el-table-column label="操作" width="116">
             <template slot-scope="scope">
-              <el-button type="text" size="mini" class="text-danger" @click="handleDelete(scope.row)">删除</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" class="table-action--danger" @click="handleDelete(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -101,7 +101,7 @@
               :value="addr.aId"
             />
           </el-select>
-          <el-button v-if="!addressList.length" type="text" @click="goAddress">暂无收货地址，去添加</el-button>
+          <el-button v-if="!addressList.length" type="warning" plain size="small" icon="el-icon-plus" @click="goAddress">暂无收货地址，去添加</el-button>
           <coupon-select :order-amount="Number(selectedTotal)" @change="onCouponChange" />
           <div class="footer-right">
             <span class="total-text">
@@ -109,6 +109,8 @@
               <span v-if="coupon" class="coupon-off">已优惠 ¥ {{ coupon.couponAmount.toFixed(2) }}</span>
             </span>
             <el-button
+              type="danger"
+              plain
               icon="el-icon-delete"
               :disabled="!selectedRows.length"
               @click="handleBatchDelete"

@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ total }} 条</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" size="small" icon="el-icon-refresh" @click="fetchList">刷新</el-button>
+          <el-button type="default" plain size="small" icon="el-icon-refresh" class="toolbar-action" @click="fetchList">刷新</el-button>
           <el-button type="primary" size="small" icon="el-icon-plus" @click="openAdd">发布优惠券</el-button>
         </div>
       </div>
@@ -59,8 +59,10 @@
           <template slot-scope="scope">
             <el-button
               v-if="scope.row.status === 1"
-              type="text"
-              class="text-danger"
+              type="danger"
+              plain
+              size="mini"
+              icon="el-icon-video-pause"
               @click="handleDisable(scope.row)"
             >停用</el-button>
             <span v-else style="color:#bbb">-</span>

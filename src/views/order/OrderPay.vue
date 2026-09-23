@@ -7,8 +7,8 @@
           <span v-if="order" class="header-meta">订单 {{ order.orderNo || '#' + order.oid }}</span>
         </div>
         <div class="header-actions">
-          <el-button v-if="order" type="text" icon="el-icon-document" @click="goDetail">订单详情</el-button>
-          <el-button type="text" icon="el-icon-back" @click="goOrders">返回订单列表</el-button>
+          <el-button v-if="order" type="default" plain icon="el-icon-document" @click="goDetail">订单详情</el-button>
+          <el-button type="default" plain icon="el-icon-back" @click="goOrders">返回订单列表</el-button>
         </div>
       </div>
 
@@ -73,7 +73,7 @@
               :disabled="!canPay"
               @click="handlePay"
             >确认支付 ¥ {{ formatAmount(order.orderAmount) }}</el-button>
-            <el-button type="text" class="text-danger" @click="handleCancel">取消订单</el-button>
+            <el-button type="danger" plain icon="el-icon-close" @click="handleCancel">取消订单</el-button>
             <span class="form-tip">{{ polling ? '正在确认支付结果…' : '将跳转到模拟收银台完成支付' }}</span>
           </div>
         </div>

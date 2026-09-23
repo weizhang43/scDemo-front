@@ -67,7 +67,7 @@
       <el-card class="panel-card" shadow="never">
         <div slot="header" class="card-header">
           <span class="card-title"><i class="el-icon-bell accent-blue" /> 系统通知</span>
-          <el-button type="text" size="mini" @click="go('/notices')">管理通知 <i class="el-icon-arrow-right" /></el-button>
+          <el-button type="default" plain size="mini" icon="el-icon-setting" @click="go('/notices')">管理通知</el-button>
         </div>
         <NoticeCarousel height="180px" />
       </el-card>
@@ -77,7 +77,7 @@
     <el-card class="log-card" shadow="never">
       <div slot="header" class="card-header">
         <span class="card-title"><i class="el-icon-document accent-blue" /> 最近操作日志</span>
-        <el-button type="text" size="mini" @click="go('/logs')">查看全部 <i class="el-icon-arrow-right" /></el-button>
+        <el-button type="default" plain size="mini" icon="el-icon-view" @click="go('/logs')">查看全部</el-button>
       </div>
       <el-table v-loading="loadingLogs" :data="recentLogs" size="mini" class="log-table">
         <template slot="empty"><div class="empty-box"><i class="el-icon-circle-check" /> 暂无操作日志</div></template>

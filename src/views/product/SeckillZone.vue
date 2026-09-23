@@ -7,7 +7,7 @@
           <span class="header-meta">共 {{ list.length }} 场</span>
         </div>
         <div class="header-actions">
-          <el-button type="text" icon="el-icon-refresh" @click="fetchData">刷新</el-button>
+          <el-button type="default" plain icon="el-icon-refresh" class="toolbar-action" @click="fetchData">刷新</el-button>
         </div>
       </div>
 
@@ -75,7 +75,7 @@
               :value="addr.aId"
             />
           </el-select>
-          <el-button v-if="!addressList.length" type="text" @click="goAddress">暂无收货地址，去添加</el-button>
+          <el-button v-if="!addressList.length" type="warning" plain size="small" icon="el-icon-plus" @click="goAddress">暂无收货地址，去添加</el-button>
         </el-form-item>
       </el-form>
       <div slot="footer">

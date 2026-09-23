@@ -21,7 +21,7 @@
       <el-card class="panel-card trend-card" shadow="never">
         <div slot="header" class="card-header">
           <span class="card-title"><i class="el-icon-data-line accent" /> 近 7 天销售趋势</span>
-          <el-button type="text" size="mini" @click="go('/stats/monthly-sales')">月度报表 <i class="el-icon-arrow-right" /></el-button>
+          <el-button type="default" plain size="mini" icon="el-icon-data-analysis" @click="go('/stats/monthly-sales')">月度报表</el-button>
         </div>
         <div ref="trendChart" class="trend-chart" v-loading="loadingTrend"></div>
       </el-card>
@@ -120,7 +120,7 @@
       <el-card class="warn-card theme-h" shadow="never">
         <div slot="header" class="card-header">
           <span class="card-title"><i class="el-icon-trophy" /> 本店热销 TOP5</span>
-          <el-button type="text" size="mini" class="btn-more" @click="go('/products')">管理商品 <i class="el-icon-arrow-right" /></el-button>
+          <el-button type="default" plain size="mini" icon="el-icon-goods" class="btn-more" @click="go('/products')">管理商品</el-button>
         </div>
         <div class="card-sub">按累计销量排行</div>
         <div v-loading="loadingRank" class="rank-list">
@@ -450,7 +450,7 @@ export default {
 .theme-s .count-badge { background: #409eff; }
 .warn-badge { background: #f56c6c; }
 .count-badge.zero { background: #c8ccd4; }
-.btn-more { padding: 0; color: var(--color-primary); font-weight: 600; }
+.btn-more { color: var(--color-primary); font-weight: 600; }
 
 /* 表格 */
 .warn-table >>> th.el-table__cell { background: #fafbfc; color: #606266; font-weight: 600; }
