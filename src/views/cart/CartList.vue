@@ -18,6 +18,8 @@
 
       <div v-else>
         <el-table
+          ref="cartTable"
+          class="desktop-cart"
           :data="rows"
           row-key="id"
           :row-class-name="rowClassName"
@@ -85,6 +87,29 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <div class="mobile-cart">
+          <div v-for="row in rows" :key="row.id" class="mobile-cart-item" :class="rowClassName({ row })">
+            <div class="goods-cell">
+              <el-checkbox :value="selectedRows.some(r => r.id === row.id)" :disabled="!rowSelectable(row)" @change="toggleMobileSelection(row, $event)" />
+              <el-image v-if="row.imageUrl" :src="row.imageUrl" fit="cover" class="goods-thumb" />
+              <div v-else class="goods-thumb goods-thumb-empty"><i class="el-icon-goods" /></div>
+              <div class="goods-info">
+                <div class="goods-name">{{ row.pName || ('商品 #' + row.pId) }}</div>
+                <el-tag v-if="!row.available || row.exceedStock" :type="row.available ? 'warning' : 'danger'" size="mini">{{ row.unavailableReason }}</el-tag>
+              </div>
+            </div>
+            <div class="mobile-cart-prices">
+              <span class="price-now">¥ {{ Number(row.effectivePrice || 0).toFixed(2) }} / 件</span>
+              <span>小计 <strong class="price-now">¥ {{ lineTotal(row) }}</strong></span>
+            </div>
+            <div class="mobile-cart-actions">
+              <el-input-number v-model="row.quantity" :min="1" :max="row.stock || 1" :disabled="!row.available" size="mini" controls-position="right" @change="handleQuantityChange(row)" />
+              <el-button v-if="row.exceedStock" type="warning" plain size="mini" @click="clampQuantity(row)">调整为 {{ row.stock }} 件</el-button>
+              <el-button type="danger" plain size="mini" icon="el-icon-delete" @click="handleDelete(row)">删除</el-button>
+            </div>
+          </div>
+        </div>
 
         <div class="cart-footer">
           <span class="footer-meta">已选 {{ selectedRows.length }} 种 / 共 {{ selectedQuantity }} 件</span>
@@ -222,6 +247,9 @@ export default {
     },
     handleSelectionChange(sel) {
       this.selectedRows = sel;
+    },
+    toggleMobileSelection(row, checked) {
+      this.$refs.cartTable.toggleRowSelection(row, checked);
     },
     onCouponChange(c) {
       this.coupon = c;
@@ -462,7 +490,19 @@ export default {
     transform: translateY(0);
   }
 }
+.mobile-cart { display: none; }
 @media (max-width: 768px) {
+  .desktop-cart { display: none; }
+  .mobile-cart { display: grid; gap: 12px; }
+  .mobile-cart-item { border: 1px solid #e8ecf5; border-radius: 12px; padding: 12px; min-width: 0; }
+  .mobile-cart-item.row-disabled { background: #fafafa; }
+  .mobile-cart-item.row-warn { background: #fdf6ec; }
+  .mobile-cart-prices, .mobile-cart-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .mobile-cart-prices { font-size: 13px; color: #6b7280; }
+  .mobile-cart-actions >>> .el-button + .el-button { margin-left: 0; }
+  .goods-cell, .goods-info { min-width: 0; }
+  .cart-footer .address-select { min-width: 0; }
+  .cart-footer .footer-right { justify-content: flex-start; }
   .cart-page {
     padding: 12px;
   }

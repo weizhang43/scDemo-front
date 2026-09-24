@@ -42,24 +42,6 @@
           </div>
         </div>
 
-        <el-descriptions :column="2" border class="detail-desc">
-          <el-descriptions-item label="库存">
-            <span :class="{ 'stock-low': product.stock != null && product.stock < 10 }">
-              {{ product.stock == null ? '-' : product.stock }}
-            </span>
-          </el-descriptions-item>
-          <el-descriptions-item label="保质期">{{ product.shelfLife }} 天</el-descriptions-item>
-          <el-descriptions-item label="生产日期">
-            <i class="el-icon-date desc-icon"></i>{{ formatDate(product.productionDate) }}
-          </el-descriptions-item>
-          <el-descriptions-item label="产地">
-            <i class="el-icon-location-outline desc-icon"></i>{{ product.origin || '-' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="厂家名称" :span="2">
-            {{ product.manufacturer || '-' }}
-          </el-descriptions-item>
-        </el-descriptions>
-
         <div class="buy-block">
           <div class="buy-title">填写订单</div>
           <el-form label-width="90px" class="buy-form">
@@ -100,22 +82,39 @@
             </el-form-item>
             <el-form-item>
               <el-button
-                icon="el-icon-shopping-cart-1"
-                :loading="addingCart"
-                :disabled="!canBuy"
-                @click="handleAddToCart"
-              >加入购物车</el-button>
-              <el-button
                 type="primary"
                 icon="el-icon-wallet"
                 :loading="submitting"
                 :disabled="!canBuy"
                 @click="handleSubmit"
               >下单支付</el-button>
+              <el-button
+                icon="el-icon-shopping-cart-1"
+                :loading="addingCart"
+                :disabled="!canBuy"
+                @click="handleAddToCart"
+              >加入购物车</el-button>
               <span v-if="!canBuy" class="form-tip">{{ disabledReason }}</span>
             </el-form-item>
           </el-form>
         </div>
+
+        <div class="spec-title">商品信息</div>
+        <el-descriptions :column="2" border class="detail-desc">
+          <el-descriptions-item label="库存">
+            <span :class="{ 'stock-low': product.stock != null && product.stock < 10 }">
+              {{ product.stock == null ? '-' : product.stock }}
+            </span>
+          </el-descriptions-item>
+          <el-descriptions-item label="保质期">{{ product.shelfLife }} 天</el-descriptions-item>
+          <el-descriptions-item label="生产日期">
+            <i class="el-icon-date desc-icon"></i>{{ formatDate(product.productionDate) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="产地">
+            <i class="el-icon-location-outline desc-icon"></i>{{ product.origin || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="厂家名称" :span="2">{{ product.manufacturer || '-' }}</el-descriptions-item>
+        </el-descriptions>
 
         <product-review-list :p-id="product.pId" />
       </div>
@@ -366,8 +365,9 @@ export default {
   color: #e6a23c;
   font-weight: 600;
 }
+.spec-title { margin: 24px 0 12px; font-size: 15px; font-weight: 600; color: #1f2733; }
 .buy-block {
-  margin-top: 22px;
+  margin: 22px 0;
   padding: 18px 20px 4px;
   background: linear-gradient(180deg, #fafbff 0%, #f3f5fb 100%);
   border: 1px solid #e8ecf5;

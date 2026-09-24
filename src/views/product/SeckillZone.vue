@@ -245,7 +245,16 @@ export default {
             this.stopPolling();
             this.finishGrab();
             if (vo.status === 'SUCCESS') {
-              this.$message.success('秒杀成功，订单已生成');
+              const oid = vo.oid || vo.oId;
+              this.$confirm(oid ? '秒杀成功，订单已生成，是否立即去支付？' : '秒杀成功，订单已生成，去订单列表查看？', '抢购成功', {
+                confirmButtonText: oid ? '去支付' : '查看订单',
+                cancelButtonText: oid ? '查看订单' : '稍后查看',
+                type: 'success'
+              })
+                .then(() => this.$router.push(oid ? `/pay/${oid}` : '/my-orders'))
+                .catch(action => {
+                  if (oid && action === 'cancel') this.$router.push('/my-orders');
+                });
             } else if (vo.status === 'FAILED') {
               this.$message.error(vo.msg || '秒杀失败');
             }

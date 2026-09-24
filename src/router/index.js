@@ -52,16 +52,11 @@ const routes = [
   },
   {
     path: '/knowledge',
-    name: 'KnowledgePage',
-    component: () => import('../views/work/KnowledgePage.vue'),
-    meta: { public: true }
+    redirect: to => ({ path: '/personal-work', query: { ...to.query, tab: 'knowledge' } })
   },
   {
     path: '/knowledge-mobile',
-    name: 'KnowledgeMobilePage',
-    component: () => import('../views/work/KnowledgePage.vue'),
-    props: { mobile: true },
-    meta: { public: true }
+    redirect: to => ({ path: '/personal-work', query: { ...to.query, tab: 'knowledge' } })
   },
   {
     path: '/jobs',

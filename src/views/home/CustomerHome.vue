@@ -19,28 +19,28 @@
           </div>
         </div>
         <div class="hero-entries">
-          <div class="entry" @click="go('/cart')">
+          <router-link to="/gallery" class="entry entry-primary">
+            <i class="el-icon-goods entry-ico" />
+            <span>逛商城</span>
+          </router-link>
+          <router-link to="/cart" class="entry">
             <el-badge :value="cartCount || undefined" :max="99" class="entry-badge">
               <i class="el-icon-shopping-cart-2 entry-ico" />
             </el-badge>
             <span>购物车</span>
-          </div>
-          <div class="entry" @click="go('/coupons')">
+          </router-link>
+          <router-link to="/coupons" class="entry">
             <el-badge :value="myCouponCount || undefined" :max="99" class="entry-badge">
               <i class="el-icon-s-ticket entry-ico" />
             </el-badge>
             <span>我的券</span>
-          </div>
-          <div class="entry" :class="{ 'entry-warn': unpaidCount > 0 }" @click="go('/my-orders')">
+          </router-link>
+          <router-link to="/my-orders" class="entry" :class="{ 'entry-warn': unpaidCount > 0 }">
             <el-badge :value="unpaidCount || undefined" :max="99" class="entry-badge">
               <i class="el-icon-wallet entry-ico" />
             </el-badge>
             <span>待付款</span>
-          </div>
-          <div class="entry" @click="go('/gallery')">
-            <i class="el-icon-goods entry-ico" />
-            <span>逛商城</span>
-          </div>
+          </router-link>
         </div>
       </div>
       <NoticeCarousel height="196px" class="hero-media" />
@@ -49,7 +49,7 @@
     <!-- 我的待办（横条，有待办才显示） -->
     <div v-if="earliestUnpaid || shippedCount > 0" class="todo-bar">
       <div class="todo-title"><i class="el-icon-bell" /> 我的待办</div>
-      <div v-if="earliestUnpaid" class="todo-item warn" @click="goPay(earliestUnpaid)">
+      <div v-if="earliestUnpaid" class="todo-item warn">
         <div class="todo-main">
           <div class="todo-text">待付款订单 <b>¥{{ earliestUnpaid.orderAmount }}</b></div>
           <div class="todo-sub">
@@ -57,14 +57,14 @@
             <span v-if="unpaidCount > 1" class="todo-extra">等 {{ unpaidCount }} 单</span>
           </div>
         </div>
-        <el-button type="danger" size="mini" round>去支付</el-button>
+        <el-button type="danger" size="mini" round @click="goPay(earliestUnpaid)">去支付</el-button>
       </div>
-      <div v-if="shippedCount > 0" class="todo-item" @click="go('/my-orders')">
+      <div v-if="shippedCount > 0" class="todo-item">
         <div class="todo-main">
           <div class="todo-text">{{ shippedCount }} 个包裹正在路上</div>
           <div class="todo-sub">已发货，记得确认收货</div>
         </div>
-        <el-button type="primary" size="mini" round plain>查看</el-button>
+        <el-button type="primary" size="mini" round plain @click="go('/my-orders')">查看</el-button>
       </div>
     </div>
 
@@ -81,8 +81,13 @@
           v-for="s in seckillTop"
           :key="s.id"
           class="seckill-item"
+          role="button"
+          tabindex="0"
+          :aria-label="`查看秒杀 ${s.pName}`"
           :class="{ disabled: seckillPhase(s).key === 'ended' || (seckillPhase(s).key === 'running' && s.remainStock <= 0) }"
           @click="go('/seckill')"
+          @keyup.enter="go('/seckill')"
+          @keyup.space.prevent="go('/seckill')"
         >
           <div class="seckill-thumb">
             <el-image v-if="s.imageUrl" :src="s.imageUrl" fit="cover" class="thumb-img">
@@ -166,8 +171,13 @@
         <el-col v-for="item in newest" :key="item.pId" :md="6" :sm="12" :xs="12">
           <div
             class="goods-card"
+            role="button"
+            tabindex="0"
+            :aria-label="`查看商品 ${item.pName}`"
             :class="{ 'goods-card--disabled': isSoldOut(item) }"
             @click="goBuy(item.pId)"
+            @keyup.enter="goBuy(item.pId)"
+            @keyup.space.prevent="goBuy(item.pId)"
           >
             <div class="goods-image-wrap">
               <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="goods-image">
@@ -203,7 +213,7 @@
           <span class="card-sub-inline">大家都在买</span>
         </div>
         <div v-loading="loadingSales" class="rank-list">
-          <div v-for="(item, idx) in salesRank" :key="item.pId" class="rank-item" @click="goBuy(item.pId)">
+          <div v-for="(item, idx) in salesRank" :key="item.pId" class="rank-item" role="button" tabindex="0" :aria-label="`查看商品 ${item.pName}`" @click="goBuy(item.pId)" @keyup.enter="goBuy(item.pId)" @keyup.space.prevent="goBuy(item.pId)">
             <span class="rank-no" :class="rankClass(idx)">{{ idx + 1 }}</span>
             <div class="rank-thumb">
               <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="thumb-img">
@@ -231,7 +241,7 @@
           <span class="card-sub-inline">口碑之选</span>
         </div>
         <div v-loading="loadingLikes" class="rank-list">
-          <div v-for="(item, idx) in likeRank" :key="item.pId" class="rank-item" @click="goBuy(item.pId)">
+          <div v-for="(item, idx) in likeRank" :key="item.pId" class="rank-item" role="button" tabindex="0" :aria-label="`查看商品 ${item.pName}`" @click="goBuy(item.pId)" @keyup.enter="goBuy(item.pId)" @keyup.space.prevent="goBuy(item.pId)">
             <span class="rank-no" :class="rankClass(idx)">{{ idx + 1 }}</span>
             <div class="rank-thumb">
               <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="thumb-img">
@@ -432,7 +442,10 @@ export default {
 </script>
 
 <style scoped>
-.customer-home { max-width: 1280px; margin: 0 auto; }
+.customer-home { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; }
+.newest-card { order: 1; }
+.promo-row { order: 2; }
+.rank-row { order: 3; }
 
 /* 顶部横幅：左侧欢迎/搜索/入口 + 右侧公告轮播 */
 .hero {
@@ -460,7 +473,7 @@ export default {
   pointer-events: none;
 }
 .hero-left {
-  flex: 1 1 340px;
+  flex: 1.5 1 450px;
   min-width: 300px;
   position: relative;
 }
@@ -478,6 +491,8 @@ export default {
 }
 .hero-entries { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .entry {
+  color: inherit;
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -490,13 +505,15 @@ export default {
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 .entry:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.26); }
+.entry.entry-primary { background: #fff; color: #254178; font-weight: 700; }
+.entry:focus-visible, .seckill-item:focus-visible, .goods-card:focus-visible, .rank-item:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 .entry.entry-warn { background: rgba(245, 108, 108, 0.32); border-color: rgba(245, 108, 108, 0.5); }
 .entry-ico { font-size: 17px; }
 .entry-badge >>> .el-badge__content { border: none; }
 
 /* 公告轮播（嵌入横幅右侧） */
 .hero-media {
-  flex: 1.15 1 400px;
+  flex: 0.8 1 300px;
   min-width: 300px;
   position: relative;
   border-radius: 12px;
@@ -766,6 +783,7 @@ export default {
   .hero { flex-direction: column; align-items: stretch; gap: 16px; }
   .hero-left, .hero-media { min-width: 0; }
   .hero-search { max-width: none; }
+  .hero-left, .hero-media { flex-basis: auto; }
 }
 @media (max-width: 560px) {
   .seckill-row, .coupon-row { grid-template-columns: 1fr; }

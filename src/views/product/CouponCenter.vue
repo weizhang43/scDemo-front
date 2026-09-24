@@ -171,8 +171,8 @@ export default {
 </script>
 
 <style scoped>
-.coupon-center { width: 100%; }
-.coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 16px; }
+.coupon-center { width: 100%; min-width: 0; }
+.coupon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); gap: 16px; }
 .coupon-item {
   display: flex; align-items: center; border-radius: var(--radius-md); overflow: hidden;
   background: var(--gradient-brand);
@@ -189,4 +189,13 @@ export default {
 .coupon-time { font-size: 12px; opacity: 0.85; }
 .coupon-remain { font-size: 12px; opacity: 0.85; margin-top: 4px; }
 .coupon-right { flex: 0 0 auto; }
+@media (max-width: 600px) {
+  .coupon-item { flex-wrap: wrap; gap: 12px; }
+  .coupon-left { flex-basis: 78px; padding-right: 8px; }
+  .coupon-value { font-size: 22px; }
+  .coupon-mid { padding: 0; }
+  .coupon-time { overflow-wrap: anywhere; }
+  .coupon-right { width: 100%; text-align: right; }
+  .coupon-center >>> .el-card__header .card-header { flex-wrap: wrap; gap: 8px; }
+}
 </style>

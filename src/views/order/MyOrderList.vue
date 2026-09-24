@@ -42,6 +42,7 @@
       </el-tabs>
 
       <el-table
+        class="desktop-orders"
         v-loading="loading"
         :data="tableData"
         border
@@ -121,6 +122,44 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <div v-loading="loading" class="mobile-orders">
+        <div v-for="row in tableData" :key="row.oid" class="mobile-order-card">
+          <div class="mobile-order-head">
+            <span class="order-no">{{ row.orderNo || ('#' + row.oid) }}</span>
+            <el-tag :type="statusTagType(row.orderStatus)" size="small">{{ statusText(row.orderStatus) }}</el-tag>
+          </div>
+          <div class="mobile-order-time">{{ formatTime(row.createTime) }}</div>
+          <div v-for="it in row.orderItems || []" :key="it.id" class="item-card" @click="goProduct(it.pId)">
+            <el-image :src="it.imageUrl || ''" fit="cover" class="item-thumb">
+              <div slot="error" class="item-thumb-fallback"><i class="el-icon-picture-outline" /></div>
+            </el-image>
+            <div class="item-info">
+              <div class="item-name">{{ it.pName || ('商品 #' + it.pId) }}</div>
+              <div class="item-meta">¥{{ formatAmount(it.price) }} × {{ it.quantity }}</div>
+            </div>
+          </div>
+          <div class="mobile-order-meta">
+            <span>{{ row.orderAddress || '暂无收货地址' }}</span>
+            <strong class="cell-amount">¥{{ formatAmount(row.orderAmount) }}</strong>
+          </div>
+          <div v-if="row.orderStatus == 0 && expireMap[row.oid]" class="pay-countdown">
+            <countdown-text :expire-time="expireMap[row.oid]" expired-text="即将取消" />
+          </div>
+          <el-tag v-if="afterSaleTag(row)" :type="afterSaleTag(row).type" size="mini">{{ afterSaleTag(row).label }}</el-tag>
+          <div class="mobile-order-actions">
+            <el-button size="mini" @click="goDetail(row.oid)">详情</el-button>
+            <el-button v-if="row.orderStatus == 0" type="primary" size="mini" @click="goPay(row.oid)">支付</el-button>
+            <el-button v-if="row.orderStatus == 3" type="success" size="mini" @click="changeStatus(row, 2)">确认收货</el-button>
+            <el-button v-if="row.orderStatus == 2" size="mini" :loading="reviewLoadingId === row.oid" @click="openReview(row)">评价</el-button>
+            <el-button v-if="canApplyAfterSale(row)" size="mini" @click="openAfterSale(row)">申请售后</el-button>
+            <el-button v-if="canRebuy(row)" size="mini" :loading="rebuyLoadingId === row.oid" @click="handleRebuy(row)">再次购买</el-button>
+            <el-button v-if="row.orderStatus == 0 || row.orderStatus == 1" type="danger" plain size="mini" @click="changeStatus(row, -1)">取消</el-button>
+            <el-button v-if="row.orderStatus == -1 || row.orderStatus == 2" type="danger" plain size="mini" @click="handleDelete(row)">删除</el-button>
+          </div>
+        </div>
+        <el-empty v-if="!loading && !tableData.length" description="暂无订单数据" />
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -557,7 +596,26 @@ export default {
   font-size: 12px;
   color: #9aa3b2;
   font-variant-numeric: tabular-nums;
-}</style>
+}
+.mobile-orders { display: none; }
+@media (max-width: 768px) {
+  .desktop-orders { display: none; }
+  .mobile-orders { display: grid; gap: 12px; min-height: 80px; }
+  .mobile-order-card { min-width: 0; border: 1px solid #e8ecf5; border-radius: 12px; padding: 14px; }
+  .mobile-order-head, .mobile-order-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .mobile-order-head .order-no { min-width: 0; overflow-wrap: anywhere; }
+  .mobile-order-time { color: #8a93a4; font-size: 12px; margin: 6px 0 12px; }
+  .mobile-order-card .item-card { margin-bottom: 8px; }
+  .mobile-order-meta { border-top: 1px solid #eef0f4; padding-top: 10px; margin-top: 10px; font-size: 12px; color: #6b7280; }
+  .mobile-order-meta span { min-width: 0; overflow-wrap: anywhere; }
+  .mobile-order-meta strong { flex-shrink: 0; }
+  .mobile-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .mobile-order-actions >>> .el-button + .el-button { margin-left: 0; }
+  .search-form { padding: 12px; }
+  .search-actions { margin-left: 0 !important; }
+  .pagination-wrap { overflow-x: auto; }
+}
+</style>
 
 <style>
 .my-order-list .pill-tabs .el-tabs__item.is-active .el-badge__content {

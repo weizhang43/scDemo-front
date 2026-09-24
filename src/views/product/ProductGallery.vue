@@ -24,20 +24,17 @@
       </div>
 
       <div class="list-toolbar">
-        <div v-if="categories.length" class="category-nav">
-          <span class="category-nav-label">分类</span>
-          <span
-            class="category-pill"
-            :class="{ 'is-active': categoryId === null }"
-            @click="handleCategoryChange(null)"
-          >全部</span>
-          <span
-            v-for="c in categories"
-            :key="c.id"
-            class="category-pill"
-            :class="{ 'is-active': categoryId === c.id }"
-            @click="handleCategoryChange(c.id)"
-          >{{ c.name }}</span>
+        <div v-if="categories.length" class="category-groups">
+          <div class="category-nav">
+            <span class="category-nav-label">分类</span>
+            <button type="button" class="category-pill" :class="{ 'is-active': parentCategoryId === null }" :aria-pressed="parentCategoryId === null" @click="handleCategoryChange(null)">全部</button>
+            <button v-for="c in categories" :key="c.id" type="button" class="category-pill" :class="{ 'is-active': parentCategoryId === c.id }" :aria-pressed="parentCategoryId === c.id" @click="handleCategoryChange(c.id)">{{ c.name }}</button>
+          </div>
+          <div v-if="selectedParent && selectedParent.children && selectedParent.children.length" class="category-nav">
+            <span class="category-nav-label">子分类</span>
+            <button type="button" class="category-pill" :class="{ 'is-active': categoryId === selectedParent.id }" :aria-pressed="categoryId === selectedParent.id" @click="handleCategoryChange(selectedParent.id)">全部</button>
+            <button v-for="child in selectedParent.children" :key="child.id" type="button" class="category-pill" :class="{ 'is-active': categoryId === child.id }" :aria-pressed="categoryId === child.id" @click="handleCategoryChange(child.id)">{{ child.name }}</button>
+          </div>
         </div>
         <el-select
           v-model="sortBy"
@@ -94,7 +91,7 @@
               </div>
             </div>
             <div class="goods-body">
-              <div class="goods-name" :title="item.pName">{{ item.pName }}</div>
+              <div class="goods-name" :title="item.pName"><button type="button" class="goods-detail" @click.stop="goBuy(item)">{{ item.pName }}</button></div>
               <div class="goods-meta">
                 <span>成交 {{ item.saleCount || 0 }}</span>
                 <span class="goods-meta-dot">·</span>
@@ -196,6 +193,7 @@ export default {
       sortOptions: SORT_OPTIONS,
       sortBy: '',
       categories: [],
+      parentCategoryId: null,
       categoryId: null,
       searchForm: {
         pName: ''
@@ -208,6 +206,9 @@ export default {
     };
   },
   computed: {
+    selectedParent() {
+      return this.categories.find(c => c.id === this.parentCategoryId);
+    },
     quickBuyPrice() {
       if (!this.quickBuy.item) return 0;
       return Number(this.effectivePriceOf(this.quickBuy.item)) || 0;
@@ -245,6 +246,9 @@ export default {
         .catch(() => {});
     },
     handleCategoryChange(id) {
+      const parent = this.categories.find(c => c.id === id);
+      if (id === null || parent) this.parentCategoryId = id;
+      if (this.categoryId === id) return;
       this.categoryId = id;
       this.pagination.pageNo = 1;
       this.fetchData();
@@ -405,6 +409,7 @@ export default {
     handleReset() {
       this.searchForm.pName = '';
       this.sortBy = '';
+      this.parentCategoryId = null;
       this.categoryId = null;
       this.pagination.pageNo = 1;
       this.fetchData();
@@ -456,6 +461,7 @@ export default {
   color: var(--color-primary);
   margin-right: 6px;
 }
+.category-groups { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .category-nav {
   display: flex;
   align-items: center;
@@ -468,6 +474,8 @@ export default {
   margin-right: 2px;
 }
 .category-pill {
+  font-family: inherit;
+  line-height: 1.4;
   padding: 5px 16px;
   border-radius: var(--radius-card);
   background: #f3f5fa;
@@ -480,6 +488,8 @@ export default {
 .category-pill:hover {
   color: var(--color-primary);
 }
+.category-pill:focus-visible, .goods-detail:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.goods-detail { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; }
 .category-pill.is-active {
   color: #fff;
   background: var(--gradient-brand);
@@ -579,7 +589,8 @@ export default {
   transition: opacity 0.2s ease;
   z-index: 3;
 }
-.goods-card:hover .hover-actions {
+.goods-card:hover .hover-actions,
+.goods-card:focus-within .hover-actions {
   opacity: 1;
 }
 .hover-btn {
@@ -693,7 +704,12 @@ export default {
   color: #67c23a;
   margin-left: 4px;
 }
+@media (hover: none) {
+  .hover-actions { opacity: 1; }
+}
 @media (max-width: 768px) {
+  .list-toolbar { flex-wrap: wrap; }
+  .category-groups { width: 100%; }
   .product-gallery {
     padding: 12px;
   }
