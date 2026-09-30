@@ -72,7 +72,12 @@ export const MENUS = [
       2] },
   { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
   //{ path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
-  { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3] },
+  { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3], children: [
+      { path: '/system/users', label: '用户列表', icon: 'el-icon-user' },
+      { path: '/system/roles', label: '角色列表', icon: 'el-icon-s-check' },
+      { path: '/system/modules', label: '权限列表', icon: 'el-icon-set-up' }
+    ]
+  },
   { path: '/notices', label: '通知管理', icon: 'el-icon-bell', types: [3] },
   { path: '/logs', label: '日志管理', icon: 'el-icon-document', types: [3] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [1, 2, 3] },
@@ -98,4 +103,22 @@ export function canAccess(uType, types) {
 export function landingFor(uType) {
   const menus = menusForType(uType);
   return menus.length ? menus[0].path : '/home';
+}
+
+export function pageKey(route) {
+  return route.path === '/profile' && route.query.id
+    ? `${route.path}?id=${route.query.id}`
+    : route.path;
+}
+
+export function pageTitle(route) {
+  const item = MENUS.reduce((found, menu) => found || [menu, ...(menu.children || [])].find(entry => entry.path === route.path), null);
+  if (item) return item.label;
+  const names = {
+    ProductDetail: '商品详情', ProductBuy: '商品详情', OrderDetail: '订单详情',
+    OrderPay: '订单支付', MockCashier: '收银台', UserProfile: '个人中心',
+    UserDetail: '用户详情', UserAddress: '收货地址', UserList: '用户列表'
+  };
+  const title = names[route.name] || route.meta.title || '页面';
+  return route.params.id ? `${title} #${route.params.id}` : title;
 }

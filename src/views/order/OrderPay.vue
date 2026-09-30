@@ -116,7 +116,15 @@ export default {
       paying: false,
       polling: false,
       pollTimer: null,
-      pollCount: 0
+      pollCount: 0,
+      pageActive: true,
+      hasDeactivated: false,
+      pollGeneration: 0,
+      pollNo: null,
+      orderRequest: 0,
+      expireRequest: 0,
+      payRequest: 0,
+      cancelRequest: 0
     };
   },
   computed: {
@@ -173,54 +181,100 @@ export default {
   created() {
     this.fetchOrder();
     this.fetchExpire();
-    this.timer = setInterval(() => {
-      this.now = Date.now();
-    }, 1000);
+    this.startClock();
     // 从收银台回跳时带 payNo：进入轮询等待网关异步回调驱动订单状态
     if (this.$route.query.payNo) {
       this.startPolling(this.$route.query.payNo);
     }
   },
-  beforeDestroy() {
-    if (this.timer) clearInterval(this.timer);
+  activated() {
+    if (!this.hasDeactivated) return;
+    this.pageActive = true;
+    this.startClock();
+    this.fetchOrder();
+    this.fetchExpire();
+    if (this.pollNo && (!this.order || this.isPending)) this.startPolling(this.pollNo);
+    else this.pollNo = null;
+  },
+  deactivated() {
+    this.hasDeactivated = true;
+    this.pageActive = false;
+    this.orderRequest += 1;
+    this.expireRequest += 1;
+    this.payRequest += 1;
+    this.cancelRequest += 1;
+    this.paying = false;
+    this.loading = false;
+    this.stopClock();
     this.stopPolling();
   },
+  beforeDestroy() {
+    this.pageActive = false;
+    this.orderRequest += 1;
+    this.expireRequest += 1;
+    this.payRequest += 1;
+    this.cancelRequest += 1;
+    this.paying = false;
+    this.loading = false;
+    this.stopClock();
+    this.stopPolling();
+    this.pollNo = null;
+  },
   methods: {
+    startClock() {
+      this.now = Date.now();
+      if (!this.timer) this.timer = setInterval(() => { this.now = Date.now(); }, 1000);
+    },
+    stopClock() {
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+    },
     fetchOrder() {
       const id = this.$route.params.id;
       if (!id) return;
       this.loading = true;
+      const request = ++this.orderRequest;
       // GET /order/{id} 返回裸 Order，没有 ResponseDto 包装；归属校验不通过时是 null
       getOrderById(id)
         .then(res => {
+          if (!this.pageActive || request !== this.orderRequest) return;
           this.order = res || null;
+          if (!this.isPending && this.pollNo) {
+            this.stopPolling();
+            this.pollNo = null;
+          }
         })
         .catch(() => {
-          this.order = null;
+          if (this.pageActive && request === this.orderRequest) this.order = null;
         })
         .finally(() => {
-          this.loading = false;
+          if (this.pageActive && request === this.orderRequest) this.loading = false;
         });
     },
     /** 到期时间取服务端算好的 expireTime —— order-timeout-minute 是 Nacos 配置，前端猜不出来 */
     fetchExpire() {
       const id = String(this.$route.params.id);
+      const request = ++this.expireRequest;
       getMyTimeoutOrders()
         .then(res => {
+          if (!this.pageActive || request !== this.expireRequest) return;
           const row = (res.dataList || []).find(r => String(r.oid) === id);
           this.expireTime = row ? row.expireTime : null;
         })
         // 倒计时是辅助信息，取不到就不渲染，不能挡住支付主流程
         .catch(() => {
-          this.expireTime = null;
+          if (this.pageActive && request === this.expireRequest) this.expireTime = null;
         });
     },
     handlePay() {
       if (!this.canPay) return;
       this.paying = true;
+      const orderId = this.order.oid;
+      const request = ++this.payRequest;
       // 真实网关语义：创建支付单 → 跳收银台，订单状态由网关异步回调驱动
-      createPay(this.order.oid, this.payMethod)
+      createPay(orderId, this.payMethod)
         .then(res => {
+          if (!this.pageActive || request !== this.payRequest) return;
           const vo = res.daoResult || {};
           if (!vo.transactionId) {
             this.$message.error('创建支付单失败，请重试');
@@ -228,16 +282,17 @@ export default {
           }
           this.$router.push({
             path: `/cashier/${vo.transactionId}`,
-            query: { oid: String(this.order.oid), payNo: vo.payNo }
+            query: { oid: String(orderId), payNo: vo.payNo }
           });
         })
         // 失败多半是订单已被超时自动取消，回源刷新让页面自己说明白
         .catch(() => {
+          if (!this.pageActive || request !== this.payRequest) return;
           this.fetchOrder();
           this.fetchExpire();
         })
         .finally(() => {
-          this.paying = false;
+          if (request === this.payRequest) this.paying = false;
         });
     },
     /**
@@ -246,49 +301,63 @@ export default {
      * expireTime 取不到时兜底只轮询 30 次（约 1 分钟），避免无界轮询。
      */
     startPolling(payNo) {
+      if (!this.pageActive) return;
+      this.stopPolling();
+      this.pollNo = payNo;
       this.polling = true;
       this.pollCount = 0;
-      this.schedulePoll(payNo);
+      this.now = Date.now();
+      this.schedulePoll(payNo, this.pollGeneration);
     },
-    schedulePoll(payNo) {
+    schedulePoll(payNo, generation) {
+      if (!this.pageActive || generation !== this.pollGeneration) return;
       const interval = this.pollCount < 30 ? 2000 : 5000;
-      this.pollTimer = setTimeout(() => this.pollOnce(payNo), interval);
+      this.pollTimer = setTimeout(() => this.pollOnce(payNo, generation), interval);
     },
-    pollOnce(payNo) {
+    pollOnce(payNo, generation) {
+      if (!this.pageActive || generation !== this.pollGeneration) return;
+      this.pollTimer = null;
+      this.now = Date.now();
       this.pollCount += 1;
       const deadlineReached = this.expireTime ? this.remainMs <= 0 : this.pollCount > 30;
       if (deadlineReached) {
         this.stopPolling();
+        this.pollNo = null;
         this.$message.warning('支付结果确认超时，请稍后在我的订单中查看');
         this.fetchOrder();
         return;
       }
       getPayStatus(payNo)
         .then(res => {
+          if (!this.pageActive || generation !== this.pollGeneration) return;
           const status = Number(res.daoResult && res.daoResult.status);
           if (status === 1) {
             this.stopPolling();
+            this.pollNo = null;
             this.$message.success('支付成功');
             this.goOrders();
           } else if (status === 2) {
             this.stopPolling();
+            this.pollNo = null;
             this.$message.error('支付失败，可重新发起支付');
             this.fetchOrder();
           } else if (status === 3 || status === 4 || status === 5) {
             this.stopPolling();
+            this.pollNo = null;
             this.$message.info(status === 3 ? '支付已关闭（订单可能已取消）' : '订单已取消，支付款将自动退回');
             this.fetchOrder();
           } else {
             // 0：待支付，继续轮询
-            this.schedulePoll(payNo);
+            this.schedulePoll(payNo, generation);
           }
         })
         // 瞬时网络错误不终止轮询，到期判断会兜底收尾
         .catch(() => {
-          this.schedulePoll(payNo);
+          this.schedulePoll(payNo, generation);
         });
     },
     stopPolling() {
+      this.pollGeneration += 1;
       if (this.pollTimer) {
         clearTimeout(this.pollTimer);
         this.pollTimer = null;
@@ -296,13 +365,19 @@ export default {
       this.polling = false;
     },
     handleCancel() {
+      const orderId = this.order.oid;
+      const request = ++this.cancelRequest;
       this.$confirm('确认取消该订单吗？取消后库存将自动返还。', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       })
-        .then(() => updateOrderStatus(this.order.oid, -1))
         .then(() => {
+          if (this.pageActive && request === this.cancelRequest) return updateOrderStatus(orderId, -1);
+          return null;
+        })
+        .then(() => {
+          if (!this.pageActive || request !== this.cancelRequest) return;
           this.$message.success('订单已取消');
           this.fetchOrder();
           this.expireTime = null;

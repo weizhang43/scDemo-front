@@ -111,39 +111,86 @@ export default {
       grabbingId: null,
       current: null,
       pollTimer: null,
-      pollTimes: 0
+      pollTimes: 0,
+      pollChecking: false,
+      pollGeneration: 0,
+      dataRequest: 0,
+      addressRequest: 0,
+      grabRequest: 0,
+      pendingGrab: null,
+      grabSubmitting: false,
+      pageActive: true,
+      hasDeactivated: false
     };
   },
   created() {
     this.fetchData();
     this.loadAddresses();
-    this.tickTimer = setInterval(() => { this.now = Date.now(); }, 1000);
+    this.startClock();
   },
-  beforeDestroy() {
-    if (this.tickTimer) clearInterval(this.tickTimer);
+  activated() {
+    if (!this.hasDeactivated) return;
+    this.pageActive = true;
+    this.startClock();
+    this.fetchData();
+    this.loadAddresses();
+    if (this.pendingGrab) this.startPolling(this.pendingGrab.uId, this.pendingGrab.activityId);
+    else if (this.grabbing && !this.grabSubmitting) this.finishGrab();
+  },
+  deactivated() {
+    this.hasDeactivated = true;
+    this.pageActive = false;
+    this.dataRequest += 1;
+    this.addressRequest += 1;
+    this.loading = false;
+    this.stopClock();
     this.stopPolling();
   },
+  beforeDestroy() {
+    this.pageActive = false;
+    this.dataRequest += 1;
+    this.addressRequest += 1;
+    this.loading = false;
+    this.stopClock();
+    this.stopPolling();
+    this.grabRequest += 1;
+    this.grabSubmitting = false;
+    this.pendingGrab = null;
+  },
   methods: {
+    startClock() {
+      this.now = Date.now();
+      if (!this.tickTimer) this.tickTimer = setInterval(() => { this.now = Date.now(); }, 1000);
+    },
+    stopClock() {
+      if (this.tickTimer) clearInterval(this.tickTimer);
+      this.tickTimer = null;
+    },
     fetchData() {
       this.loading = true;
+      const request = ++this.dataRequest;
       activeSeckillList()
         .then(res => {
-          this.list = res.dataList || [];
+          if (this.pageActive && request === this.dataRequest) this.list = res.dataList || [];
         })
         .catch(() => {})
-        .finally(() => { this.loading = false; });
+        .finally(() => { if (this.pageActive && request === this.dataRequest) this.loading = false; });
     },
     loadAddresses() {
       const user = this.$store.state.userInfo || {};
       if (!user.uId) return;
+      const request = ++this.addressRequest;
       getAddressList(user.uId)
         .then(res => {
+          if (!this.pageActive || request !== this.addressRequest) return;
           const list = res.dataList || [];
           this.addressList = Array.isArray(list) ? list : [];
           const def = this.addressList.find(a => a.isDefault === 1);
-          this.addressId = def ? def.aId : (this.addressList[0] && this.addressList[0].aId) || null;
+          if (!this.addressList.some(a => a.aId === this.addressId)) {
+            this.addressId = def ? def.aId : (this.addressList[0] && this.addressList[0].aId) || null;
+          }
         })
-        .catch(() => { this.addressList = []; });
+        .catch(() => { if (this.pageActive && request === this.addressRequest) this.addressList = []; });
     },
     formatAddressLabel(addr) {
       if (!addr) return '';
@@ -206,43 +253,63 @@ export default {
       }
       const user = this.$store.state.userInfo || {};
       this.grabbing = true;
+      this.grabSubmitting = true;
       this.grabbingId = this.current.id;
+      const activityId = this.current.id;
+      const request = ++this.grabRequest;
       seckill({
         uId: user.uId,
-        activityId: this.current.id,
+        activityId,
         addressId: this.addressId,
         addPerson: user.uName || user.realName || 'anonymous'
       })
         .then(res => {
+          if (request !== this.grabRequest) return;
+          this.grabSubmitting = false;
           const vo = res.daoResult || {};
           if (vo.status === 'FAILED') {
-            this.$message.error(vo.msg || '抢购失败');
+            if (this.pageActive) this.$message.error(vo.msg || '抢购失败');
             this.finishGrab();
             return;
           }
           this.grabVisible = false;
+          this.pendingGrab = { uId: user.uId, activityId };
+          if (!this.pageActive) return;
           this.$message.info('已抢到名额，正在生成订单…');
-          this.startPolling(user.uId, this.current.id);
+          this.startPolling(user.uId, activityId);
         })
-        .catch(() => { this.finishGrab(); });
+        .catch(() => {
+          if (request !== this.grabRequest) return;
+          this.grabSubmitting = false;
+          this.finishGrab();
+        });
     },
     /** 秒杀是「预扣 → 入队 → 异步落库」，终态只能靠轮询 */
     startPolling(uId, activityId) {
       this.stopPolling();
+      if (!this.pageActive) return;
+      this.pendingGrab = { uId, activityId };
       this.pollTimes = 0;
+      this.pollChecking = false;
+      const generation = this.pollGeneration;
       this.pollTimer = setInterval(() => {
+        if (!this.pageActive || generation !== this.pollGeneration || this.pollChecking) return;
         this.pollTimes += 1;
         if (this.pollTimes > POLL_MAX_TIMES) {
           this.stopPolling();
+          this.pendingGrab = null;
           this.finishGrab();
           this.$message.warning('订单处理中，请稍后到订单列表查看');
           return;
         }
+        this.pollChecking = true;
         seckillResult(uId, activityId)
           .then(res => {
+            if (!this.pageActive || generation !== this.pollGeneration) return;
             const vo = res.daoResult;
             if (!vo || vo.status === 'PENDING') return;
             this.stopPolling();
+            this.pendingGrab = null;
             this.finishGrab();
             if (vo.status === 'SUCCESS') {
               const oid = vo.oid || vo.oId;
@@ -251,9 +318,9 @@ export default {
                 cancelButtonText: oid ? '查看订单' : '稍后查看',
                 type: 'success'
               })
-                .then(() => this.$router.push(oid ? `/pay/${oid}` : '/my-orders'))
+                .then(() => { if (this.pageActive) this.$router.push(oid ? `/pay/${oid}` : '/my-orders'); })
                 .catch(action => {
-                  if (oid && action === 'cancel') this.$router.push('/my-orders');
+                  if (this.pageActive && oid && action === 'cancel') this.$router.push('/my-orders');
                 });
             } else if (vo.status === 'FAILED') {
               this.$message.error(vo.msg || '秒杀失败');
@@ -261,12 +328,17 @@ export default {
             this.fetchData();
           })
           .catch(() => {
+            if (!this.pageActive || generation !== this.pollGeneration) return;
             this.stopPolling();
+            this.pendingGrab = null;
             this.finishGrab();
-          });
+          })
+          .finally(() => { if (generation === this.pollGeneration) this.pollChecking = false; });
       }, POLL_INTERVAL);
     },
     stopPolling() {
+      this.pollGeneration += 1;
+      this.pollChecking = false;
       if (this.pollTimer) {
         clearInterval(this.pollTimer);
         this.pollTimer = null;

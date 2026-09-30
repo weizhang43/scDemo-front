@@ -1,7 +1,9 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import { Message } from 'element-ui';
+import store from '../store';
 import { getToken, getUser } from '../utils/auth';
-import { canAccess, landingFor } from './menuConfig';
+import { canAccess, landingFor, pageKey, pageTitle } from './menuConfig';
 
 Vue.use(VueRouter);
 
@@ -266,30 +268,30 @@ const routes = [
         name: 'UserAddress',
         component: () => import('../views/user/UserAddress.vue'),
         meta: { requiresAuth: true, types: [1, 2, 3] }
-      }
-    ]
-  },
-  {
-    path: '/system',
-    component: () => import('../layout/SystemLayout.vue'),
-    children: [
-      {
-        path: 'users',
-        name: 'SystemUserList',
-        component: () => import('../views/user/UserList.vue'),
-        meta: { requiresAuth: true, types: [3] }
       },
       {
-        path: 'roles',
-        name: 'RoleList',
-        component: () => import('../views/system/RoleList.vue'),
-        meta: { requiresAuth: true, types: [3] }
-      },
-      {
-        path: 'modules',
-        name: 'ModuleList',
-        component: () => import('../views/system/ModuleList.vue'),
-        meta: { requiresAuth: true, types: [3] }
+        path: 'system',
+        component: { render: h => h('router-view') },
+        children: [
+          {
+            path: 'users',
+            name: 'SystemUserList',
+            component: () => import('../views/user/UserList.vue'),
+            meta: { requiresAuth: true, types: [3] }
+          },
+          {
+            path: 'roles',
+            name: 'RoleList',
+            component: () => import('../views/system/RoleList.vue'),
+            meta: { requiresAuth: true, types: [3] }
+          },
+          {
+            path: 'modules',
+            name: 'ModuleList',
+            component: () => import('../views/system/ModuleList.vue'),
+            meta: { requiresAuth: true, types: [3] }
+          }
+        ]
       }
     ]
   }
@@ -300,6 +302,8 @@ const router = new VueRouter({
   routes
 });
 
+let pageSequence = 0;
+
 // 角色选择页、各角色登录页与注册页：已登录用户不应再看到，直接送回其落地页
 function isAuthEntry(path) {
   return path === '/portal' || path === '/register' || path.indexOf('/login') === 0;
@@ -309,13 +313,34 @@ router.beforeEach((to, from, next) => {
   const hasToken = getToken();
   const uType = (getUser() || {}).uType;
   if (to.meta.requiresAuth && !hasToken) {
+    if (store.state.openPages.length) store.commit('CLEAR_PAGES');
     next('/portal');
   } else if (isAuthEntry(to.path) && hasToken) {
     next(landingFor(uType));
+  } else if (hasToken && to.meta.requiresAuth && to.path !== '/home' &&
+    from.path === '/' && from.matched.length === 0) {
+    next('/home');
   } else if (hasToken && !canAccess(uType, to.meta.types)) {
     next(landingFor(uType));
+  } else if (to.meta.requiresAuth && store.state.openPages.length >= 10 &&
+    !store.state.openPages.some(page => page.key === pageKey(to))) {
+    Message.warning('最多打开10个页面');
+    next(false);
   } else {
+    if (!hasToken && store.state.openPages.length) store.commit('CLEAR_PAGES');
     next();
+  }
+});
+
+router.afterEach(to => {
+  if (to.meta.requiresAuth && getToken()) {
+    const key = pageKey(to);
+    store.commit('OPEN_PAGE', {
+      key,
+      title: pageTitle(to),
+      fullPath: to.fullPath,
+      cacheName: `WorkspacePage${++pageSequence}`
+    });
   }
 });
 

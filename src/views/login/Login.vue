@@ -45,14 +45,6 @@
         <el-form ref="loginForm" :model="loginForm" :rules="loginRules" label-position="top" class="login-form auth-form" @submit.native.prevent="handleLogin">
           <el-form-item label="用户名" prop="uName" class="field"><el-input v-model="loginForm.uName" autocomplete="username" placeholder="请输入用户名" prefix-icon="el-icon-user" /></el-form-item>
           <el-form-item label="密码" prop="password" class="field"><el-input v-model="loginForm.password" type="password" autocomplete="current-password" show-password placeholder="请输入密码" prefix-icon="el-icon-lock" /></el-form-item>
-          <div class="user-type-row">
-            <div class="user-type-label"><span>用户类型</span><small>选择你的登录身份</small></div>
-            <div class="user-type-options" role="tablist" aria-label="用户类型">
-              <button v-for="item in roles" :key="item.key" type="button" class="user-type-option" :class="{ 'is-active': item.key === role.key }" :style="{ '--type-accent': item.accent, '--type-soft': item.accentSoft }" role="tab" :aria-selected="item.key === role.key" @click="selectRole(item)">
-                <i :class="item.icon" aria-hidden="true" /><span>{{ item.label }}</span>
-              </button>
-            </div>
-          </div>
           <el-form-item class="action"><el-button native-type="submit" type="primary" :loading="loading" class="auth-submit-btn">{{ loading ? '正在验证…' : '登录' }}</el-button></el-form-item>
           <div class="auth-footer"><router-link to="/forgot-password" class="auth-link link--forgot">忘记密码？</router-link><template v-if="role.canRegister"><span class="footer-sep">|</span>还没有账号？<router-link :to="{ path: '/register', query: { uType: role.uType } }" class="auth-link">去注册</router-link></template></div>
         </el-form>
@@ -83,7 +75,6 @@ export default {
     };
   },
   computed: {
-    roles() { return ROLES; },
     role() { return roleByKey(this.$route.params.role) || ROLES[0]; }
   },
   created() {
@@ -92,9 +83,6 @@ export default {
     getPublishedNotices().then(res => { this.notices = res.dataList || []; }).catch(() => {});
   },
   methods: {
-    selectRole(role) {
-      if (role.key !== this.role.key) this.$router.push(`/login/${role.key}`);
-    },
     slideStyle(n) { return n.coverImage ? { backgroundImage: `url(${n.coverImage})` } : { background: 'linear-gradient(135deg,#182a46,#27486b)' }; },
     openNotice(notice) {
       this.currentNotice = { ...notice, content: this.sanitizeNoticeContent(notice.content) };
@@ -275,15 +263,7 @@ export default {
 .brand-title { margin: 0 0 7px; color: #20242b; font-size: 26px; letter-spacing: 1px; }
 .brand-subtitle { margin: 0; color: #7b8490; font-size: 13px; line-height: 1.6; }
 .auth-form .el-form-item { margin-bottom: 20px; }
-.user-type-row { margin: -2px 0 4px; }
-.user-type-label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; color: #4a5568; font-size: 13px; font-weight: 600; }
-.user-type-label small { color: #a0a8b1; font-size: 10px; font-weight: 400; }
-.user-type-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
-.user-type-option { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; padding: 9px 5px; border: 1px solid #e1e4e7; border-radius: 8px; color: #7b8490; background: #fff; font-size: 12px; cursor: pointer; transition: .18s ease; }
-.user-type-option:hover, .user-type-option:focus-visible { border-color: var(--type-accent); color: var(--type-accent); outline: none; }
-.user-type-option.is-active { border-color: var(--type-accent); color: var(--type-accent); background: var(--type-soft); box-shadow: 0 0 0 2px var(--type-soft); font-weight: 600; }
-.user-type-option i { font-size: 14px; }
-.action { margin-top: 18px; margin-bottom: 10px !important; }
+.action { margin-top: 4px; margin-bottom: 10px !important; }
 .panel-right >>> .auth-submit-btn { background: var(--accent); border-color: var(--accent); }
 .panel-right >>> .auth-submit-btn:hover, .panel-right >>> .auth-submit-btn:focus { background: var(--accent); border-color: var(--accent); filter: brightness(1.08); }
 .footer-sep { margin: 0 8px; color: #d5d8da; }

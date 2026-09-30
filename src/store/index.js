@@ -21,6 +21,7 @@ export default new Vuex.Store({
     token: getToken() || '',
     userInfo: getUser() || {},
     cartCount: 0,
+    openPages: [],
     perms: getPerms()
   },
   getters: {
@@ -54,6 +55,20 @@ export default new Vuex.Store({
     SET_CART_COUNT(state, n) {
       state.cartCount = Number(n) || 0;
     },
+    OPEN_PAGE(state, page) {
+      const index = state.openPages.findIndex(item => item.key === page.key);
+      if (index === -1) {
+        state.openPages.push(page);
+      } else {
+        Vue.set(state.openPages, index, { ...state.openPages[index], fullPath: page.fullPath });
+      }
+    },
+    CLOSE_PAGE(state, key) {
+      state.openPages = state.openPages.filter(page => page.key !== key);
+    },
+    CLEAR_PAGES(state) {
+      state.openPages = [];
+    },
     SET_PERMS(state, perms) {
       state.perms = perms || [];
       localStorage.setItem(PERMS_KEY, JSON.stringify(state.perms));
@@ -63,6 +78,7 @@ export default new Vuex.Store({
       state.userInfo = {};
       // 不归零的话，同一标签页里顾客登出后商家登入会继承一个陈旧角标
       state.cartCount = 0;
+      state.openPages = [];
       state.perms = [];
       removeToken();
       removeUser();

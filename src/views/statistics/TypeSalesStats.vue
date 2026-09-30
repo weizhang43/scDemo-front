@@ -40,7 +40,10 @@ export default {
   data() {
     return {
       loading: false,
-      tableData: []
+      tableData: [],
+      hasDeactivated: false,
+      pageActive: true,
+      dataRequest: 0
     };
   },
   computed: {
@@ -53,9 +56,26 @@ export default {
   },
   mounted() {
     this.chart = echarts.init(this.$refs.chart);
+    this.renderChart();
     window.addEventListener('resize', this.handleResize);
   },
+  activated() {
+    if (!this.hasDeactivated) return;
+    this.pageActive = true;
+    window.addEventListener('resize', this.handleResize);
+    this.fetchData();
+    this.$nextTick(() => { if (this.pageActive) this.handleResize(); });
+  },
+  deactivated() {
+    this.hasDeactivated = true;
+    this.pageActive = false;
+    this.dataRequest += 1;
+    this.loading = false;
+    window.removeEventListener('resize', this.handleResize);
+  },
   beforeDestroy() {
+    this.pageActive = false;
+    this.dataRequest += 1;
     window.removeEventListener('resize', this.handleResize);
     if (this.chart) {
       this.chart.dispose();
@@ -65,14 +85,16 @@ export default {
   methods: {
     fetchData() {
       this.loading = true;
+      const request = ++this.dataRequest;
       getTypeSales().then(res => {
+        if (!this.pageActive || request !== this.dataRequest) return;
         this.tableData = (res.dataList || []).map(r => ({
           typeName: r.categoryName || '未分类',
           salesCount: r.salesCount || 0
         }));
         this.renderChart();
       }).finally(() => {
-        this.loading = false;
+        if (this.pageActive && request === this.dataRequest) this.loading = false;
       });
     },
     percentOf(cnt) {

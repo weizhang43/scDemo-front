@@ -43,7 +43,7 @@
           </router-link>
         </div>
       </div>
-      <NoticeCarousel height="196px" class="hero-media" />
+      <NoticeCarousel ref="notices" height="196px" class="hero-media" />
     </div>
 
     <!-- 我的待办（横条，有待办才显示） -->
@@ -53,7 +53,7 @@
         <div class="todo-main">
           <div class="todo-text">待付款订单 <b>¥{{ earliestUnpaid.orderAmount }}</b></div>
           <div class="todo-sub">
-            剩余 <CountdownText :expire-time="earliestUnpaid.expireTime" expired-text="已超时" />
+            剩余 <CountdownText v-if="pageActive" :expire-time="earliestUnpaid.expireTime" expired-text="已超时" />
             <span v-if="unpaidCount > 1" class="todo-extra">等 {{ unpaidCount }} 单</span>
           </div>
         </div>
@@ -300,7 +300,10 @@ export default {
       loadingLikes: false,
       loadingNewest: false,
       now: Date.now(),
-      timer: null
+      timer: null,
+      hasDeactivated: false,
+      pageActive: true,
+      refreshRequest: 0
     };
   },
   computed: {
@@ -320,47 +323,86 @@ export default {
   },
   created() {
     this.fetchAll();
-    this.timer = setInterval(() => { this.now = Date.now(); }, 1000);
+    this.startClock();
+  },
+  activated() {
+    if (!this.hasDeactivated) return;
+    this.pageActive = true;
+    this.startClock();
+    this.fetchAll();
+    this.$nextTick(() => { if (this.pageActive) this.toggleCarousel(true); });
+  },
+  deactivated() {
+    this.hasDeactivated = true;
+    this.pageActive = false;
+    this.refreshRequest += 1;
+    this.loadingSales = false;
+    this.loadingLikes = false;
+    this.loadingNewest = false;
+    this.stopClock();
+    this.toggleCarousel(false);
   },
   beforeDestroy() {
-    if (this.timer) clearInterval(this.timer);
+    this.pageActive = false;
+    this.refreshRequest += 1;
+    this.loadingSales = false;
+    this.loadingLikes = false;
+    this.loadingNewest = false;
+    this.stopClock();
   },
   methods: {
+    startClock() {
+      this.now = Date.now();
+      if (!this.timer) this.timer = setInterval(() => { this.now = Date.now(); }, 1000);
+    },
+    stopClock() {
+      if (this.timer) clearInterval(this.timer);
+      this.timer = null;
+    },
+    toggleCarousel(active) {
+      const notices = this.$refs.notices;
+      const carousel = notices && notices.$children.find(child => child.$options.name === 'ElCarousel');
+      if (!carousel) return;
+      if (active && typeof carousel.startTimer === 'function') carousel.startTimer();
+      else if (!active && typeof carousel.pauseTimer === 'function') carousel.pauseTimer();
+    },
     fetchAll() {
+      const request = ++this.refreshRequest;
       getCartCount()
-        .then(res => { this.cartCount = Number(res.daoResult) || 0; })
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.cartCount = Number(res.daoResult) || 0; })
         .catch(() => {});
       myCoupons(0)
-        .then(res => { this.myCouponCount = (res.dataList || []).length; })
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.myCouponCount = (res.dataList || []).length; })
         .catch(() => {});
       orderStatusCount({})
         .then(res => {
+          if (!this.pageActive || request !== this.refreshRequest) return;
           const counts = res.daoResult || {};
           this.unpaidCount = Number(counts['0']) || 0;
           this.shippedCount = Number(counts['3']) || 0;
         })
         .catch(() => {});
       getMyTimeoutOrders()
-        .then(res => { this.myTimeoutOrders = res.dataList || []; })
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.myTimeoutOrders = res.dataList || []; })
         .catch(() => {});
       activeSeckillList()
-        .then(res => { this.seckills = res.dataList || []; })
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.seckills = res.dataList || []; })
         .catch(() => {});
       couponCenter()
-        .then(res => { this.coupons = (res.dataList || []).slice(0, COUPON_LIMIT); })
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.coupons = (res.dataList || []).slice(0, COUPON_LIMIT); })
         .catch(() => {});
       this.loadingSales = true;
       getSalesRank(RANK_LIMIT)
-        .then(res => { this.salesRank = res.dataList || []; })
-        .catch(() => {}).finally(() => { this.loadingSales = false; });
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.salesRank = res.dataList || []; })
+        .catch(() => {}).finally(() => { if (this.pageActive && request === this.refreshRequest) this.loadingSales = false; });
       this.loadingLikes = true;
       getLikeRank(RANK_LIMIT)
-        .then(res => { this.likeRank = res.dataList || []; })
-        .catch(() => {}).finally(() => { this.loadingLikes = false; });
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.likeRank = res.dataList || []; })
+        .catch(() => {}).finally(() => { if (this.pageActive && request === this.refreshRequest) this.loadingLikes = false; });
       this.loadingNewest = true;
       getNewestProducts(NEWEST_LIMIT)
-        .then(res => { this.newest = res.dataList || []; })
-        .catch(() => {}).finally(() => { this.loadingNewest = false; });
+        .then(res => { if (this.pageActive && request === this.refreshRequest) this.newest = res.dataList || []; })
+        .catch(() => {}).finally(() => { if (this.pageActive && request === this.refreshRequest) this.loadingNewest = false; });
     },
     doSearch() {
       const kw = this.keyword.trim();

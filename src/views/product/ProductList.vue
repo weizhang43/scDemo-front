@@ -264,6 +264,13 @@ export default {
       exportTaskId: null,
       exportTimer: null,
       exportPollFails: 0,
+      exportChecking: false,
+      exportGeneration: 0,
+      exportRequestGeneration: 0,
+      cancelingExport: false,
+      pageActive: true,
+      hasDeactivated: false,
+      listRequest: 0,
       restockRow: null,
       // 设折扣 / 发布秒杀 共用同一个商品行
       activityRow: null,
@@ -281,7 +288,23 @@ export default {
     this.fetchData();
     this.fetchCategoryTree();
   },
+  activated() {
+    if (!this.hasDeactivated) return;
+    this.pageActive = true;
+    this.fetchData();
+    if (this.exporting && this.exportTaskId && !this.cancelingExport) this.startPolling();
+  },
+  deactivated() {
+    this.hasDeactivated = true;
+    this.pageActive = false;
+    this.listRequest += 1;
+    this.loading = false;
+    this.stopPolling();
+  },
   beforeDestroy() {
+    this.pageActive = false;
+    this.listRequest += 1;
+    this.loading = false;
     this.stopPolling();
   },
   methods: {
@@ -300,6 +323,7 @@ export default {
     },
     fetchData() {
       this.loading = true;
+      const request = ++this.listRequest;
       const params = {
         pName: this.searchForm.pName || '',
         proDesc: this.searchForm.proDesc || '',
@@ -314,6 +338,7 @@ export default {
       };
       pageQuery(params)
         .then(res => {
+          if (!this.pageActive || request !== this.listRequest) return;
           const page = res.daoResult || {};
           this.tableData = page.records || [];
           this.pagination.total = page.total || 0;
@@ -324,7 +349,7 @@ export default {
         })
         .catch(() => {})
         .finally(() => {
-          this.loading = false;
+          if (this.pageActive && request === this.listRequest) this.loading = false;
         });
     },
     handleTabChange() {
@@ -462,11 +487,15 @@ export default {
         // 导出接口只认 isExpired，不带上下架：在售 / 下架 两个 tab 导出的都是全部未过期商品
         isExpired: this.tabQuery.isExpired
       };
+      this.stopPolling();
+      this.cancelingExport = false;
       this.exporting = true;
       this.exportProgress = 0;
       this.exportTaskId = null;
+      const generation = ++this.exportRequestGeneration;
       exportProductAsync(params)
         .then(res => {
+          if (generation !== this.exportRequestGeneration) return;
           const vo = res.daoResult;
           if (!vo || !vo.taskId) {
             this.exporting = false;
@@ -475,26 +504,32 @@ export default {
           // 提交时已被拒（线程池满）
           if (vo.status === 'FAILED') {
             this.exporting = false;
-            this.$message.error(vo.errorMsg || '导出失败');
+            if (this.pageActive) this.$message.error(vo.errorMsg || '导出失败');
             return;
           }
           this.exportTaskId = vo.taskId;
-          this.startPolling();
+          if (this.pageActive && !this.cancelingExport) this.startPolling();
         })
-        .catch(() => { this.exporting = false; });
+        .catch(() => { if (generation === this.exportRequestGeneration) this.exporting = false; });
     },
     startPolling() {
       this.stopPolling();
+      if (!this.pageActive || !this.exportTaskId || this.cancelingExport) return;
       this.exportPollFails = 0;
+      this.exportChecking = false;
+      const generation = this.exportGeneration;
       this.exportTimer = setInterval(() => {
-        if (!this.exportTaskId) return;
+        if (!this.pageActive || generation !== this.exportGeneration || !this.exportTaskId || this.exportChecking) return;
+        this.exportChecking = true;
         getExportStatus(this.exportTaskId)
           .then(res => {
+            if (!this.pageActive || generation !== this.exportGeneration) return;
             this.exportPollFails = 0;
             const vo = res.daoResult;
             if (!vo) {
               this.stopPolling();
               this.exporting = false;
+              this.exportTaskId = null;
               this.$message.error('任务不存在或已过期');
               return;
             }
@@ -507,17 +542,21 @@ export default {
             } else if (vo.status === 'FAILED') {
               this.stopPolling();
               this.exporting = false;
+              this.exportTaskId = null;
               this.$message.error(vo.errorMsg || '导出失败');
             } else if (vo.status === 'CANCELED') {
               this.stopPolling();
               this.exporting = false;
+              this.exportTaskId = null;
               this.$message.info('导出已取消');
             }
           })
           .catch(err => {
+            if (!this.pageActive || generation !== this.exportGeneration) return;
             if (err && err.response && err.response.status === 401) {
               this.stopPolling();
               this.exporting = false;
+              this.exportTaskId = null;
               return;
             }
             // 连续失败（如断网）时终止轮询，避免定时器永不停止
@@ -525,33 +564,52 @@ export default {
             if (this.exportPollFails >= 5) {
               this.stopPolling();
               this.exporting = false;
+              this.exportTaskId = null;
               this.$message.error('导出状态查询多次失败，请稍后重试');
             }
-          });
+          })
+          .finally(() => { if (generation === this.exportGeneration) this.exportChecking = false; });
       }, 2000);
     },
     stopPolling() {
+      this.exportGeneration += 1;
+      this.exportChecking = false;
       if (this.exportTimer) {
         clearInterval(this.exportTimer);
         this.exportTimer = null;
       }
     },
     triggerDownload() {
-      downloadExportFile(this.exportTaskId)
-        .then(res => downloadBlob(res, '商品列表.xlsx'))
-        .catch(() => {})
-        .finally(() => { this.exportTaskId = null; });
+      const taskId = this.exportTaskId;
+      this.exportTaskId = null;
+      this.exportRequestGeneration += 1;
+      this.stopPolling();
+      downloadExportFile(taskId)
+        .then(res => { if (this.pageActive) downloadBlob(res, '商品列表.xlsx'); })
+        .catch(() => {});
     },
     handleCancelExport() {
       if (!this.exportTaskId) return;
-      cancelExport(this.exportTaskId)
+      const taskId = this.exportTaskId;
+      const generation = this.exportRequestGeneration;
+      this.cancelingExport = true;
+      this.stopPolling();
+      cancelExport(taskId)
         .then(() => {
+          if (this.exportTaskId !== taskId || generation !== this.exportRequestGeneration) return;
           this.stopPolling();
-          this.exporting = false;
           this.exportTaskId = null;
-          this.$message.info('已取消导出');
+          this.exportRequestGeneration += 1;
+          this.cancelingExport = false;
+          this.exporting = false;
+          if (this.pageActive) this.$message.info('已取消导出');
         })
-        .catch(() => {});
+        .catch(() => {})
+        .finally(() => {
+          if (generation !== this.exportRequestGeneration) return;
+          this.cancelingExport = false;
+          if (this.pageActive && this.exporting && this.exportTaskId === taskId) this.startPolling();
+        });
     }
   }
 };
@@ -687,17 +745,7 @@ export default {
 </style>
 
 <style>
-/* 页面特有：卡片头吸顶（要求卡片 overflow 可见）、更紧凑的行高、行状态底色 */
-.product-list .el-card {
-  overflow: visible;
-}
-.product-list .el-card__header {
-  border-top-left-radius: var(--radius-card);
-  border-top-right-radius: var(--radius-card);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
+/* 页面特有：更紧凑的行高、行状态底色 */
 .product-list .el-table td.el-table__cell {
   padding: 10px 0;
 }
