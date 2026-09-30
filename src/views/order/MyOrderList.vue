@@ -107,17 +107,21 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300" align="center" fixed="right">
+        <el-table-column label="操作" width="210" align="center" fixed="right">
           <template slot-scope="scope">
             <div class="table-actions">
-              <el-button type="default" plain size="mini" icon="el-icon-document" @click="goDetail(scope.row.oid)">详情</el-button>
-              <el-button v-if="scope.row.orderStatus == 0" type="primary" plain size="mini" icon="el-icon-wallet" @click="goPay(scope.row.oid)">支付</el-button>
-              <el-button v-if="scope.row.orderStatus == 3" type="success" plain size="mini" icon="el-icon-circle-check" @click="changeStatus(scope.row, 2)">确认收货</el-button>
-              <el-button v-if="scope.row.orderStatus == 2" type="default" plain size="mini" icon="el-icon-star-off" :loading="reviewLoadingId === scope.row.oid" @click="openReview(scope.row)">评价</el-button>
-              <el-button v-if="canApplyAfterSale(scope.row)" type="default" plain size="mini" icon="el-icon-refresh-left" @click="openAfterSale(scope.row)">申请售后</el-button>
-              <el-button v-if="canRebuy(scope.row)" type="default" plain size="mini" icon="el-icon-shopping-cart-2" :loading="rebuyLoadingId === scope.row.oid" @click="handleRebuy(scope.row)">再次购买</el-button>
-              <el-button v-if="scope.row.orderStatus == 0 || scope.row.orderStatus == 1" type="danger" plain size="mini" icon="el-icon-close" @click="changeStatus(scope.row, -1)">取消</el-button>
-              <el-button v-if="scope.row.orderStatus == -1 || scope.row.orderStatus == 2" type="danger" plain size="mini" icon="el-icon-delete" class="action-delete" @click="handleDelete(scope.row)">删除</el-button>
+              <el-tooltip v-for="act in actionScheme(scope.row)" :key="act.label" :content="act.label" placement="top">
+                <el-button
+                  :type="act.type"
+                  plain
+                  size="mini"
+                  class="order-action-icon"
+                  :icon="act.icon"
+                  :loading="act.loading"
+                  :aria-label="act.label"
+                  @click="act.handler()"
+                />
+              </el-tooltip>
             </div>
           </template>
         </el-table-column>
@@ -148,14 +152,19 @@
           </div>
           <el-tag v-if="afterSaleTag(row)" :type="afterSaleTag(row).type" size="mini">{{ afterSaleTag(row).label }}</el-tag>
           <div class="mobile-order-actions">
-            <el-button size="mini" @click="goDetail(row.oid)">详情</el-button>
-            <el-button v-if="row.orderStatus == 0" type="primary" size="mini" @click="goPay(row.oid)">支付</el-button>
-            <el-button v-if="row.orderStatus == 3" type="success" size="mini" @click="changeStatus(row, 2)">确认收货</el-button>
-            <el-button v-if="row.orderStatus == 2" size="mini" :loading="reviewLoadingId === row.oid" @click="openReview(row)">评价</el-button>
-            <el-button v-if="canApplyAfterSale(row)" size="mini" @click="openAfterSale(row)">申请售后</el-button>
-            <el-button v-if="canRebuy(row)" size="mini" :loading="rebuyLoadingId === row.oid" @click="handleRebuy(row)">再次购买</el-button>
-            <el-button v-if="row.orderStatus == 0 || row.orderStatus == 1" type="danger" plain size="mini" @click="changeStatus(row, -1)">取消</el-button>
-            <el-button v-if="row.orderStatus == -1 || row.orderStatus == 2" type="danger" plain size="mini" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              v-for="act in actionScheme(row)"
+              :key="act.label"
+              :type="act.type"
+              plain
+              size="mini"
+              class="order-action-icon"
+              :icon="act.icon"
+              :loading="act.loading"
+              :title="act.label"
+              :aria-label="act.label"
+              @click="act.handler()"
+            />
           </div>
         </div>
         <el-empty v-if="!loading && !tableData.length" description="暂无订单数据" />
@@ -374,6 +383,20 @@ export default {
     goDetail(id) {
       this.$router.push(`/order/${id}`);
     },
+    actionScheme(row) {
+      const s = row.orderStatus;
+      const actions = [
+        { label: '详情', type: 'default', icon: 'el-icon-document', handler: () => this.goDetail(row.oid) }
+      ];
+      if (s == 0) actions.push({ label: '支付', type: 'primary', icon: 'el-icon-wallet', handler: () => this.goPay(row.oid) });
+      if (s == 3) actions.push({ label: '确认收货', type: 'success', icon: 'el-icon-circle-check', handler: () => this.changeStatus(row, 2) });
+      if (s == 2) actions.push({ label: '评价', type: 'default', icon: 'el-icon-star-off', loading: this.reviewLoadingId === row.oid, handler: () => this.openReview(row) });
+      if (this.canApplyAfterSale(row)) actions.push({ label: '申请售后', icon: 'el-icon-refresh-left', handler: () => this.openAfterSale(row) });
+      if (this.canRebuy(row)) actions.push({ label: '再次购买', icon: 'el-icon-shopping-cart-2', loading: this.rebuyLoadingId === row.oid, handler: () => this.handleRebuy(row) });
+      if (s == 0 || s == 1) actions.push({ label: '取消订单', type: 'danger', icon: 'el-icon-close', handler: () => this.changeStatus(row, -1) });
+      if (s == -1 || s == 2) actions.push({ label: '删除订单', type: 'danger', icon: 'el-icon-delete', handler: () => this.handleDelete(row) });
+      return actions;
+    },
     /** 整单评价：明细与已评列表都拿到手再开弹窗，避免弹窗先空后跳 */
     openReview(row) {
       if (this.reviewLoadingId) return;
@@ -549,6 +572,8 @@ export default {
   margin-top: 4px;
   font-size: 12px;
 }
+.order-action-icon { width: 30px; height: 30px; padding: 0; font-size: 15px; }
+.desktop-orders .table-actions { flex-wrap: nowrap; gap: 6px; white-space: nowrap; }
 .item-cards {
   display: flex;
   flex-direction: column;
@@ -610,7 +635,8 @@ export default {
   .mobile-order-meta span { min-width: 0; overflow-wrap: anywhere; }
   .mobile-order-meta strong { flex-shrink: 0; }
   .mobile-order-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .mobile-order-actions >>> .el-button + .el-button { margin-left: 0; }
+  .mobile-order-actions .order-action-icon { width: 36px; height: 36px; }
+  .mobile-order-actions .order-action-icon + .order-action-icon { margin-left: 0; }
   .search-form { padding: 12px; }
   .search-actions { margin-left: 0 !important; }
   .pagination-wrap { overflow-x: auto; }

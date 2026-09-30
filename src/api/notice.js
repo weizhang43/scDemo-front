@@ -17,6 +17,14 @@ export function getPublishedNotices() {
   });
 }
 
+export function getLoginNotices(uType) {
+  return request({
+    url: '/user/notice/login-list',
+    method: 'get',
+    params: { uType }
+  });
+}
+
 export function getNoticeDetail(noticeId) {
   return request({
     url: `/user/notice/${noticeId}`,

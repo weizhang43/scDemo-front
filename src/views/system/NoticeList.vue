@@ -35,6 +35,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+        <el-table-column label="通知对象" min-width="160">
+          <template slot-scope="s">{{ targetTypesText(s.row.targetTypes) }}</template>
+        </el-table-column>
         <el-table-column prop="sortOrder" label="排序" width="80" />
         <el-table-column label="状态" width="90">
           <template slot-scope="s">
@@ -87,6 +90,14 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-form-item label="通知对象">
+          <el-checkbox-group v-model="selectedTargetTypes">
+            <el-checkbox :label="2">顾客</el-checkbox>
+            <el-checkbox :label="1">商家</el-checkbox>
+            <el-checkbox :label="4">管理员</el-checkbox>
+          </el-checkbox-group>
+          <span class="tip">不选或全选均表示所有人可见</span>
+        </el-form-item>
         <el-form-item label="封面图">
           <el-upload
             class="cover-uploader"
@@ -139,6 +150,7 @@ export default {
       dialogVisible: false,
       dialogTitle: '发布通知',
       noticeForm: { noticeId: null, title: '', content: '', coverImage: '', status: 1, sortOrder: 0 },
+      selectedTargetTypes: [],
       rules: {
         title: [{ required: true, message: '请输入标题', trigger: 'blur' }]
       },
@@ -219,9 +231,17 @@ export default {
         this.editor = null;
       }
     },
+    targetTypesText(mask) {
+      if (!mask || mask === 7) return '所有人';
+      return [[2, '顾客'], [1, '商家'], [4, '管理员']]
+        .filter(([bit]) => (mask & bit) !== 0)
+        .map(([, label]) => label)
+        .join('、');
+    },
     openAdd() {
       this.dialogTitle = '发布通知';
       this.noticeForm = { noticeId: null, title: '', content: '', coverImage: '', status: 1, sortOrder: 0 };
+      this.selectedTargetTypes = [];
       this.dialogVisible = true;
       this.$nextTick(() => this.$refs.noticeForm && this.$refs.noticeForm.clearValidate());
     },
@@ -235,6 +255,7 @@ export default {
         status: row.status,
         sortOrder: row.sortOrder || 0
       };
+      this.selectedTargetTypes = [2, 1, 4].filter(bit => (row.targetTypes & bit) !== 0);
       this.dialogVisible = true;
     },
     handleSave() {
@@ -242,7 +263,9 @@ export default {
         if (!valid) return;
         this.saving = true;
         const action = this.noticeForm.noticeId ? updateNotice : addNotice;
-        action(this.noticeForm)
+        const selectedMask = this.selectedTargetTypes.reduce((mask, bit) => mask | bit, 0);
+        const targetTypes = selectedMask === 7 ? null : selectedMask || null;
+        action({ ...this.noticeForm, targetTypes })
           .then(() => {
             this.$message.success('保存成功');
             this.dialogVisible = false;

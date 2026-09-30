@@ -463,6 +463,7 @@ export default {
 </script>
 
 <style scoped>
+.personal-work .page-header { background: var(--gradient-topbar); }
 .header-inner,
 .page-body {
   max-width: 1500px;

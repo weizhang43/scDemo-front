@@ -33,8 +33,8 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
-  background: var(--gradient-brand);
-  box-shadow: 0 2px 12px rgba(102, 126, 234, 0.35);
+  background: var(--gradient-topbar);
+  box-shadow: 0 2px 12px rgba(30, 60, 114, 0.25);
 }
 .topbar-brand {
   display: flex;

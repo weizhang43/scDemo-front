@@ -26,7 +26,7 @@
         </div>
         <div v-if="notices.length" class="left-notices">
           <div class="notice-head"><i class="el-icon-bell" aria-hidden="true" />最新公告 <span>LIVE UPDATE</span></div>
-          <el-carousel height="154px" :interval="4000" :autoplay="true" :pause-on-hover="true" :loop="true" arrow="never" indicator-position="outside" class="notice-carousel">
+          <el-carousel height="120px" :interval="4000" :autoplay="true" :pause-on-hover="true" :loop="true" arrow="never" indicator-position="outside" class="notice-carousel">
             <el-carousel-item v-for="n in notices" :key="n.noticeId" @click.native="openNotice(n)">
               <div class="carousel-slide" :style="slideStyle(n)" role="button" tabindex="0" :aria-label="`查看公告：${n.title}`" @keyup.enter="openNotice(n)">
                 <div class="carousel-mask"><div class="carousel-title">{{ n.title }}</div><div class="carousel-time"><i class="el-icon-time" aria-hidden="true" /> {{ n.createTime }}</div></div>
@@ -59,7 +59,7 @@
 <script>
 import { login } from '../../api/user';
 import { getMyPerms } from '../../api/userRole';
-import { getPublishedNotices } from '../../api/notice';
+import { getLoginNotices } from '../../api/notice';
 import { landingFor, roleByKey, ROLES } from '../../router/menuConfig';
 
 export default {
@@ -80,7 +80,7 @@ export default {
   created() {
     if (!roleByKey(this.$route.params.role)) { this.$router.replace('/portal'); return; }
     if (!window.matchMedia('(min-width: 769px)').matches) return;
-    getPublishedNotices().then(res => { this.notices = res.dataList || []; }).catch(() => {});
+    getLoginNotices(this.role.uType).then(res => { this.notices = res.dataList || []; }).catch(() => {});
   },
   methods: {
     slideStyle(n) { return n.coverImage ? { backgroundImage: `url(${n.coverImage})` } : { background: 'linear-gradient(135deg,#182a46,#27486b)' }; },
@@ -197,9 +197,9 @@ export default {
   position: relative;
   z-index: 1;
   display: flex;
-  width: 920px;
+  width: 820px;
   max-width: calc(100vw - 48px);
-  min-height: 560px;
+  min-height: 510px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.46);
   border-radius: var(--radius-lg);
@@ -219,17 +219,17 @@ export default {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  padding: 30px 34px 24px;
+  padding: 24px 28px 20px;
   color: #fff;
   background: linear-gradient(160deg, rgba(11, 27, 54, 0.96), rgba(25, 45, 75, 0.98));
 }
 .left-kicker, .form-kicker, .message-label { margin: 0; color: #e7a14c; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
-.left-kicker { margin-bottom: 26px; color: #aebdca; }
-.left-brand { display: flex; align-items: center; gap: 14px; padding-bottom: 22px; border-bottom: 1px solid rgba(255, 255, 255, 0.18); }
+.left-kicker { margin-bottom: 18px; color: #aebdca; }
+.left-brand { display: flex; align-items: center; gap: 14px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.18); }
 .brand-mark { width: 50px; height: 50px; object-fit: contain; border-radius: var(--radius-sm); background: #fff; }
 .brand-name { font-size: 19px; font-weight: 700; letter-spacing: 1px; }
 .brand-slogan { margin-top: 5px; color: #aebdca; font-size: 12px; }
-.left-message { margin: 42px 0 28px; }
+.left-message { margin: 24px 0 16px; }
 .message-label { margin-bottom: 12px; }
 .left-message h1 { margin: 0; font-size: 30px; line-height: 1.35; letter-spacing: 1px; font-weight: 600; }
 .left-message h1 em { color: var(--accent-signal, #e7a14c); font-style: normal; }
@@ -246,11 +246,11 @@ export default {
 .left-footer { display: flex; justify-content: space-between; margin-top: 20px; color: #6f8296; font-size: 10px; letter-spacing: 1.5px; }
 .panel-right {
   position: relative;
-  flex: 0 0 400px;
+  flex: 0 0 365px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 56px 42px 34px;
+  padding: 50px 34px 30px;
   box-sizing: border-box;
   background: rgba(255, 253, 249, 0.98);
 }
@@ -258,7 +258,7 @@ export default {
 .back-link { position: absolute; top: 22px; left: 28px; color: #748091; font-size: 12px; text-decoration: none; }
 .back-link:hover, .back-link:focus { color: var(--accent); outline: none; }
 .role-badge { position: absolute; top: 20px; right: 28px; padding: 6px 12px; border-radius: 999px; color: var(--accent); background: var(--accent-soft); font-size: 12px; font-weight: 700; }
-.brand { margin-bottom: 30px; }
+.brand { margin-bottom: 22px; }
 .form-kicker { color: var(--accent); margin-bottom: 10px; }
 .brand-title { margin: 0 0 7px; color: #20242b; font-size: 26px; letter-spacing: 1px; }
 .brand-subtitle { margin: 0; color: #7b8490; font-size: 13px; line-height: 1.6; }
@@ -268,7 +268,7 @@ export default {
 .panel-right >>> .auth-submit-btn:hover, .panel-right >>> .auth-submit-btn:focus { background: var(--accent); border-color: var(--accent); filter: brightness(1.08); }
 .footer-sep { margin: 0 8px; color: #d5d8da; }
 .link--forgot { color: var(--accent); }
-.form-privacy { margin-top: 30px; color: #a1a7ad; text-align: center; font-size: 11px; }
+.form-privacy { margin-top: 20px; color: #a1a7ad; text-align: center; font-size: 11px; }
 .notice-detail { max-height: 62vh; overflow: auto; color: #303133; line-height: 1.75; }
 .notice-detail >>> img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) { .login-panel, .customer-entry { animation: none; transition: none; } }
