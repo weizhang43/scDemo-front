@@ -311,17 +311,18 @@ function isAuthEntry(path) {
 
 router.beforeEach((to, from, next) => {
   const hasToken = getToken();
-  const uType = (getUser() || {}).uType;
+  const cachedUser = getUser() || {};
+  const uType = cachedUser.uType;
   if (to.meta.requiresAuth && !hasToken) {
     if (store.state.openPages.length) store.commit('CLEAR_PAGES');
     next('/portal');
   } else if (isAuthEntry(to.path) && hasToken) {
     next(landingFor(uType));
+  } else if (hasToken && to.meta.requiresAuth && !canAccess(uType, to.meta.types)) {
+    next(landingFor(uType));
   } else if (hasToken && to.meta.requiresAuth && to.path !== '/home' &&
     from.path === '/' && from.matched.length === 0) {
     next('/home');
-  } else if (hasToken && !canAccess(uType, to.meta.types)) {
-    next(landingFor(uType));
   } else if (to.meta.requiresAuth && store.state.openPages.length >= 10 &&
     !store.state.openPages.some(page => page.key === pageKey(to))) {
     Message.warning('最多打开10个页面');

@@ -35,11 +35,11 @@ export function seckill(payload) {
 }
 
 /** 轮询秒杀结果：PENDING / SUCCESS / FAILED / NONE */
-export function seckillResult(uId, activityId) {
+export function seckillResult(activityId) {
   return request({
     url: '/order/seckill/result',
     method: 'get',
-    params: { uId, activityId }
+    params: { activityId }
   });
 }
 

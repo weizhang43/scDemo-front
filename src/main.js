@@ -10,9 +10,21 @@ import './styles/work-page.css';
 import App from './App.vue';
 import router from './router';
 import store from './store';
+import { getUser, getPerms, onSessionEvent } from './utils/auth';
 
 Vue.use(ElementUI, { size: 'small' });
 Vue.config.productionTip = false;
+
+onSessionEvent(event => {
+  if (event.type === 'logout') {
+    store.commit('SYNC_LOGOUT');
+    if (router.currentRoute.path !== '/portal') router.replace('/portal');
+  } else if (event.type === 'user-updated') {
+    store.commit('SYNC_USER', getUser() || {});
+  } else if (event.type === 'permissions-updated') {
+    store.commit('SYNC_PERMS', getPerms());
+  }
+});
 
 new Vue({
   router,

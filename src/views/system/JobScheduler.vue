@@ -25,22 +25,6 @@ export default {
     }
   },
   async mounted() {
-    const userName = process.env.VUE_APP_XXLJOB_USER;
-    const password = process.env.VUE_APP_XXLJOB_PASSWORD;
-    if (this.xxlJobUrl && userName && password) {
-      this.logging = true;
-      try {
-        await fetch(`${this.xxlJobUrl}/login`, {
-          method: 'POST',
-          body: new URLSearchParams({ userName, password, ifRemember: 'on' }),
-          credentials: 'same-origin'
-        });
-      } catch (e) {
-        // 登录失败不阻塞，iframe 会回落到 xxl-job 登录页
-      } finally {
-        this.logging = false;
-      }
-    }
     this.ready = true;
   }
 };

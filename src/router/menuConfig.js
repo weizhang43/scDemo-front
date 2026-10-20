@@ -84,25 +84,25 @@ export const MENUS = [
   { path: '/admin/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
 ];
 
-// 本次改动前登录的会话，localStorage 里的 sc_user 没有 uType，按管理员兜底避免空菜单
 export function normalizeType(uType) {
   const t = Number(uType);
-  return t === 1 || t === 2 || t === 3 ? t : U_TYPE_ADMIN;
+  return t === 1 || t === 2 || t === 3 ? t : null;
 }
 
 export function menusForType(uType) {
   const t = normalizeType(uType);
-  return MENUS.filter(m => m.types.indexOf(t) > -1);
+  return t === null ? [] : MENUS.filter(m => m.types.indexOf(t) > -1);
 }
 
 export function canAccess(uType, types) {
   if (!types) return true;
-  return types.indexOf(normalizeType(uType)) > -1;
+  const t = normalizeType(uType);
+  return t !== null && types.indexOf(t) > -1;
 }
 
 export function landingFor(uType) {
   const menus = menusForType(uType);
-  return menus.length ? menus[0].path : '/home';
+  return menus.length ? menus[0].path : '/portal';
 }
 
 export function pageKey(route) {

@@ -1,20 +1,21 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { getToken, setToken, removeToken, getUser, setUser, removeUser } from '../utils/auth';
-import { menusForType, normalizeType, U_TYPE_CUSTOMER } from '../router/menuConfig';
-import { getCartCount } from '../api/cart';
 
 Vue.use(Vuex);
-
-const PERMS_KEY = 'sc_perms';
-
-function getPerms() {
-  try {
-    return JSON.parse(localStorage.getItem(PERMS_KEY)) || [];
-  } catch (e) {
-    return [];
-  }
-}
+import {
+  getToken,
+  setToken,
+  removeToken,
+  getUser,
+  setUser,
+  removeUser,
+  getPerms,
+  setPerms,
+  removePerms,
+  broadcastSessionEvent
+} from '../utils/auth';
+import { menusForType, normalizeType, U_TYPE_CUSTOMER } from '../router/menuConfig';
+import { getCartCount } from '../api/cart';
 
 export default new Vuex.Store({
   state: {
@@ -37,20 +38,14 @@ export default new Vuex.Store({
   },
   mutations: {
     SET_TOKEN(state, token) {
-      state.token = token;
-      if (token) {
-        setToken(token);
-      } else {
-        removeToken();
-      }
+      state.token = token || '';
+      setToken(token);
+      broadcastSessionEvent(token ? 'login' : 'logout');
     },
     SET_USER(state, user) {
       state.userInfo = user || {};
-      if (user) {
-        setUser(user);
-      } else {
-        removeUser();
-      }
+      setUser(user);
+      broadcastSessionEvent(user ? 'user-updated' : 'logout');
     },
     SET_CART_COUNT(state, n) {
       state.cartCount = Number(n) || 0;
@@ -70,19 +65,33 @@ export default new Vuex.Store({
       state.openPages = [];
     },
     SET_PERMS(state, perms) {
-      state.perms = perms || [];
-      localStorage.setItem(PERMS_KEY, JSON.stringify(state.perms));
+      state.perms = Array.isArray(perms) ? perms : [];
+      setPerms(state.perms);
+      broadcastSessionEvent('permissions-updated');
+    },
+    SYNC_USER(state, user) {
+      state.userInfo = user || {};
+    },
+    SYNC_LOGOUT(state) {
+      state.token = '';
+      state.userInfo = {};
+      state.cartCount = 0;
+      state.openPages = [];
+      state.perms = [];
+    },
+    SYNC_PERMS(state, perms) {
+      state.perms = Array.isArray(perms) ? perms : [];
     },
     LOGOUT(state) {
       state.token = '';
       state.userInfo = {};
-      // 不归零的话，同一标签页里顾客登出后商家登入会继承一个陈旧角标
       state.cartCount = 0;
       state.openPages = [];
       state.perms = [];
       removeToken();
       removeUser();
-      localStorage.removeItem(PERMS_KEY);
+      removePerms();
+      broadcastSessionEvent('logout');
     }
   },
   actions: {

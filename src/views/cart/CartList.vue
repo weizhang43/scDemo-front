@@ -319,13 +319,9 @@ export default {
         return;
       }
 
-      const user = this.$store.state.userInfo || {};
       const pIds = this.selectedRows.map(r => r.pId);
       this.submitting = true;
       placeOrderV2({
-        uId: user.uId,
-        addPerson: user.uName || (user.realName || 'anonymous'),
-        addressId: this.addressId,
         orderStatus: 0,
         couponId: this.coupon ? this.coupon.couponId : null,
         expectedPayAmount: this.coupon ? Number(this.payTotal) : null,

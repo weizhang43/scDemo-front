@@ -61,6 +61,7 @@ import { login } from '../../api/user';
 import { getMyPerms } from '../../api/userRole';
 import { getLoginNotices } from '../../api/notice';
 import { landingFor, roleByKey, ROLES } from '../../router/menuConfig';
+import { sanitizeRichText } from '../../utils/sanitize';
 
 export default {
   name: 'Login',
@@ -85,25 +86,11 @@ export default {
   methods: {
     slideStyle(n) { return n.coverImage ? { backgroundImage: `url(${n.coverImage})` } : { background: 'linear-gradient(135deg,#182a46,#27486b)' }; },
     openNotice(notice) {
-      this.currentNotice = { ...notice, content: this.sanitizeNoticeContent(notice.content) };
+      this.currentNotice = { ...notice, content: sanitizeRichText(notice.content) };
       this.detailVisible = true;
     },
     sanitizeNoticeContent(content) {
-      if (!content) return '';
-      const parsedDocument = new DOMParser().parseFromString(String(content), 'text/html');
-      parsedDocument.querySelectorAll('script,style,iframe,object,embed,form,base,meta,link,svg,math,template').forEach(node => node.remove());
-      parsedDocument.body.querySelectorAll('*').forEach(node => {
-        Array.from(node.attributes).forEach(attribute => {
-          const name = attribute.name.toLowerCase();
-          const value = attribute.value.trim().toLowerCase();
-          const isUrl = ['href', 'src', 'action', 'xlink:href'].indexOf(name) !== -1;
-          const isAllowedUrl = /^(https?:\/\/|\/|\.?\.\/)/.test(value);
-          if (name.indexOf('on') === 0 || name === 'style' || name === 'srcdoc' || (isUrl && !isAllowedUrl)) {
-            node.removeAttribute(attribute.name);
-          }
-        });
-      });
-      return parsedDocument.body.innerHTML;
+      return sanitizeRichText(content);
     },
     handleLogin() {
       if (this.loading) return;

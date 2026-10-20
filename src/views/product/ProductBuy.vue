@@ -126,7 +126,7 @@
 
 <script>
 import { getProductById } from '../../api/product';
-import { getAddressList } from '../../api/address';
+import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
 import ProductReviewList from '../../components/ProductReviewList.vue';
@@ -213,7 +213,7 @@ export default {
         this.addressId = null;
         return;
       }
-      getAddressList(uId)
+      getMyAddressList()
         .then(res => {
           const list = res.dataList || [];
           this.addressList = Array.isArray(list) ? list : [];
@@ -246,11 +246,8 @@ export default {
         this.$message.warning(`下单数量不能大于库存（${this.maxQuantity}）`);
         return;
       }
-      const user = this.$store.state.userInfo || {};
       this.submitting = true;
       placeOrderV2({
-        uId: user.uId,
-        addPerson: user.uName || (user.realName || 'anonymous'),
         addressId: this.addressId,
         orderStatus: 0,
         couponId: this.coupon ? this.coupon.couponId : null,

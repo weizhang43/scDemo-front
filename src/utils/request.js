@@ -5,7 +5,8 @@ import router from '../router';
 
 const service = axios.create({
   baseURL: '',
-  timeout: 30000
+  timeout: 30000,
+  withCredentials: true
 });
 
 // 401 只处理一次：token 过期时页面上并发的请求会同时返回 401，
@@ -42,8 +43,13 @@ service.interceptors.response.use(
       if (res.code === 200) {
         return res;
       }
-      Message.error(res.msg || '请求失败');
-      return Promise.reject(new Error(res.msg || '请求失败'));
+      if (!(response.config && response.config.skipGlobalError)) {
+        Message.error(res.msg || '请求失败');
+      }
+      const businessError = new Error(res.msg || '请求失败');
+      businessError.code = res.errorCode || res.code;
+      businessError.traceId = res.traceId;
+      return Promise.reject(businessError);
     }
     return res;
   },
@@ -61,7 +67,7 @@ service.interceptors.response.use(
       if (router.currentRoute.path !== '/portal') {
         router.push('/portal');
       }
-    } else {
+    } else if (!(error.config && error.config.skipGlobalError)) {
       Message.error(msg || error.message || '网络错误');
     }
     return Promise.reject(error);

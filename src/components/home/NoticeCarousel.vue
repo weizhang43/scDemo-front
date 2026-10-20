@@ -37,6 +37,7 @@
 
 <script>
 import { getPublishedNotices } from '../../api/notice';
+import { sanitizeRichText } from '../../utils/sanitize';
 
 export default {
   name: 'NoticeCarousel',
@@ -67,7 +68,7 @@ export default {
       return { background: 'linear-gradient(135deg,#1e3c72,#2a5298 55%,#667eea)' };
     },
     openNotice(n) {
-      this.current = n;
+      this.current = { ...n, content: sanitizeRichText(n.content) };
       this.detailVisible = true;
     }
   }

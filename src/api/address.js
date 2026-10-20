@@ -4,7 +4,7 @@ export function getAddressList(uId) {
   return request({
     url: '/user/address/list',
     method: 'get',
-    params: { uId }
+    params: uId == null ? undefined : { uId }
   });
 }
 
@@ -34,7 +34,7 @@ export function deleteAddress(aId) {
 export function setDefaultAddress(aId, uId) {
   const params = new URLSearchParams();
   params.append('aId', aId);
-  params.append('uId', uId);
+  if (uId != null) params.append('uId', uId);
   return request({
     url: '/user/address/default',
     method: 'post',

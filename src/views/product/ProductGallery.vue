@@ -342,11 +342,8 @@ export default {
     doQuickBuy() {
       const item = this.quickBuy.item;
       if (!item || this.buyingId !== null) return;
-      const user = this.$store.state.userInfo || {};
       this.buyingId = item.pId;
       placeOrderV2({
-        uId: user.uId,
-        addPerson: user.uName || user.realName || 'anonymous',
         addressId: this.defaultAddress.aId,
         orderStatus: 0,
         couponId: this.quickBuy.coupon ? this.quickBuy.coupon.couponId : null,

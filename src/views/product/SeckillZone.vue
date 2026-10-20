@@ -89,7 +89,7 @@
 <script>
 import { activeSeckillList } from '../../api/seckill';
 import { seckill, seckillResult } from '../../api/order';
-import { getAddressList } from '../../api/address';
+import { getMyAddressList } from '../../api/address';
 
 /** 结果轮询：秒杀是异步落库，PENDING 期间最多等这么久 */
 const POLL_INTERVAL = 1000;
@@ -180,7 +180,7 @@ export default {
       const user = this.$store.state.userInfo || {};
       if (!user.uId) return;
       const request = ++this.addressRequest;
-      getAddressList(user.uId)
+      getMyAddressList()
         .then(res => {
           if (!this.pageActive || request !== this.addressRequest) return;
           const list = res.dataList || [];
@@ -258,7 +258,6 @@ export default {
       const activityId = this.current.id;
       const request = ++this.grabRequest;
       seckill({
-        uId: user.uId,
         activityId,
         addressId: this.addressId,
         addPerson: user.uName || user.realName || 'anonymous'
@@ -303,7 +302,7 @@ export default {
           return;
         }
         this.pollChecking = true;
-        seckillResult(uId, activityId)
+        seckillResult(activityId)
           .then(res => {
             if (!this.pageActive || generation !== this.pollGeneration) return;
             const vo = res.daoResult;
