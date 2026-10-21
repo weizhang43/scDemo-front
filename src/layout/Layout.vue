@@ -32,10 +32,33 @@
             <button type="button" class="tab-close" :aria-label="`关闭${page.title}`" @click="closePage(page)"><i class="el-icon-close" /></button>
           </div>
         </div>
+        <el-dropdown trigger="click" class="msg-dropdown" @visible-change="onMsgDropdown">
+          <button type="button" class="msg-bell" aria-label="站内消息">
+            <el-badge :value="unreadCount" :max="99" :hidden="unreadCount === 0" class="msg-badge">
+              <i class="el-icon-bell" />
+            </el-badge>
+          </button>
+          <el-dropdown-menu slot="dropdown" class="msg-panel">
+            <div class="msg-panel-head">
+              <strong>站内消息</strong>
+              <el-button v-if="unreadCount > 0" type="text" size="mini" @click="handleReadAll">全部已读</el-button>
+            </div>
+            <div v-if="!recentMessages.length" class="msg-empty">暂无消息</div>
+            <div v-for="msg in recentMessages" :key="msg.id" class="msg-item" :class="{ unread: !msg.isRead }" @click="openMessage(msg)">
+              <i :class="msgIcon(msg.msgType)" class="msg-item-icon" />
+              <div class="msg-item-body">
+                <div class="msg-item-title">{{ msg.title }}</div>
+                <div class="msg-item-desc">{{ msg.content }}</div>
+                <div class="msg-item-time">{{ msg.createTime }}</div>
+              </div>
+            </div>
+            <div class="msg-panel-foot" @click="goMessageCenter">查看全部消息 <i class="el-icon-arrow-right" /></div>
+          </el-dropdown-menu>
+        </el-dropdown>
         <el-dropdown trigger="click" class="account-dropdown" @command="handleCommand">
           <button class="user-chip" type="button" aria-label="账号菜单">
             <span class="user-avatar"><img v-if="avatarUrl" :src="avatarUrl" alt=""><template v-else>{{ avatarText }}</template></span>
-            <span class="user-meta"><small>当前账号</small><strong>{{ username }}</strong></span>
+            <span class="user-meta"><small>当前账号</small><strong>{{ username }}<el-tag v-if="levelName" size="mini" effect="plain" class="level-chip">{{ levelName }}</el-tag></strong></span>
             <i class="el-icon-arrow-down" />
           </button>
           <el-dropdown-menu slot="dropdown">
@@ -55,6 +78,8 @@
 
 <script>
 import { landingFor, pageKey } from '../router/menuConfig';
+import { getMessagePage, markRead, markAllRead } from '../api/message';
+import { getPointsSummary } from '../api/points';
 
 const pageComponents = Object.create(null);
 let resetPageSequence = 0;
@@ -62,7 +87,11 @@ let resetPageSequence = 0;
 export default {
   name: 'Layout',
   data() {
-    return { drawerOpen: false };
+    return {
+      drawerOpen: false,
+      recentMessages: [],
+      pointsLevel: ''
+    };
   },
   computed: {
     menus() { return this.$store.getters.menus; },
@@ -85,6 +114,11 @@ export default {
     avatarText() { return this.username === '未登录' ? 'U' : this.username.charAt(0).toUpperCase(); },
     avatarUrl() { return (this.$store.state.userInfo || {}).avatar || ''; },
     cartCount() { return this.$store.state.cartCount; },
+    unreadCount() { return this.$store.state.unreadCount; },
+    levelName() {
+      const isCustomer = this.$store.getters.userType === 2;
+      return isCustomer ? (this.pointsLevel || '') : '';
+    },
     activeMenu() {
       const path = this.$route.path;
       const entries = this.menus.reduce((all, menu) => all.concat(menu.children || menu), []);
@@ -101,6 +135,9 @@ export default {
   },
   created() {
     this.$store.dispatch('refreshCartCount');
+    this.$store.dispatch('refreshUnreadCount');
+    this.$store.dispatch('startMessageSocket');
+    this.loadPointsLevel();
     window.addEventListener('keydown', this.handleKeydown);
   },
   beforeDestroy() {
@@ -111,6 +148,51 @@ export default {
       if (event.key === 'Escape') this.drawerOpen = false;
     },
     goHome() { this.$router.push('/home').catch(() => {}); },
+    loadPointsLevel() {
+      if (this.$store.getters.userType !== 2) return;
+      getPointsSummary()
+        .then(res => {
+          const data = res && res.daoResult;
+          if (data && data.levelName) this.pointsLevel = String(data.levelName).replace('会员', '');
+        })
+        .catch(() => {});
+    },
+    msgIcon(type) {
+      if (type === 'aftersale') return 'el-icon-refresh-left';
+      if (type === 'order') return 'el-icon-s-order';
+      return 'el-icon-message-solid';
+    },
+    onMsgDropdown(visible) {
+      if (visible) this.loadRecentMessages();
+    },
+    loadRecentMessages() {
+      getMessagePage({ pageNum: 1, pageSize: 5 })
+        .then(res => {
+          const page = (res && res.dataList && res.dataList[0]) || null;
+          this.recentMessages = page && page.records ? page.records : [];
+        })
+        .catch(() => { this.recentMessages = []; });
+    },
+    openMessage(msg) {
+      if (!msg.isRead) {
+        markRead(msg.id).then(() => {
+          msg.isRead = 1;
+          this.$store.commit('SET_UNREAD_COUNT', Math.max(0, this.unreadCount - 1));
+        }).catch(() => {});
+      }
+      this.goMessageCenter();
+    },
+    handleReadAll() {
+      markAllRead().then(() => {
+        this.$store.commit('SET_UNREAD_COUNT', 0);
+        if (this.recentMessages.length) {
+          this.recentMessages.forEach(m => { m.isRead = 1; });
+        }
+      }).catch(() => {});
+    },
+    goMessageCenter() {
+      this.$router.push('/messages').catch(() => {});
+    },
     switchPage(page) {
       if (page.key !== this.activeKey) this.$router.push(page.fullPath).catch(() => {});
     },
@@ -170,6 +252,24 @@ export default {
 .side-nav >>> .el-submenu .el-menu-item { min-width: 0; padding-left: 47px !important; font-size: 13px; }
 .side-nav >>> .el-submenu .el-menu-item i { font-size: 15px; margin-right: 7px; }
 .nav-badge >>> .el-badge__content { background: #ffd166; color: #1e3c72; border: none; }
+.msg-dropdown { flex: 0 0 auto; }
+.msg-bell { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #cbd7eb; border-radius: 10px; background: rgba(255, 255, 255, .8); color: #1e3c72; font-size: 17px; cursor: pointer; }
+.msg-bell:hover { background: #fff; border-color: #a6b8dc; }
+.msg-badge >>> .el-badge__content { background: #f56c6c; border: none; }
+.msg-panel { width: 320px; max-height: 420px; overflow: auto; padding: 0; }
+.msg-panel-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #eef1f7; color: #1e3c72; }
+.msg-empty { padding: 26px 0; text-align: center; color: #97a3b8; font-size: 12px; }
+.msg-item { display: flex; gap: 10px; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f2f4f9; }
+.msg-item:hover { background: #f6f8fd; }
+.msg-item.unread .msg-item-title { color: #1e3c72; font-weight: 650; }
+.msg-item.unread .msg-item-icon::after { content: ''; display: inline-block; width: 6px; height: 6px; margin-left: 4px; border-radius: 50%; background: #f56c6c; vertical-align: middle; }
+.msg-item-icon { font-size: 17px; color: #667eea; margin-top: 2px; }
+.msg-item-body { min-width: 0; flex: 1; }
+.msg-item-title { font-size: 13px; color: #43537a; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.msg-item-desc { font-size: 12px; color: #8c97ad; margin-top: 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.msg-item-time { font-size: 11px; color: #aab3c5; margin-top: 3px; }
+.msg-panel-foot { padding: 10px 0; text-align: center; color: #667eea; font-size: 12px; cursor: pointer; }
+.msg-panel-foot:hover { background: #f6f8fd; }
 .account-dropdown { flex: 0 0 auto; margin-left: 5px; }
 .user-chip { min-width: 148px; display: flex; align-items: center; gap: 9px; padding: 5px 9px 5px 5px; color: #1e3c72; border: 1px solid #cbd7eb; border-radius: 10px; background: rgba(255, 255, 255, .8); cursor: pointer; text-align: left; }
 .user-chip:hover { background: #fff; border-color: #a6b8dc; }
@@ -178,6 +278,7 @@ export default {
 .user-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .user-meta small { color: #7183a2; font-size: 11px; }
 .user-meta strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+.level-chip { margin-left: 6px; transform: scale(0.85); }
 .workspace-body { min-width: 0; flex: 1; background: #f5f7fb; }
 .workspace-topbar { display: flex; align-items: center; gap: 10px; height: 62px; flex: 0 0 62px; padding: 0 20px; border-bottom: 1px solid #e4e8f2; }
 .tabs-scroll { display: flex; align-items: center; gap: 7px; overflow-x: auto; min-width: 0; flex: 1; padding: 8px 1px; scrollbar-width: thin; }

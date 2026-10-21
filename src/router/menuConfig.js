@@ -60,7 +60,8 @@ export const MENUS = [
     children: [
       { path: '/stats/product-type', label: '商品类型统计', icon: 'el-icon-pie-chart' },
       { path: '/stats/type-sales', label: '商品类型销量统计', icon: 'el-icon-s-data' },
-      { path: '/stats/monthly-sales', label: '近三个月销量统计', icon: 'el-icon-data-line' }
+      { path: '/stats/monthly-sales', label: '近三个月销量统计', icon: 'el-icon-data-line' },
+      { path: '/stats/review-sentiment', label: '评论情感分析', icon: 'el-icon-cpu' }
     ]
   },
   { path: '/gallery', label: '商品列表', icon: 'el-icon-picture-outline', types: [2] },
@@ -71,6 +72,8 @@ export const MENUS = [
   { path: '/my-aftersale', label: '我的售后', icon: 'el-icon-refresh-left', types: [
       2] },
   { path: '/my-reviews', label: '我的评价', icon: 'el-icon-star-on', types: [2] },
+  { path: '/my-favorites', label: '收藏与足迹', icon: 'el-icon-collection-tag', types: [2] },
+  { path: '/my-points', label: '我的积分', icon: 'el-icon-coin', types: [2] },
   //{ path: '/my-profile', label: '个人主页', icon: 'el-icon-user', types: [2] },
   { path: '/system/users', label: '用户管理', icon: 'el-icon-s-tools', types: [3], children: [
       { path: '/system/users', label: '用户列表', icon: 'el-icon-user' },
@@ -81,6 +84,7 @@ export const MENUS = [
   { path: '/notices', label: '通知管理', icon: 'el-icon-bell', types: [3] },
   { path: '/logs', label: '日志管理', icon: 'el-icon-document', types: [3] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [1, 2, 3] },
+  { path: '/messages', label: '消息中心', icon: 'el-icon-message', types: [1, 2, 3] },
   { path: '/admin/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
 ];
 

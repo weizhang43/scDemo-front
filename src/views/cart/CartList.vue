@@ -151,6 +151,22 @@
           </div>
         </div>
       </div>
+
+      <div v-if="recommends.length" class="recommend-block">
+        <div class="recommend-title"><i class="el-icon-magic-stick" /> 猜你喜欢</div>
+        <el-row :gutter="14">
+          <el-col v-for="rec in recommends" :key="rec.pId" :xs="12" :sm="8" :md="4">
+            <div class="recommend-card" @click="goRecommend(rec)">
+              <el-image v-if="rec.imageUrl" :src="rec.imageUrl" fit="cover" class="recommend-image">
+                <div slot="error" class="recommend-fallback"><i class="el-icon-picture-outline" /></div>
+              </el-image>
+              <div v-else class="recommend-fallback"><i class="el-icon-picture-outline" /></div>
+              <div class="recommend-name" :title="rec.pName">{{ rec.pName }}</div>
+              <div class="recommend-price">¥ {{ rec.effectivePrice != null ? rec.effectivePrice : rec.price }}</div>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
     </el-card>
   </div>
 </template>
@@ -159,6 +175,7 @@
 import { getCartList, updateCartQuantity, deleteCartItem, batchDeleteCart } from '../../api/cart';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
+import { getRecommendProducts } from '../../api/product';
 import CouponSelect from '../../components/CouponSelect.vue';
 
 export default {
@@ -172,7 +189,8 @@ export default {
       addressId: null,
       coupon: null,
       loading: false,
-      submitting: false
+      submitting: false,
+      recommends: []
     };
   },
   computed: {
@@ -204,6 +222,7 @@ export default {
   created() {
     this.fetchList();
     this.loadAddresses();
+    this.loadRecommends();
   },
   methods: {
     fetchList() {
@@ -232,6 +251,18 @@ export default {
           this.addressList = [];
           this.addressId = null;
         });
+    },
+    loadRecommends() {
+      getRecommendProducts(8)
+        .then(res => {
+          const inCart = new Set((this.rows || []).map(r => r.pId));
+          const list = (res && res.dataList) || [];
+          this.recommends = list.filter(item => !inCart.has(item.pId)).slice(0, 6);
+        })
+        .catch(() => { this.recommends = []; });
+    },
+    goRecommend(rec) {
+      this.$router.push('/product-buy/' + rec.pId).catch(() => {});
     },
     /** 核心防线：不可购买的行结构上就进不了 payload，Element 的全选也会自动跳过 */
     rowSelectable(row) {
@@ -510,6 +541,62 @@ export default {
     width: 100%;
   }
 }
+.recommend-block {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed #eef0f4;
+}
+.recommend-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e3c72;
+  margin-bottom: 12px;
+}
+.recommend-title i { color: #667eea; margin-right: 6px; }
+.recommend-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.recommend-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(31, 41, 59, 0.1);
+}
+.recommend-image {
+  width: 100%;
+  height: 110px;
+  display: block;
+}
+.recommend-image .el-image__inner {
+  object-fit: cover;
+}
+.recommend-fallback {
+  height: 110px;
+  display: grid;
+  place-items: center;
+  color: #c3c9d4;
+  font-size: 26px;
+  background: #f7f8fb;
+}
+.recommend-name {
+  font-size: 13px;
+  color: #1f2733;
+  padding: 8px 10px 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.recommend-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-price);
+  padding: 2px 10px 10px;
+  font-variant-numeric: tabular-nums;
+}
 </style>
 
 <style>
@@ -520,6 +607,5 @@ export default {
   color: #c0c4cc;
 }
 .cart-page .el-table .row-warn {
-  background: #fdf6ec;
-}
+  background: #fdf6ec;}
 </style>

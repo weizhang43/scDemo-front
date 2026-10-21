@@ -7,7 +7,8 @@ module.exports = {
     proxy: {
       '/user': {
         target: 'http://localhost:8000',
-        changeOrigin: true
+        changeOrigin: true,
+        ws: true
       },
       '/product': {
         target: 'http://localhost:8000',

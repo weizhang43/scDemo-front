@@ -28,6 +28,9 @@
             <el-button type="primary" size="small" icon="el-icon-plus" class="action-add" @click="goAdd">
               {{ activeTab === 'daily' ? '添加日报' : '添加周报' }}
             </el-button>
+            <el-button v-if="activeTab === 'weekly' && isLoggedIn" type="success" plain size="small" icon="el-icon-magic-stick" class="action-ai" @click="goAiAdd">
+              AI 生成周报
+            </el-button>
           </div>
 
           <el-table
@@ -201,6 +204,7 @@ import '@wangeditor/editor/dist/css/style.css';
 import KnowledgeQuick from './KnowledgeQuick.vue';
 import { getReportPage, deleteReport, sendReport } from '../../api/workReport';
 import { getPlanPage, getPlanDetail, addPlan, updatePlan, deletePlan, completePlan } from '../../api/studyPlan';
+import { getToken } from '../../utils/auth';
 
 export default {
   name: 'PersonalWork',
@@ -244,6 +248,9 @@ export default {
       const d = String(now.getDate()).padStart(2, '0');
       const week = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()];
       return `${y}-${m}-${d} ${week}`;
+    },
+    isLoggedIn() {
+      return !!getToken();
     }
   },
   created() {
@@ -311,6 +318,9 @@ export default {
     },
     goAdd() {
       this.$router.push({ path: '/work-report/add', query: { type: this.currentType } });
+    },
+    goAiAdd() {
+      this.$router.push({ path: '/work-report/add', query: { type: 2, ai: 1 } });
     },
     goDetail(row) {
       this.$router.push(`/work-report/${row.reportId}`);

@@ -124,6 +124,24 @@
               <i class="el-icon-time desc-icon"></i>{{ order.receiveTime ? formatTime(order.receiveTime) : '待收货' }}
             </el-descriptions-item>
           </el-descriptions>
+
+          <div v-if="logisticsNodes.length" class="logistics-timeline">
+            <div class="timeline-caption"><i class="el-icon-map-location" /> 物流轨迹（模拟）</div>
+            <el-timeline>
+              <el-timeline-item
+                v-for="(nd, idx) in reversedNodes"
+                :key="idx"
+                :timestamp="formatTime(nd.time) + (nd.reached ? '' : '（预计）')"
+                :type="nd.reached ? 'primary' : 'info'"
+                :color="nd.reached ? '#667eea' : '#c0c4cc'"
+                :hollow="!nd.reached"
+                placement="top"
+              >
+                <div class="timeline-title" :class="{ 'timeline-title--dim': !nd.reached }">{{ nd.title }}</div>
+                <div class="timeline-desc">{{ nd.desc }}</div>
+              </el-timeline-item>
+            </el-timeline>
+          </div>
         </div>
 
         <div class="goods-section">
@@ -236,7 +254,7 @@
 </template>
 
 <script>
-import { getOrderById, updateOrderStatus, shipOrder } from '../../api/order';
+import { getOrderById, updateOrderStatus, shipOrder, getLogistics } from '../../api/order';
 import { likeProduct, getMyLikedProducts } from '../../api/product';
 import { getOrderReviewedPIds } from '../../api/review';
 import { getAfterSaleByOrder } from '../../api/aftersale';
@@ -258,6 +276,7 @@ export default {
       reviewItems: [],
       afterSale: null,
       afterSaleVisible: false,
+      logisticsNodes: [],
       shipDialogVisible: false,
       shipSubmitting: false,
       shipForm: {
@@ -301,6 +320,9 @@ export default {
       const o = this.order || {};
       return !!(o.shippingCompany || o.trackingNo || o.shipTime);
     },
+    reversedNodes() {
+      return this.logisticsNodes.slice().reverse();
+    },
     canApplyAfterSale() {
       if (!this.isCustomer || !this.order) return false;
       const status = Number(this.order.orderStatus);
@@ -312,7 +334,26 @@ export default {
   created() {
     this.fetchData();
   },
+  watch: {
+    // 缓存页复用：从其它订单跳转过来时重拉物流
+    '$route.params.id'() {
+      if (this.$route.name === 'OrderDetail') {
+        this.logisticsNodes = [];
+        this.loadLogistics();
+      }
+    }
+  },
   methods: {
+    loadLogistics() {
+      const id = this.$route.params.id;
+      if (!id || !this.hasShipInfo) return;
+      getLogistics(id)
+        .then(res => {
+          const data = (res && res.daoResult) || {};
+          this.logisticsNodes = data.nodes || [];
+        })
+        .catch(() => { this.logisticsNodes = []; });
+    },
     liked(pId) {
       return this.likedPIds.indexOf(Number(pId)) > -1;
     },
@@ -418,6 +459,7 @@ export default {
             this.loadReviewedPIds();
             this.loadAfterSale();
           }
+          this.loadLogistics();
         })
         .catch(() => {
           this.order = null;
@@ -495,6 +537,31 @@ export default {
 }
 .goods-section {
   margin-top: 20px;
+}
+.logistics-timeline {
+  margin-top: 14px;
+  padding: 16px 18px 6px;
+  border: 1px solid #eef0f4;
+  border-radius: 12px;
+  background: #fafbff;
+}
+.timeline-caption {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e3c72;
+  margin-bottom: 14px;
+}
+.timeline-caption i { color: #667eea; margin-right: 6px; }
+.timeline-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2733;
+}
+.timeline-title--dim { color: #9aa3b2; }
+.timeline-desc {
+  font-size: 12px;
+  color: #8c97ad;
+  margin-top: 2px;
 }
 .aftersale-apply-row {
   margin-top: 14px;

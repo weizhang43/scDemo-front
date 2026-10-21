@@ -9,6 +9,60 @@ export function pageQuery(params) {
   });
 }
 
+/** 搜索框联想词：按商品名匹配在售商品 */
+export function suggestSearch(keyword, limit = 10) {
+  return request({
+    url: '/product/search/suggest',
+    method: 'get',
+    params: { keyword, limit },
+    skipGlobalError: true
+  });
+}
+
+// ---------- 收藏 / 足迹 / 推荐 ----------
+
+export function favoriteProduct(pId) {
+  return request({ url: `/product/favorite/${pId}`, method: 'post' });
+}
+
+export function unfavoriteProduct(pId) {
+  return request({ url: `/product/favorite/${pId}`, method: 'delete' });
+}
+
+export function getFavoriteList() {
+  return request({ url: '/product/favorite/list', method: 'get' });
+}
+
+export function getFavoriteStatus(pId) {
+  return request({
+    url: '/product/favorite/status',
+    method: 'get',
+    params: { pId },
+    skipGlobalError: true
+  });
+}
+
+export function recordBrowse(pId) {
+  return request({
+    url: `/product/browse/${pId}`,
+    method: 'post',
+    skipGlobalError: true
+  });
+}
+
+export function getBrowseList(limit = 20) {
+  return request({ url: '/product/browse/list', method: 'get', params: { limit } });
+}
+
+export function getRecommendProducts(limit = 8) {
+  return request({
+    url: '/product/recommend',
+    method: 'get',
+    params: { limit },
+    skipGlobalError: true
+  });
+}
+
 export function addProduct(data) {
   return request({
     url: '/product/add',

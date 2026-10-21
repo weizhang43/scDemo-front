@@ -35,6 +35,9 @@
           </el-form-item>
           <el-form-item>
             <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
+            <el-button v-if="isWeekly && canAi" type="success" plain :loading="aiGenerating" @click="generateWeeklyByAi">
+              <i class="el-icon-magic-stick" /> AI 生成草稿
+            </el-button>
             <el-button @click="$router.push('/personal-work')">取消</el-button>
           </el-form-item>
         </el-form>
@@ -47,6 +50,7 @@
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import '@wangeditor/editor/dist/css/style.css';
 import { addReport, getDailyTemplate, getWeeklyTemplate } from '../../api/workReport';
+import { getToken } from '../../utils/auth';
 
 function fmt(d) {
   const y = d.getFullYear();
@@ -86,7 +90,9 @@ export default {
       editor: null,
       // 页面免登录，图片/视频上传接口需要登录态，故隐藏对应菜单
       toolbarConfig: { excludeKeys: ['group-image', 'group-video'] },
-      editorConfig: { placeholder: this.$route.query.type === '2' ? '请输入周报内容...' : '请输入日报内容...' }
+      editorConfig: { placeholder: this.$route.query.type === '2' ? '请输入周报内容...' : '请输入日报内容...' },
+      aiGenerating: false,
+      canAi: !!getToken()
     };
   },
   computed: {
@@ -111,6 +117,42 @@ export default {
   methods: {
     onEditorCreated(editor) {
       this.editor = Object.seal(editor);
+      // 从周报列表点「AI 生成草稿」按钮跳来时 query 带 ai=1，编辑器就绪后自动开流
+      if (this.$route.query.ai === '1' && this.isWeekly && this.canAi && !this.aiGenerating) {
+        this.generateWeeklyByAi();
+      }
+    },
+    generateWeeklyByAi() {
+      if (!this.canAi) {
+        this.$message.warning('AI 周报需要登录后使用');
+        return;
+      }
+      if (this.aiGenerating) return;
+      this.aiGenerating = true;
+      this.form.content = '';
+      const clientType = 'qianwen';
+      const url = `/user/chat/weeklyReport?clientType=${clientType}`;
+      const source = new EventSource(url);
+      let first = true;
+      source.onmessage = event => {
+        if (event.data === '[DONE]') {
+          this.aiGenerating = false;
+          source.close();
+          return;
+        }
+        if (first) {
+          this.form.content = '';
+          first = false;
+        }
+        this.form.content += event.data;
+      };
+      source.onerror = () => {
+        this.aiGenerating = false;
+        source.close();
+        if (!this.form.content) {
+          this.$message.warning('AI 生成失败，请稍后再试');
+        }
+      };
     },
     handleSave() {
       this.$refs.reportForm.validate(valid => {

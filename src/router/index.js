@@ -176,6 +176,12 @@ const routes = [
             name: 'MonthlySalesStats',
             component: () => import('../views/statistics/MonthlySalesStats.vue'),
             meta: { requiresAuth: true, types: [1] }
+          },
+          {
+            path: 'review-sentiment',
+            name: 'ReviewSentiment',
+            component: () => import('../views/statistics/ReviewSentiment.vue'),
+            meta: { requiresAuth: true, types: [1] }
           }
         ]
       },
@@ -202,6 +208,24 @@ const routes = [
         name: 'MyReviewList',
         component: () => import('../views/review/MyReviewList.vue'),
         meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'my-favorites',
+        name: 'MyFavorite',
+        component: () => import('../views/user/MyFavorite.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'my-points',
+        name: 'MyPoints',
+        component: () => import('../views/user/MyPoints.vue'),
+        meta: { requiresAuth: true, types: [2] }
+      },
+      {
+        path: 'messages',
+        name: 'MessageCenter',
+        component: () => import('../views/message/MessageCenter.vue'),
+        meta: { requiresAuth: true, types: [1, 2, 3] }
       },
       {
         path: 'order/:id',

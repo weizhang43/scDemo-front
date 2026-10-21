@@ -27,7 +27,19 @@
             </div>
           </div>
           <div class="hero-info">
-            <div class="hero-name">{{ product.pName }}</div>
+            <div class="hero-name-row">
+              <div class="hero-name">{{ product.pName }}</div>
+              <button
+                type="button"
+                class="fav-btn"
+                :class="{ 'is-faved': isFaved }"
+                :aria-label="isFaved ? '取消收藏' : '收藏商品'"
+                @click="toggleFavorite"
+              >
+                <i :class="isFaved ? 'el-icon-star-on' : 'el-icon-star-off'" />
+                <span>{{ isFaved ? '已收藏' : '收藏' }}</span>
+              </button>
+            </div>
             <div class="hero-sub">
               <span class="hero-price">¥ {{ unitPrice }}</span>
               <template v-if="product.discount">
@@ -117,6 +129,20 @@
         </el-descriptions>
 
         <product-review-list :p-id="product.pId" />
+
+        <div v-if="recommends.length" class="spec-title">猜你喜欢</div>
+        <el-row v-if="recommends.length" :gutter="14" class="recommend-row">
+          <el-col v-for="rec in recommends" :key="rec.pId" :xs="12" :sm="8" :md="4">
+            <div class="recommend-card" @click="goRecommend(rec)">
+              <el-image v-if="rec.imageUrl" :src="rec.imageUrl" fit="cover" class="recommend-image">
+                <div slot="error" class="recommend-fallback"><i class="el-icon-picture-outline" /></div>
+              </el-image>
+              <div v-else class="recommend-fallback"><i class="el-icon-picture-outline" /></div>
+              <div class="recommend-name" :title="rec.pName">{{ rec.pName }}</div>
+              <div class="recommend-price">¥ {{ rec.effectivePrice != null ? rec.effectivePrice : rec.price }}</div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
 
       <el-empty v-else-if="!loading" description="未找到商品信息" />
@@ -125,7 +151,7 @@
 </template>
 
 <script>
-import { getProductById } from '../../api/product';
+import { getProductById, getFavoriteStatus, favoriteProduct, unfavoriteProduct, recordBrowse, getRecommendProducts } from '../../api/product';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
 import { addToCart } from '../../api/cart';
@@ -144,7 +170,9 @@ export default {
       coupon: null,
       loading: false,
       submitting: false,
-      addingCart: false
+      addingCart: false,
+      isFaved: false,
+      recommends: []
     };
   },
   computed: {
@@ -184,11 +212,61 @@ export default {
       return `${(d / 10).toFixed(1).replace(/\.0$/, '')} 折`;
     }
   },
+  watch: {
+    // 多标签页复用同一组件：从推荐位跳另一个商品时路由参数变化，需整体重载
+    '$route.params.id'() {
+      if (this.$route.name === 'ProductBuy') {
+        this.quantity = 1;
+        this.coupon = null;
+        this.fetchProduct();
+        this.loadFavoriteStatus();
+        this.recordFootprint();
+        this.loadRecommends();
+      }
+    }
+  },
   created() {
     this.fetchProduct();
     this.loadAddresses();
+    this.loadFavoriteStatus();
+    this.recordFootprint();
+    this.loadRecommends();
   },
   methods: {
+    loadFavoriteStatus() {
+      const id = this.$route.params.id;
+      if (!id) return;
+      getFavoriteStatus(id)
+        .then(res => { this.isFaved = !!res.daoResult; })
+        .catch(() => { this.isFaved = false; });
+    },
+    toggleFavorite() {
+      const id = this.$route.params.id;
+      if (!id) return;
+      const action = this.isFaved ? unfavoriteProduct(id) : favoriteProduct(id);
+      action.then(() => {
+        this.isFaved = !this.isFaved;
+        this.$message.success(this.isFaved ? '已加入收藏' : '已取消收藏');
+        this.loadRecommends();
+      }).catch(() => {});
+    },
+    recordFootprint() {
+      const id = this.$route.params.id;
+      if (!id) return;
+      recordBrowse(id).catch(() => {});
+    },
+    loadRecommends() {
+      getRecommendProducts(6)
+        .then(res => {
+          const list = (res && res.dataList) || [];
+          const currentId = Number(this.$route.params.id);
+          this.recommends = list.filter(item => item.pId !== currentId).slice(0, 6);
+        })
+        .catch(() => { this.recommends = []; });
+    },
+    goRecommend(rec) {
+      this.$router.push('/product-buy/' + rec.pId).catch(() => {});
+    },
     fetchProduct() {
       const id = this.$route.params.id;
       if (!id) return;
@@ -321,6 +399,85 @@ export default {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+.hero-name-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.hero-name-row .hero-name {
+  flex: 1;
+  min-width: 0;
+}
+.fav-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid #e6e9f5;
+  background: #fff;
+  color: #8a93a4;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.fav-btn:hover {
+  color: #f7ba2a;
+  border-color: #f7ba2a;
+}
+.fav-btn.is-faved {
+  color: #f7ba2a;
+  border-color: #f7ba2a;
+  background: rgba(247, 186, 42, 0.08);
+}
+.recommend-row {
+  margin-top: 12px;
+}
+.recommend-card {
+  background: #fff;
+  border: 1px solid #eef0f4;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.recommend-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(31, 41, 59, 0.1);
+}
+.recommend-image {
+  width: 100%;
+  height: 110px;
+  display: block;
+}
+.recommend-image .el-image__inner {
+  object-fit: cover;
+}
+.recommend-fallback {
+  height: 110px;
+  display: grid;
+  place-items: center;
+  color: #c3c9d4;
+  font-size: 26px;
+  background: #f7f8fb;
+}
+.recommend-name {
+  font-size: 13px;
+  color: #1f2733;
+  padding: 8px 10px 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.recommend-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-price);
+  padding: 2px 10px 10px;
+  font-variant-numeric: tabular-nums;
 }
 .detail-body {
   padding: 4px 0;

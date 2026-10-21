@@ -30,7 +30,20 @@
             class="gen-image"
             alt="生成的图片"
           />
-          <span v-else-if="msg.content">{{ msg.content }}</span>
+          <template v-else-if="msg.content">
+            <template v-for="(seg, sIdx) in splitGuideSegments(msg.content)">
+              <span v-if="seg.type === 'text'" :key="'t-' + index + '-' + sIdx">{{ seg.value }}</span>
+              <button
+                v-else
+                :key="'p-' + index + '-' + sIdx"
+                type="button"
+                class="guide-card"
+                @click="goProduct(seg.pId)"
+              >
+                <i class="el-icon-goods" />{{ seg.name }}
+              </button>
+            </template>
+          </template>
           <span v-else class="typing">思考中…</span>
         </div>
       </div>
@@ -52,6 +65,12 @@
             <span class="service-option"><i class="el-icon-cpu" />小D</span>
           </el-option>
         </el-select>
+        <el-switch
+          v-model="guideMode"
+          active-text="导购"
+          class="guide-switch"
+          :disabled="loading"
+        />
         <input
           ref="imageInput"
           type="file"
@@ -106,6 +125,7 @@ export default {
       loading: false,
       source: null,
       clientType: 'qianwen',
+      guideMode: false,
       parsing: false,
       focused: false
     };
@@ -166,6 +186,31 @@ export default {
       this.input = '';
       this.sendText(text);
     },
+    goProduct(pId) {
+      if (this.isLoggedIn) {
+        this.$router.push('/product-buy/' + pId);
+      } else {
+        this.$router.push('/login');
+      }
+    },
+    splitGuideSegments(content) {
+      if (!content) return [{ type: 'text', value: content }];
+      const regex = /\[P:(\d+):([^\]]+)\]/g;
+      const segments = [];
+      let lastIndex = 0;
+      let match;
+      while ((match = regex.exec(content)) !== null) {
+        if (match.index > lastIndex) {
+          segments.push({ type: 'text', value: content.substring(lastIndex, match.index) });
+        }
+        segments.push({ type: 'product', pId: match[1], name: match[2] });
+        lastIndex = regex.lastIndex;
+      }
+      if (lastIndex < content.length) {
+        segments.push({ type: 'text', value: content.substring(lastIndex) });
+      }
+      return segments;
+    },
     isImagePrompt(text) {
       const t = text.trim();
       // "生成/画/绘制…图片/图像/照片" 视为文生图意图，例如"生成一张小猫的图片"
@@ -186,7 +231,9 @@ export default {
         return;
       }
 
-      const url = `/user/chat?message=${encodeURIComponent(text)}&clientType=${encodeURIComponent(this.clientType)}`;
+      const isGuide = this.guideMode;
+      const base = isGuide ? '/user/chat/guide' : '/user/chat';
+      const url = `${base}?message=${encodeURIComponent(text)}&clientType=${encodeURIComponent(this.clientType)}`;
       const source = new EventSource(url);
       this.source = source;
 
@@ -289,6 +336,29 @@ export default {
   margin-right: 10px;
   margin-bottom: 8px;
   flex-shrink: 0;
+}
+.guide-switch {
+  align-self: flex-end;
+  margin-right: 10px;
+  margin-bottom: 8px;
+}
+.guide-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  margin: 0 2px;
+  border: 1px solid #667eea;
+  border-radius: 999px;
+  background: rgba(102, 126, 234, 0.08);
+  color: #1e3c72;
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.guide-card:hover {
+  background: #667eea;
+  color: #fff;
 }
 .service-select >>> .el-input__inner {
   height: 36px;

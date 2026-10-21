@@ -16,12 +16,15 @@ import {
 } from '../utils/auth';
 import { menusForType, normalizeType, U_TYPE_CUSTOMER } from '../router/menuConfig';
 import { getCartCount } from '../api/cart';
+import { getUnreadCount } from '../api/message';
+import { connectMessageWs, disconnectMessageWs, resetMessageWsState } from '../utils/ws';
 
 export default new Vuex.Store({
   state: {
     token: getToken() || '',
     userInfo: getUser() || {},
     cartCount: 0,
+    unreadCount: 0,
     openPages: [],
     perms: getPerms()
   },
@@ -50,6 +53,12 @@ export default new Vuex.Store({
     SET_CART_COUNT(state, n) {
       state.cartCount = Number(n) || 0;
     },
+    SET_UNREAD_COUNT(state, n) {
+      state.unreadCount = Number(n) || 0;
+    },
+    INCREMENT_UNREAD(state) {
+      state.unreadCount = (state.unreadCount || 0) + 1;
+    },
     OPEN_PAGE(state, page) {
       const index = state.openPages.findIndex(item => item.key === page.key);
       if (index === -1) {
@@ -76,6 +85,7 @@ export default new Vuex.Store({
       state.token = '';
       state.userInfo = {};
       state.cartCount = 0;
+      state.unreadCount = 0;
       state.openPages = [];
       state.perms = [];
     },
@@ -86,6 +96,7 @@ export default new Vuex.Store({
       state.token = '';
       state.userInfo = {};
       state.cartCount = 0;
+      state.unreadCount = 0;
       state.openPages = [];
       state.perms = [];
       removeToken();
@@ -96,6 +107,7 @@ export default new Vuex.Store({
   },
   actions: {
     logout({ commit }) {
+      disconnectMessageWs();
       commit('LOGOUT');
     },
     /** 身份守卫放在 action 里：调用方不必判身份，非顾客也不会发出 /count 请求 */
@@ -107,6 +119,23 @@ export default new Vuex.Store({
       getCartCount()
         .then(res => commit('SET_CART_COUNT', res.daoResult || 0))
         .catch(() => commit('SET_CART_COUNT', 0));
+    },
+    refreshUnreadCount({ commit, getters }) {
+      if (!getters.userType) {
+        commit('SET_UNREAD_COUNT', 0);
+        return;
+      }
+      getUnreadCount()
+        .then(res => commit('SET_UNREAD_COUNT', res.daoResult || 0))
+        .catch(() => commit('SET_UNREAD_COUNT', 0));
+    },
+    startMessageSocket({ commit, dispatch, getters }) {
+      if (!getters.userType) return;
+      resetMessageWsState();
+      connectMessageWs(
+        payload => commit('INCREMENT_UNREAD'),
+        () => dispatch('refreshUnreadCount')
+      );
     }
   }
 });

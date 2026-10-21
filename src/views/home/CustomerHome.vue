@@ -551,7 +551,20 @@ export default {
 .entry:focus-visible, .seckill-item:focus-visible, .goods-card:focus-visible, .rank-item:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 .entry.entry-warn { background: rgba(245, 108, 108, 0.32); border-color: rgba(245, 108, 108, 0.5); }
 .entry-ico { font-size: 17px; }
-.entry-badge >>> .el-badge__content { border: none; }
+/* 角标挂在整个入口胶囊的右上角：取消 el-badge 自身定位，让 sup 锚到 .entry */
+.entry { position: relative; }
+.entry-badge { position: static; }
+.entry-badge >>> .el-badge__content {
+  top: -8px;
+  right: -8px;
+  transform: none;
+  border: none;
+  background: #ffd166;
+  color: #1e3c72;
+  font-weight: 700;
+  z-index: 1;
+  box-shadow: 0 2px 6px rgba(30, 60, 114, 0.35);
+}
 
 /* 公告轮播（嵌入横幅右侧） */
 .hero-media {

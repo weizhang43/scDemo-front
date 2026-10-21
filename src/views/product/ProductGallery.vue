@@ -10,16 +10,41 @@
 
       <div class="search-form">
         <div class="search-row">
-          <el-input
+          <el-autocomplete
             v-model="searchForm.pName"
+            :fetch-suggestions="fetchSuggestions"
             placeholder="搜索商品名称"
             prefix-icon="el-icon-search"
             clearable
             class="search-input"
+            popper-class="gallery-suggest-popper"
             @keyup.enter.native="handleSearch"
-          />
+            @select="handleSuggestSelect"
+          >
+            <template slot-scope="{ item }">
+              <div class="suggest-item">
+                <el-image :src="item.imageUrl || ''" fit="cover" class="suggest-thumb">
+                  <div slot="error" class="suggest-thumb-fallback"><i class="el-icon-picture-outline" /></div>
+                </el-image>
+                <span class="suggest-name" :title="item.pName">{{ item.pName }}</span>
+                <span class="suggest-price">¥ {{ item.price }}</span>
+              </div>
+            </template>
+          </el-autocomplete>
           <el-button type="primary" icon="el-icon-search" @click="handleSearch">搜索</el-button>
           <el-button icon="el-icon-refresh-left" @click="handleReset">重置</el-button>
+        </div>
+        <div class="filter-row">
+          <div class="filter-group">
+            <span class="filter-label"><i class="el-icon-price-tag" /> 价格区间</span>
+            <el-input-number v-model="searchForm.minPrice" :min="0" :controls="false" placeholder="最低价" class="price-input" />
+            <span class="price-sep">-</span>
+            <el-input-number v-model="searchForm.maxPrice" :min="0" :controls="false" placeholder="最高价" class="price-input" />
+            <span class="filter-unit">元</span>
+            <el-divider direction="vertical" class="filter-divider" />
+            <el-checkbox v-model="searchForm.hasStock" class="stock-check">仅看有货</el-checkbox>
+          </div>
+          <el-button type="primary" plain size="small" icon="el-icon-search" class="filter-apply" @click="handleSearch">筛选</el-button>
         </div>
       </div>
 
@@ -158,7 +183,7 @@
 </template>
 
 <script>
-import { pageQuery } from '../../api/product';
+import { pageQuery, suggestSearch } from '../../api/product';
 import { getCategoryTree } from '../../api/category';
 import { getMyAddressList } from '../../api/address';
 import { placeOrderV2 } from '../../api/order';
@@ -171,7 +196,9 @@ const SORT_OPTIONS = [
   { value: '', label: '综合排序', icon: 'el-icon-s-operation' },
   { value: 'sales', label: '成交数优先', icon: 'el-icon-sold-out' },
   { value: 'reviews', label: '评价数优先', icon: 'el-icon-chat-line-square' },
-  { value: 'likes', label: '点赞数优先', icon: 'el-icon-thumb' }
+  { value: 'likes', label: '点赞数优先', icon: 'el-icon-thumb' },
+  { value: 'priceAsc', label: '价格从低到高', icon: 'el-icon-top' },
+  { value: 'priceDesc', label: '价格从高到低', icon: 'el-icon-bottom' }
 ];
 
 export default {
@@ -196,7 +223,10 @@ export default {
       parentCategoryId: null,
       categoryId: null,
       searchForm: {
-        pName: ''
+        pName: '',
+        minPrice: undefined,
+        maxPrice: undefined,
+        hasStock: false
       },
       pagination: {
         pageNo: 1,
@@ -253,6 +283,22 @@ export default {
       this.pagination.pageNo = 1;
       this.fetchData();
     },
+    fetchSuggestions(queryString, cb) {
+      const kw = (queryString || '').trim();
+      if (!kw) {
+        cb([]);
+        return;
+      }
+      suggestSearch(kw, 8)
+        .then(res => {
+          cb((res && res.dataList) || []);
+        })
+        .catch(() => cb([]));
+    },
+    handleSuggestSelect(item) {
+      this.searchForm.pName = item.pName;
+      this.handleSearch();
+    },
     fetchData() {
       this.loading = true;
       // 下架商品由服务端按角色过滤，这里只额外排除过期商品；选一级分类时服务端会聚合其子分类商品
@@ -261,6 +307,9 @@ export default {
         isExpired: 0,
         categoryId: this.categoryId || undefined,
         sortBy: this.sortBy || undefined,
+        minPrice: this.searchForm.minPrice != null && this.searchForm.minPrice !== '' ? this.searchForm.minPrice : undefined,
+        maxPrice: this.searchForm.maxPrice != null && this.searchForm.maxPrice !== '' ? this.searchForm.maxPrice : undefined,
+        hasStock: this.searchForm.hasStock ? 1 : undefined,
         pageNo: this.pagination.pageNo,
         pageSize: this.pagination.pageSize
       })
@@ -405,6 +454,9 @@ export default {
     },
     handleReset() {
       this.searchForm.pName = '';
+      this.searchForm.minPrice = undefined;
+      this.searchForm.maxPrice = undefined;
+      this.searchForm.hasStock = false;
       this.sortBy = '';
       this.parentCategoryId = null;
       this.categoryId = null;
@@ -439,7 +491,52 @@ export default {
   flex-wrap: wrap;
 }
 .search-input {
-  width: 240px;
+  flex: 1 1 320px;
+  min-width: 220px;
+  max-width: 540px;
+}
+.filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 13px;
+  border-top: 1px dashed #e8ecf5;
+}
+.filter-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+.filter-label {
+  font-size: 13px;
+  color: #8a93a4;
+  flex-shrink: 0;
+}
+.filter-label i { margin-right: 4px; }
+.price-input {
+  width: 128px;
+}
+.price-sep {
+  color: #c0c6d2;
+}
+.filter-unit {
+  font-size: 12px;
+  color: #aab3c5;
+}
+.filter-divider {
+  height: 18px;
+  background: #e4e8f2;
+}
+.stock-check {
+  flex-shrink: 0;
+}
+.filter-apply {
+  flex-shrink: 0;
 }
 .list-toolbar {
   display: flex;
@@ -711,7 +808,14 @@ export default {
     padding: 12px;
   }
   .search-input {
-    width: 100%;
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .filter-row {
+    justify-content: flex-start;
+  }
+  .filter-apply {
+    margin-left: auto;
   }
   /* 触屏没有 hover，动作条常驻显示 */
   .hover-actions {
@@ -724,6 +828,45 @@ export default {
 .product-gallery .goods-image .el-image__inner {
   object-fit: cover;
 }
+.gallery-suggest-popper .suggest-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 2px;
+}
+.gallery-suggest-popper .suggest-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: #f5f7fb;
+  flex: 0 0 36px;
+}
+.gallery-suggest-popper .suggest-thumb .el-image__inner {
+  object-fit: cover;
+}
+.gallery-suggest-popper .suggest-thumb-fallback {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #c3c9d4;
+  font-size: 16px;
+}
+.gallery-suggest-popper .suggest-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  color: #4a5568;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.gallery-suggest-popper .suggest-price {
+  font-size: 13px;
+  color: var(--color-price, #f56c6c);
+  font-variant-numeric: tabular-nums;
+}
+</style>
 .product-gallery .sort-select .el-input__inner {
   border-radius: var(--radius-md);
   border-color: #e8ecf5;

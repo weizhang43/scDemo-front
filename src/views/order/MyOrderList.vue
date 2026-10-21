@@ -389,6 +389,7 @@ export default {
         { label: '详情', type: 'default', icon: 'el-icon-document', handler: () => this.goDetail(row.oid) }
       ];
       if (s == 0) actions.push({ label: '支付', type: 'primary', icon: 'el-icon-wallet', handler: () => this.goPay(row.oid) });
+      if (s == 3 || s == 2) actions.push({ label: '查看物流', type: 'default', icon: 'el-icon-truck', handler: () => this.goDetail(row.oid) });
       if (s == 3) actions.push({ label: '确认收货', type: 'success', icon: 'el-icon-circle-check', handler: () => this.changeStatus(row, 2) });
       if (s == 2) actions.push({ label: '评价', type: 'default', icon: 'el-icon-star-off', loading: this.reviewLoadingId === row.oid, handler: () => this.openReview(row) });
       if (this.canApplyAfterSale(row)) actions.push({ label: '申请售后', icon: 'el-icon-refresh-left', handler: () => this.openAfterSale(row) });

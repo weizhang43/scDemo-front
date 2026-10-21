@@ -67,6 +67,15 @@ export function shipOrder(id, shippingCompany, trackingNo) {
   });
 }
 
+/** 物流轨迹（模拟时间线），订单发货后可用 */
+export function getLogistics(id) {
+  return request({
+    url: `/order/logistics/${id}`,
+    method: 'get',
+    skipGlobalError: true
+  });
+}
+
 export function deleteOrder(id) {
   return request({
     url: `/order/${id}`,
