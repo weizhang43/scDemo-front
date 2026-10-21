@@ -15,7 +15,9 @@
       <nav class="portal-nav" aria-label="公共快捷入口">
         <router-link to="/browse" class="nav-link"><i class="el-icon-shopping-bag-1" aria-hidden="true" /><span>逛商城</span></router-link>
         <router-link :to="{ path: '/customer', query: { from: 'portal' } }" class="nav-link"><i class="el-icon-service" aria-hidden="true" /><span>联系客服</span></router-link>
+        <span class="nav-divider" aria-hidden="true" />
         <router-link to="/personal-work" class="nav-link"><i class="el-icon-notebook-2" aria-hidden="true" /><span>个人空间</span></router-link>
+        <router-link to="/knowledge" class="nav-link"><i class="el-icon-collection-tag" aria-hidden="true" /><span>知识速记</span></router-link>
       </nav>
     </header>
 
@@ -118,8 +120,9 @@ export default {
 .brand-name { font-size: 19px; font-weight: 700; letter-spacing: .02em; }
 .brand-name em { color: var(--coral); font-family: 'Trebuchet MS', sans-serif; font-size: 23px; font-style: normal; }
 .brand-copy small { color: #aaaebe; font-size: 10px; letter-spacing: .18em; }
-.portal-nav { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
-.nav-link { position: relative; display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 13px; border: 1px solid transparent; border-radius: 10px; color: #cbd0dd; font-size: 13px; text-decoration: none; transition: color .22s var(--ease), background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease); }
+.portal-nav { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.nav-link { position: relative; display: inline-flex; align-items: center; gap: 7px; min-height: 42px; padding: 0 14px; border: 1px solid transparent; border-radius: 10px; color: #cbd0dd; font-size: 13px; text-decoration: none; transition: color .22s var(--ease), background .22s var(--ease), border-color .22s var(--ease), transform .22s var(--ease); }
+.nav-divider { flex: 0 0 auto; width: 1px; height: 18px; margin: 0 3px; background: rgba(255,255,255,.16); }
 .nav-link i { color: #aeb5c5; font-size: 16px; transition: color .22s var(--ease), transform .22s var(--ease); }
 .nav-link:hover { color: #fff; border-color: rgba(255,255,255,.08); background: rgba(255,255,255,.1); transform: translateY(-1px); }
 .nav-link:hover i { color: var(--coral); transform: translateY(-1px); }
@@ -183,6 +186,7 @@ export default {
   .portal-header { align-items: flex-start; flex-wrap: wrap; padding-bottom: 17px; }
   .portal-nav { width: 100%; justify-content: flex-start; gap: 2px; overflow-x: auto; }
   .nav-link { flex: 0 0 auto; padding: 0 10px; }
+  .nav-divider { display: none; }
   .portal-main { gap: 38px; padding: 44px 0 38px; }
   .portal-intro h1 { font-size: clamp(34px, 9vw, 48px); }
   .role-list { grid-template-columns: 1fr; }

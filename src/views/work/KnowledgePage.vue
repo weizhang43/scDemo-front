@@ -26,10 +26,20 @@ import KnowledgeQuick from './KnowledgeQuick.vue';
 export default {
   name: 'KnowledgePage',
   components: { KnowledgeQuick },
-  props: {
-    mobile: {
-      type: Boolean,
-      default: false
+  data() {
+    return {
+      mobile: window.matchMedia('(max-width: 768px)').matches
+    };
+  },
+  created() {
+    window.addEventListener('resize', this.updateMobile);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.updateMobile);
+  },
+  methods: {
+    updateMobile() {
+      this.mobile = window.matchMedia('(max-width: 768px)').matches;
     }
   }
 };

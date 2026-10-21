@@ -19,7 +19,6 @@
           <el-tab-pane label="工作日报" name="daily" />
           <el-tab-pane label="工作周报" name="weekly" />
           <el-tab-pane label="学习计划" name="study" />
-          <el-tab-pane label="知识速记" name="knowledge" />
         </el-tabs>
 
         <div v-if="activeTab === 'daily' || activeTab === 'weekly'">
@@ -157,8 +156,6 @@
             @current-change="handlePlanPageChange"
           />
         </div>
-
-        <KnowledgeQuick v-else-if="activeTab === 'knowledge'" :mobile="knowledgeMobile" />
       </el-card>
     </div>
 
@@ -201,20 +198,18 @@
 <script>
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue';
 import '@wangeditor/editor/dist/css/style.css';
-import KnowledgeQuick from './KnowledgeQuick.vue';
 import { getReportPage, deleteReport, sendReport } from '../../api/workReport';
 import { getPlanPage, getPlanDetail, addPlan, updatePlan, deletePlan, completePlan } from '../../api/studyPlan';
 import { getToken } from '../../utils/auth';
 
 export default {
   name: 'PersonalWork',
-  components: { Editor, Toolbar, KnowledgeQuick },
+  components: { Editor, Toolbar },
   data() {
     return {
       // 周五默认显示周报，其他日期默认显示日报
-      activeTab: ['daily', 'weekly', 'study', 'knowledge'].includes(this.$route.query.tab)
+      activeTab: ['daily', 'weekly', 'study'].includes(this.$route.query.tab)
         ? this.$route.query.tab : (new Date().getDay() === 5 ? 'weekly' : 'daily'),
-      knowledgeMobile: window.matchMedia('(max-width: 768px)').matches,
       loading: false,
       tableData: [],
       total: 0,
@@ -255,24 +250,19 @@ export default {
   },
   created() {
     this.loadActiveTab();
-    window.addEventListener('resize', this.updateKnowledgeMobile);
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.updateKnowledgeMobile);
     if (this.editor) this.editor.destroy();
   },
   watch: {
     '$route.query.tab'(tab) {
-      if (['daily', 'weekly', 'study', 'knowledge'].includes(tab) && tab !== this.activeTab) {
+      if (['daily', 'weekly', 'study'].includes(tab) && tab !== this.activeTab) {
         this.activeTab = tab;
         this.loadActiveTab();
       }
     }
   },
   methods: {
-    updateKnowledgeMobile() {
-      this.knowledgeMobile = window.matchMedia('(max-width: 768px)').matches;
-    },
     fetchList() {
       this.loading = true;
       getReportPage({
@@ -293,7 +283,6 @@ export default {
         this.fetchPlanList();
         return;
       }
-      if (this.activeTab === 'knowledge') return;
       this.query.pageNum = 1;
       this.fetchList();
     },
