@@ -1,6 +1,7 @@
 <template>
   <div class="fp-container">
     <div class="bg-decorations">
+      <span class="page-texture" />
       <span class="blob blob-1" />
       <span class="blob blob-2" />
       <span class="blob blob-3" />
@@ -188,15 +189,17 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--gradient-topbar);
+  background: linear-gradient(135deg, #26344b 0%, #3a3b59 48%, #285258 100%);
   overflow: hidden;
   padding: 40px 16px;
 }
 .bg-decorations { position: absolute; inset: 0; pointer-events: none; }
-.blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.5; }
-.blob-1 { width: 320px; height: 320px; background: #7f9cf0; top: -80px; left: -60px; }
-.blob-2 { width: 380px; height: 380px; background: #9b6cff; bottom: -120px; right: -80px; }
-.blob-3 { width: 240px; height: 240px; background: #2dd4bf; top: 40%; right: 20%; opacity: 0.25; }
+.bg-decorations .page-texture { position: absolute; inset: 0; opacity: .5; background-image: radial-gradient(rgba(255,255,255,.085) .7px, transparent .7px); background-size: 8px 8px; -webkit-mask-image: linear-gradient(to bottom, #000, transparent 88%); mask-image: linear-gradient(to bottom, #000, transparent 88%); }
+.blob { position: absolute; border-radius: 50%; filter: blur(46px); opacity: .9; animation: fp-breathe 16s ease-in-out infinite; }
+.blob-1 { width: 420px; height: 420px; background: radial-gradient(circle, rgba(255,135,109,.34), rgba(255,135,109,0) 68%); top: -100px; left: -80px; }
+.blob-2 { width: 460px; height: 460px; background: radial-gradient(circle, rgba(118,75,162,.32), rgba(118,75,162,0) 68%); bottom: -140px; right: -100px; animation-delay: -6s; }
+.blob-3 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(87,218,190,.28), rgba(87,218,190,0) 68%); top: 34%; right: 18%; animation-delay: -11s; }
+@keyframes fp-breathe { 0%, 100% { transform: scale(1); opacity: .75; } 50% { transform: scale(1.16); opacity: 1; } }
 .fp-card {
   position: relative;
   z-index: 1;

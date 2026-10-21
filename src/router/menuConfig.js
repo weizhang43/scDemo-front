@@ -4,15 +4,15 @@ export const U_TYPE_ADMIN = 3;
 
 export const ROLES = [
   {
-    key: 'admin',
-    uType: U_TYPE_ADMIN,
-    label: '管理员',
-    desc: '平台运营与用户管理',
-    subtitle: '管理用户、分类、公告与系统日志',
-    icon: 'el-icon-s-check',
-    accent: '#764ba2',
-    accentSoft: 'rgba(118, 75, 162, 0.12)',
-    canRegister: false
+    key: 'customer',
+    uType: U_TYPE_CUSTOMER,
+    label: '顾客',
+    desc: '购物下单与售后申请',
+    subtitle: '逛商品、抢秒杀、领优惠券',
+    icon: 'el-icon-shopping-cart-full',
+    accent: '#0f9b8e',
+    accentSoft: 'rgba(15, 155, 142, 0.12)',
+    canRegister: true
   },
   {
     key: 'merchant',
@@ -26,15 +26,15 @@ export const ROLES = [
     canRegister: true
   },
   {
-    key: 'customer',
-    uType: U_TYPE_CUSTOMER,
-    label: '顾客',
-    desc: '购物下单与售后申请',
-    subtitle: '逛商品、抢秒杀、领优惠券',
-    icon: 'el-icon-shopping-cart-full',
-    accent: '#0f9b8e',
-    accentSoft: 'rgba(15, 155, 142, 0.12)',
-    canRegister: true
+    key: 'admin',
+    uType: U_TYPE_ADMIN,
+    label: '管理员',
+    desc: '平台运营与用户管理',
+    subtitle: '管理用户、分类、公告与系统日志',
+    icon: 'el-icon-s-check',
+    accent: '#764ba2',
+    accentSoft: 'rgba(118, 75, 162, 0.12)',
+    canRegister: false
   }
 ];
 

@@ -1,10 +1,10 @@
 <template>
   <div :class="['login-container', `login-container--${role.key}`]">
     <div class="bg-decorations" aria-hidden="true">
-      <span class="grid-line grid-line--one" />
-      <span class="grid-line grid-line--two" />
-      <span class="signal signal--one" />
-      <span class="signal signal--two" />
+      <span class="page-texture" />
+      <span class="page-shape page-shape--coral" />
+      <span class="page-shape page-shape--violet" />
+      <span class="page-shape page-shape--mint" />
     </div>
     <nav class="top-nav" aria-label="快捷入口">
       <router-link to="/browse" class="customer-entry"><i class="el-icon-shopping-bag-1" aria-hidden="true" />随便逛逛</router-link>
@@ -40,15 +40,7 @@
 
       <section class="panel-right" :style="{ '--accent': role.accent, '--accent-soft': role.accentSoft }">
         <router-link to="/portal" class="back-link"><i class="el-icon-arrow-left" aria-hidden="true" />切换身份</router-link>
-        <div class="role-badge"><i :class="role.icon" aria-hidden="true" />{{ role.label }}</div>
-        <div class="brand"><p class="form-kicker">SECURE ACCESS / {{ String(role.uType).padStart(2, '0') }}</p><h2 class="brand-title">欢迎回来</h2><p class="brand-subtitle">{{ role.subtitle }}</p></div>
-        <el-form ref="loginForm" :model="loginForm" :rules="loginRules" label-position="top" class="login-form auth-form" @submit.native.prevent="handleLogin">
-          <el-form-item label="用户名" prop="uName" class="field"><el-input v-model="loginForm.uName" autocomplete="username" placeholder="请输入用户名" prefix-icon="el-icon-user" /></el-form-item>
-          <el-form-item label="密码" prop="password" class="field"><el-input v-model="loginForm.password" type="password" autocomplete="current-password" show-password placeholder="请输入密码" prefix-icon="el-icon-lock" /></el-form-item>
-          <el-form-item class="action"><el-button native-type="submit" type="primary" :loading="loading" class="auth-submit-btn">{{ loading ? '正在验证…' : '登录' }}</el-button></el-form-item>
-          <div class="auth-footer"><router-link to="/forgot-password" class="auth-link link--forgot">忘记密码？</router-link><template v-if="role.canRegister"><span class="footer-sep">|</span>还没有账号？<router-link :to="{ path: '/register', query: { uType: role.uType } }" class="auth-link">去注册</router-link></template></div>
-        </el-form>
-        <div class="form-privacy"><i class="el-icon-lock" aria-hidden="true" />你的登录信息将被安全保护</div>
+        <LoginForm :role="role" />
       </section>
     </main>
 
@@ -57,19 +49,16 @@
 </template>
 
 <script>
-import { login } from '../../api/user';
-import { getMyPerms } from '../../api/userRole';
 import { getLoginNotices } from '../../api/notice';
-import { landingFor, roleByKey, ROLES } from '../../router/menuConfig';
+import { roleByKey, ROLES } from '../../router/menuConfig';
 import { sanitizeRichText } from '../../utils/sanitize';
+import LoginForm from './LoginForm.vue';
 
 export default {
   name: 'Login',
+  components: { LoginForm },
   data() {
     return {
-      loginForm: { uName: '', password: '' },
-      loginRules: { uName: [{ required: true, message: '请输入用户名', trigger: 'blur' }], password: [{ required: true, message: '请输入密码', trigger: 'blur' }] },
-      loading: false,
       notices: [],
       currentNotice: {},
       detailVisible: false
@@ -91,25 +80,6 @@ export default {
     },
     sanitizeNoticeContent(content) {
       return sanitizeRichText(content);
-    },
-    handleLogin() {
-      if (this.loading) return;
-      this.$refs.loginForm.validate(valid => {
-        if (!valid || this.loading) return;
-        this.loading = true;
-        login({ ...this.loginForm, uType: this.role.uType }).then(res => {
-          const result = res.daoResult || {};
-          this.$store.commit('SET_TOKEN', result.token);
-          this.$store.commit('SET_USER', result.user || {});
-          getMyPerms()
-            .then(permRes => this.$store.commit('SET_PERMS', permRes.dataList || []))
-            .catch(() => this.$store.commit('SET_PERMS', []))
-            .then(() => {
-              this.$message.success('登录成功');
-              this.$router.push(landingFor((result.user || {}).uType));
-            });
-        }).catch(() => {}).finally(() => { this.loading = false; });
-      });
     }
   }
 };
@@ -117,9 +87,6 @@ export default {
 
 <style scoped>
 .login-container {
-  --page-bg: linear-gradient(135deg, #10182f 0%, #1c2d52 52%, #493779 100%);
-  --page-glow: rgba(142, 102, 224, 0.32);
-  --line-color: rgba(173, 145, 255, 0.72);
   position: relative;
   min-height: 100vh;
   display: flex;
@@ -128,36 +95,17 @@ export default {
   padding: 88px 24px 40px;
   box-sizing: border-box;
   overflow: hidden;
-  background: var(--page-bg);
+  color: #f2f4f8;
+  background: linear-gradient(135deg, #26344b 0%, #3a3b59 48%, #285258 100%);
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.bg-decorations {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 12% 0%, var(--page-glow), transparent 32%),
-    radial-gradient(circle at 88% 100%, rgba(255, 255, 255, 0.12), transparent 36%);
-}
-.grid-line {
-  position: absolute;
-  width: 42vw;
-  height: 1px;
-  background: var(--line-color);
-  transform: rotate(-28deg);
-  opacity: 0.7;
-}
-.grid-line--one { top: 18%; left: -10%; }
-.grid-line--two { right: -8%; bottom: 14%; transform: rotate(28deg); }
-.signal {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent-signal, #e8850e);
-  box-shadow: 0 0 0 7px var(--signal-soft, rgba(232, 133, 14, 0.12));
-}
-.signal--one { top: 30%; left: 12%; }
-.signal--two { right: 16%; bottom: 26%; background: var(--accent-signal-alt, #0f9b8e); box-shadow: 0 0 0 7px var(--signal-soft-alt, rgba(15, 155, 142, 0.12)); }
+.bg-decorations { position: absolute; inset: 0; pointer-events: none; }.bg-decorations .page-texture { position: absolute; inset: 0; opacity: .5; background-image: radial-gradient(rgba(255,255,255,.085) .7px, transparent .7px); background-size: 8px 8px; -webkit-mask-image: linear-gradient(to bottom, #000, transparent 88%); mask-image: linear-gradient(to bottom, #000, transparent 88%); }
+.bg-decorations .page-shape { position: absolute; border-radius: 50%; filter: blur(46px); will-change: transform, opacity; }
+.page-shape--coral { width: clamp(300px, 36vw, 560px); height: clamp(300px, 36vw, 560px); top: -10%; right: -6%; background: radial-gradient(circle, rgba(255,135,109,.36), rgba(255,135,109,0) 68%); animation: breathe 16s ease-in-out infinite; }
+.page-shape--violet { width: 460px; height: 460px; top: 30%; left: 34%; background: radial-gradient(circle, rgba(118,75,162,.34), rgba(118,75,162,0) 68%); animation: breathe 19s ease-in-out -6s infinite; }
+.page-shape--mint { width: 460px; height: 460px; bottom: -12%; left: 6%; background: radial-gradient(circle, rgba(87,218,190,.28), rgba(87,218,190,0) 68%); animation: breathe 22s ease-in-out -11s infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1) translate(0, 0); opacity: .72; } 50% { transform: scale(1.18) translate(-2.5%, 2%); opacity: 1; } }
 .top-nav { position: absolute; top: 24px; right: 32px; z-index: 2; display: flex; gap: 8px; }
 .customer-entry {
   display: inline-flex;
@@ -188,18 +136,11 @@ export default {
   max-width: calc(100vw - 48px);
   min-height: 510px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.46);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 28px 80px rgba(8, 15, 36, 0.3);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: linear-gradient(transparent, transparent) padding-box, linear-gradient(160deg, rgba(255,255,255,.45), rgba(255,255,255,.14) 42%, rgba(255,135,109,.5)) border-box;
+  box-shadow: 0 18px 42px rgba(10,14,26,.42), inset 0 1px 0 rgba(255,255,255,.14);
   animation: panel-in 0.45s ease both;
-}
-.login-panel::after {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: inherit;
-  content: '';
-  pointer-events: none;
 }
 @keyframes panel-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 .panel-left {
@@ -208,7 +149,9 @@ export default {
   flex-direction: column;
   padding: 24px 28px 20px;
   color: #fff;
-  background: linear-gradient(160deg, rgba(11, 27, 54, 0.96), rgba(25, 45, 75, 0.98));
+  background: linear-gradient(155deg, rgba(20,26,42,.88), rgba(15,20,33,.8) 55%, rgba(18,23,38,.85));
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
 .left-kicker, .form-kicker, .message-label { margin: 0; color: #e7a14c; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
 .left-kicker { margin-bottom: 18px; color: #aebdca; }
@@ -239,26 +182,19 @@ export default {
   justify-content: center;
   padding: 50px 34px 30px;
   box-sizing: border-box;
-  background: rgba(255, 253, 249, 0.98);
+  background: rgba(255,253,249,.98);
 }
 .panel-right::before { position: absolute; top: 0; right: 0; left: 0; height: 4px; background: var(--accent); content: ''; }
 .back-link { position: absolute; top: 22px; left: 28px; color: #748091; font-size: 12px; text-decoration: none; }
 .back-link:hover, .back-link:focus { color: var(--accent); outline: none; }
-.role-badge { position: absolute; top: 20px; right: 28px; padding: 6px 12px; border-radius: 999px; color: var(--accent); background: var(--accent-soft); font-size: 12px; font-weight: 700; }
-.brand { margin-bottom: 22px; }
-.form-kicker { color: var(--accent); margin-bottom: 10px; }
-.brand-title { margin: 0 0 7px; color: #20242b; font-size: 26px; letter-spacing: 1px; }
-.brand-subtitle { margin: 0; color: #7b8490; font-size: 13px; line-height: 1.6; }
-.auth-form .el-form-item { margin-bottom: 20px; }
-.action { margin-top: 4px; margin-bottom: 10px !important; }
+.panel-right >>> .role-badge { position: absolute; top: 20px; right: 28px; margin-bottom: 0; }
+.panel-right >>> .brand { margin-top: 26px; }
+.panel-right >>> .form-privacy { margin-top: 44px; }
 .panel-right >>> .auth-submit-btn { background: var(--accent); border-color: var(--accent); }
 .panel-right >>> .auth-submit-btn:hover, .panel-right >>> .auth-submit-btn:focus { background: var(--accent); border-color: var(--accent); filter: brightness(1.08); }
-.footer-sep { margin: 0 8px; color: #d5d8da; }
-.link--forgot { color: var(--accent); }
-.form-privacy { margin-top: 20px; color: #a1a7ad; text-align: center; font-size: 11px; }
 .notice-detail { max-height: 62vh; overflow: auto; color: #303133; line-height: 1.75; }
 .notice-detail >>> img { max-width: 100%; }
-@media (prefers-reduced-motion: reduce) { .login-panel, .customer-entry { animation: none; transition: none; } }
+@media (prefers-reduced-motion: reduce) { .login-panel, .customer-entry, .page-shape { animation: none !important; transition: none !important; } }
 @media (max-width: 768px) {
   .login-container { padding: 76px 16px 32px; }
   .top-nav { top: 16px; left: 16px; right: 16px; justify-content: flex-end; overflow-x: auto; }
@@ -281,57 +217,33 @@ export default {
 .login-container .notice-carousel .el-carousel__indicators--outside button { background-color: rgba(255, 255, 255, 0.45); }
 .login-container .notice-carousel .el-carousel__indicator.is-active button { background-color: var(--accent-signal, #e7a14c); }
 .login-container--admin {
-  --page-bg: linear-gradient(135deg, #10182f 0%, #1b2c55 50%, #493779 100%);
-  --page-glow: rgba(142, 102, 224, 0.34);
-  --line-color: rgba(173, 145, 255, 0.72);
   --accent-signal: #ad91ff;
-  --accent-signal-alt: #e7a14c;
-  --signal-soft: rgba(173, 145, 255, 0.14);
-  --signal-soft-alt: rgba(231, 161, 76, 0.13);
 }
-.login-container--admin .panel-left { background: linear-gradient(155deg, #121c3b 0%, #2a2856 100%); }
 .login-container--admin .panel-left .left-kicker,
 .login-container--admin .panel-left .message-label { color: #c2b0ff; }
 .login-container--admin .panel-left .left-message h1 em { color: #c2b0ff; }
-.login-container--admin .panel-right { --accent: #764ba2; --accent-soft: rgba(118, 75, 162, 0.13); }
 .login-container--admin .role-badge { color: #684092; background: rgba(118, 75, 162, 0.12); }
 .login-container--admin .form-privacy { color: #8990a6; }
 .login-container--admin .panel-right .auth-submit-btn { box-shadow: 0 10px 20px rgba(118, 75, 162, 0.2); }
 .login-container--admin .panel-right .auth-submit-btn:hover,
 .login-container--admin .panel-right .auth-submit-btn:focus { box-shadow: 0 12px 24px rgba(118, 75, 162, 0.3); }
 .login-container--merchant {
-  --page-bg: linear-gradient(135deg, #142238 0%, #1f405c 50%, #80512d 100%);
-  --page-glow: rgba(232, 133, 14, 0.28);
-  --line-color: rgba(244, 181, 93, 0.72);
   --accent-signal: #f3b65d;
-  --accent-signal-alt: #83c9d3;
-  --signal-soft: rgba(243, 182, 93, 0.15);
-  --signal-soft-alt: rgba(131, 201, 211, 0.13);
 }
-.login-container--merchant .panel-left { background: linear-gradient(155deg, #15263d 0%, #29465a 100%); }
 .login-container--merchant .panel-left .left-kicker,
 .login-container--merchant .panel-left .message-label { color: #f3b65d; }
 .login-container--merchant .panel-left .left-message h1 em { color: #f3b65d; }
-.login-container--merchant .panel-right { --accent: #e8850e; --accent-soft: rgba(232, 133, 14, 0.13); }
 .login-container--merchant .role-badge { color: #bc6908; background: rgba(232, 133, 14, 0.13); }
 .login-container--merchant .form-privacy { color: #938d83; }
 .login-container--merchant .panel-right .auth-submit-btn { box-shadow: 0 10px 20px rgba(232, 133, 14, 0.2); }
 .login-container--merchant .panel-right .auth-submit-btn:hover,
 .login-container--merchant .panel-right .auth-submit-btn:focus { box-shadow: 0 12px 24px rgba(232, 133, 14, 0.3); }
 .login-container--customer {
-  --page-bg: linear-gradient(135deg, #083b4a 0%, #0d6570 48%, #159a91 100%);
-  --page-glow: rgba(93, 231, 207, 0.24);
-  --line-color: rgba(114, 226, 208, 0.72);
   --accent-signal: #72e2d0;
-  --accent-signal-alt: #83c9d3;
-  --signal-soft: rgba(114, 226, 208, 0.15);
-  --signal-soft-alt: rgba(131, 201, 211, 0.13);
 }
-.login-container--customer .panel-left { background: linear-gradient(155deg, #073342 0%, #0b5360 100%); }
 .login-container--customer .panel-left .left-kicker,
 .login-container--customer .panel-left .message-label { color: #72e2d0; }
 .login-container--customer .panel-left .left-message h1 em { color: #70e1d0; }
-.login-container--customer .panel-right { --accent: #0f9b8e; --accent-soft: rgba(15, 155, 142, 0.13); }
 .login-container--customer .role-badge { color: #087a70; background: rgba(15, 155, 142, 0.12); }
 .login-container--customer .form-privacy { color: #849b9e; }
 .login-container--customer .panel-right .auth-submit-btn { box-shadow: 0 10px 20px rgba(15, 155, 142, 0.2); }

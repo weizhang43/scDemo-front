@@ -2,6 +2,7 @@
   <div class="portal-page">
     <div class="page-texture" aria-hidden="true" />
     <div class="page-shape page-shape--coral" aria-hidden="true" />
+    <div class="page-shape page-shape--violet" aria-hidden="true" />
     <div class="page-shape page-shape--mint" aria-hidden="true" />
 
     <header class="portal-header">
@@ -36,26 +37,41 @@
       <section class="role-section" aria-labelledby="role-title">
         <div class="section-heading">
           <div><p class="section-eyebrow">CHOOSE YOUR ROLE</p><h2 id="role-title">选择身份进入</h2></div>
-          <span>登录后使用对应功能</span>
+          <span>选择身份，登录进入</span>
         </div>
         <div class="role-list">
-          <router-link
+          <a
             v-for="(role, index) in roles"
             :key="role.key"
-            :to="`/login/${role.key}`"
+            role="button"
+            tabindex="0"
             class="role-card"
-            :class="`role-card--${role.key}`"
-            :style="{ '--accent': role.accent, '--accent-soft': role.accentSoft }"
+            :style="{ '--accent': role.accent, '--accent-ink': accentInks[role.key], '--i': index }"
+            @click="openLogin(role)"
+            @keyup.enter="openLogin(role)"
           >
-            <span class="card-index">{{ String(index + 1).padStart(2, '0') }}</span>
-            <span class="role-icon"><i :class="role.icon" aria-hidden="true" /></span>
-            <span class="card-identity"><strong>{{ role.label }}</strong><small>{{ role.desc }}</small></span>
+            <span class="card-top">
+              <span class="card-eyebrow">{{ role.key.toUpperCase() }}</span>
+              <span class="role-icon"><i :class="role.icon" aria-hidden="true" /></span>
+            </span>
+            <strong class="card-name">{{ role.label }}</strong>
+            <small class="card-desc">{{ role.desc }}</small>
             <span class="card-modules"><span v-for="module in modules[role.key]" :key="module">{{ module }}</span></span>
             <span class="card-action">{{ actions[role.key] }}<i class="el-icon-right" aria-hidden="true" /></span>
-          </router-link>
+          </a>
         </div>
       </section>
     </main>
+
+    <el-dialog
+      :visible.sync="loginVisible"
+      width="520px"
+      top="12vh"
+      custom-class="portal-login-dialog"
+      @closed="activeRole = null"
+    >
+      <LoginForm v-if="activeRole" :role="activeRole" />
+    </el-dialog>
 
     <footer class="portal-footer">
       <div class="portal-register"><span>还没有账号？</span><router-link to="/register">商家 / 顾客注册 <i class="el-icon-right" aria-hidden="true" /></router-link></div>
@@ -66,6 +82,7 @@
 
 <script>
 import { ROLES } from '../../router/menuConfig';
+import LoginForm from './LoginForm.vue';
 
 const modules = {
   admin: ['用户与角色', '公告与日志'],
@@ -79,17 +96,29 @@ const actions = {
   customer: '去逛商城'
 };
 
+// 深色玻璃卡上直接用 menuConfig 的 accent 对比度不够，配一版亮色
+const accentInks = {
+  admin: '#b79ae8',
+  merchant: '#f7a94d',
+  customer: '#3ec9ba'
+};
+
 export default {
   name: 'RolePortal',
-  data() { return { modules, actions }; },
-  computed: { roles() { return ROLES; } }
+  components: { LoginForm },
+  data() { return { modules, actions, accentInks, loginVisible: false, activeRole: null }; },
+  computed: { roles() { return ROLES; } },
+  methods: {
+    openLogin(role) {
+      this.activeRole = role;
+      this.loginVisible = true;
+    }
+  }
 };
 </script>
 
 <style scoped>
 .portal-page {
-  --ink: #273044;
-  --muted: #777b80;
   --coral: #ff876d;
   --paper: #f7f3ea;
   --line: rgba(255,255,255,.18);
@@ -109,9 +138,11 @@ export default {
 }
 .portal-page ::selection { color: #fff; background: rgba(237, 104, 74, .75); }
 .page-texture { position: absolute; inset: 0; pointer-events: none; opacity: .55; background-image: radial-gradient(rgba(255,255,255,.085) .7px, transparent .7px); background-size: 8px 8px; mask-image: linear-gradient(to bottom, #000, transparent 88%); }
-.page-shape { position: absolute; border-radius: 50%; pointer-events: none; }
-.page-shape--coral { width: clamp(280px, 34vw, 540px); height: clamp(280px, 34vw, 540px); top: 8%; right: -15%; background: rgba(255,135,109,.16); filter: blur(2px); }
-.page-shape--mint { width: 300px; height: 300px; bottom: -210px; left: 7%; border: 1px solid rgba(87,218,190,.22); box-shadow: inset 0 0 0 55px rgba(87,218,190,.055); }
+.page-shape { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(46px); will-change: transform, opacity; }
+.page-shape--coral { width: clamp(300px, 36vw, 560px); height: clamp(300px, 36vw, 560px); top: 6%; right: -12%; background: radial-gradient(circle, rgba(255,135,109,.34), rgba(255,135,109,0) 68%); animation: breathe 16s ease-in-out infinite; }
+.page-shape--violet { width: 420px; height: 420px; top: 30%; left: 24%; background: radial-gradient(circle, rgba(118,75,162,.3), rgba(118,75,162,0) 68%); animation: breathe 19s ease-in-out -6s infinite; }
+.page-shape--mint { width: 460px; height: 460px; bottom: -240px; left: 4%; background: radial-gradient(circle, rgba(87,218,190,.26), rgba(87,218,190,0) 68%); animation: breathe 22s ease-in-out -11s infinite; }
+@keyframes breathe { 0%, 100% { transform: scale(1) translate(0, 0); opacity: .72; } 50% { transform: scale(1.18) translate(-2.5%, 2%); opacity: 1; } }
 .portal-header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 24px; width: 100%; max-width: 1380px; margin: 0 auto; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .brand-lockup { display: inline-flex; align-items: center; gap: 11px; color: #fffaf5; text-decoration: none; }
 .brand-mark { width: 42px; height: 42px; object-fit: contain; border-radius: 11px; background: #fff; box-shadow: 0 8px 20px rgba(74,65,52,.12); transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
@@ -140,30 +171,21 @@ export default {
 .section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 19px; padding-bottom: 11px; border-bottom: 1px solid rgba(255,255,255,.1); }
 .section-heading h2 { margin: 7px 0 0; font-size: 23px; font-weight: 600; letter-spacing: .02em; }
 .section-heading > span { color: #aeb5c3; font-size: 12px; }
-.role-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 20px); }
-.role-card { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 350px; overflow: hidden; padding: 22px clamp(18px, 1.8vw, 26px) 24px; box-sizing: border-box; border: 1px solid rgba(39,48,68,.12); border-radius: 16px; color: var(--ink); background: rgba(255,255,255,.72); box-shadow: 0 14px 35px rgba(20,25,42,.12), 0 2px 5px rgba(20,25,42,.06); text-decoration: none; transition: transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease), background .3s var(--ease); }
-.role-card::before { position: absolute; inset: 0 0 auto; height: 3px; background: var(--accent); content: ''; opacity: .78; transform: scaleX(.23); transform-origin: left; transition: transform .35s var(--ease), opacity .35s var(--ease); }
-.role-card::after { position: absolute; right: -55px; bottom: -75px; width: 160px; height: 160px; border-radius: 50%; background: var(--accent-soft); content: ''; transition: transform .4s var(--ease); }
-.role-card:hover { border-color: var(--accent); background: rgba(255,255,255,.93); box-shadow: 0 22px 48px rgba(74,65,52,.13); transform: translateY(-7px); }
-.role-card--admin { border-color: rgba(118,75,162,.2); background: linear-gradient(150deg, rgba(255,253,255,.98) 0%, rgba(239,232,248,.96) 100%); box-shadow: 0 14px 35px rgba(83,55,115,.11); }
-.role-card--merchant { border-color: rgba(232,133,14,.22); background: linear-gradient(150deg, rgba(255,254,250,.98) 0%, rgba(255,238,211,.96) 100%); box-shadow: 0 14px 35px rgba(137,84,26,.11); }
-.role-card--customer { border-color: rgba(15,155,142,.2); background: linear-gradient(150deg, rgba(252,255,254,.98) 0%, rgba(222,244,240,.96) 100%); box-shadow: 0 14px 35px rgba(25,103,96,.11); }
-.role-card--admin:hover { background: linear-gradient(150deg, #fff 0%, #eee4f8 100%); box-shadow: 0 22px 48px rgba(83,55,115,.18); }
-.role-card--merchant:hover { background: linear-gradient(150deg, #fff 0%, #ffebca 100%); box-shadow: 0 22px 48px rgba(137,84,26,.18); }
-.role-card--customer:hover { background: linear-gradient(150deg, #fff 0%, #d8f1ed 100%); box-shadow: 0 22px 48px rgba(25,103,96,.18); }
-.role-card:hover::before { opacity: 1; transform: scaleX(1); }
-.role-card:hover::after { transform: scale(1.22); }
-.role-card:focus-visible { outline-color: var(--accent); }
-.card-index { align-self: flex-end; color: #aaa69d; font-family: 'Trebuchet MS', sans-serif; font-size: 11px; letter-spacing: .14em; }
-.role-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; margin: 28px 0 23px; border-radius: 13px; color: var(--accent); font-size: 23px; background: var(--accent-soft); transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
-.role-card:hover .role-icon { box-shadow: 0 10px 24px var(--accent-soft); transform: translateY(-2px) rotate(-3deg); }
-.card-identity { display: flex; flex-direction: column; gap: 7px; }
-.card-identity strong { font-family: 'Songti SC', 'STSong', Georgia, serif; font-size: 26px; font-weight: 600; letter-spacing: .03em; }
-.card-identity small { min-height: 34px; color: var(--muted); font-size: 12px; line-height: 1.55; }
-.card-modules { display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0; }
-.card-modules span { padding: 5px 8px; border: 1px solid rgba(39,48,68,.095); border-radius: 999px; color: #696e78; font-size: 10px; white-space: nowrap; background: rgba(247,243,234,.72); }
-.card-action { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 17px; border-top: 1px solid rgba(39,48,68,.1); color: var(--accent); font-size: 12px; font-weight: 700; transition: border-color .25s var(--ease); }
-.role-card:hover .card-action { border-color: var(--accent); }
+.role-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 1.6vw, 22px); }
+.role-card { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 352px; padding: 20px clamp(18px, 1.8vw, 24px) 22px; box-sizing: border-box; border: 1px solid transparent; border-radius: 20px; color: #f2f4f8; cursor: pointer; background: linear-gradient(155deg, rgba(26,33,52,.72), rgba(20,26,42,.62) 55%, rgba(23,30,49,.68)) padding-box, linear-gradient(160deg, rgba(255,255,255,.42), rgba(255,255,255,.14) 42%, var(--accent)) border-box; box-shadow: 0 18px 42px rgba(10,14,26,.42), inset 0 1px 0 rgba(255,255,255,.14); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); text-decoration: none; transition: transform .32s var(--ease), box-shadow .32s var(--ease), background .32s var(--ease); animation: card-in .65s var(--ease) backwards; animation-delay: calc(var(--i) * .12s); }
+@keyframes card-in { from { opacity: 0; transform: translateY(26px); } }
+.role-card:hover { transform: translateY(-6px); background: linear-gradient(155deg, rgba(32,40,63,.76), rgba(25,32,51,.66) 55%, rgba(29,36,57,.72)) padding-box, linear-gradient(160deg, rgba(255,255,255,.55), rgba(255,255,255,.2) 42%, var(--accent)) border-box; box-shadow: 0 24px 46px rgba(6,10,20,.5), 0 18px 40px -18px var(--accent), inset 0 1px 0 rgba(255,255,255,.18); }
+.role-card:focus-visible { outline-color: var(--accent-ink); }
+.card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.card-eyebrow { color: rgba(235,238,246,.62); font-family: 'Trebuchet MS', sans-serif; font-size: 11px; letter-spacing: .2em; }
+.role-icon { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border: 1px solid rgba(255,255,255,.18); border-radius: 13px; color: var(--accent-ink); font-size: 22px; background: rgba(255,255,255,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.16); transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+.role-card:hover .role-icon { transform: translateY(-2px) rotate(-4deg); box-shadow: 0 10px 22px -8px var(--accent), inset 0 1px 0 rgba(255,255,255,.22); }
+.card-name { margin: 20px 0 0; color: #fffaf5; font-family: 'Songti SC', 'STSong', Georgia, serif; font-size: 27px; font-weight: 600; letter-spacing: .04em; }
+.card-desc { min-height: 38px; margin: 8px 0 0; color: rgba(220,226,238,.8); font-size: 12px; line-height: 1.65; }
+.card-modules { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 16px; }
+.card-modules span { padding: 5px 9px; border: 1px solid rgba(255,255,255,.14); border-radius: 999px; color: rgba(226,231,240,.75); font-size: 10px; white-space: nowrap; background: rgba(255,255,255,.07); }
+.card-action { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.12); color: var(--accent-ink); font-size: 12px; font-weight: 700; transition: border-color .25s var(--ease); }
+.role-card:hover .card-action { border-color: rgba(255,255,255,.24); }
 .card-action i { font-size: 15px; transition: transform .25s var(--ease); }
 .role-card:hover .card-action i { transform: translateX(5px); }
 .portal-footer { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 20px; width: 100%; max-width: 1380px; margin: 0 auto; color: #aeb5c3; font-size: 11px; }
@@ -190,11 +212,9 @@ export default {
   .portal-main { gap: 38px; padding: 44px 0 38px; }
   .portal-intro h1 { font-size: clamp(34px, 9vw, 48px); }
   .role-list { grid-template-columns: 1fr; }
-  .role-card { min-height: 0; padding: 20px 22px; }
-  .role-card::after { right: -70px; bottom: -95px; }
-  .role-icon { margin: 14px 0 17px; }
-  .card-identity small { min-height: 0; }
-  .card-modules { margin: 16px 0; }
+  .role-card { min-height: 0; padding: 18px 20px; }
+  .role-card:hover { transform: none; }
+  .card-desc { min-height: 0; }
   .portal-footer { align-items: flex-start; flex-direction: column; gap: 6px; }
 }
 @media (max-width: 420px) {
@@ -205,7 +225,45 @@ export default {
   .portal-register { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .portal-page *, .portal-page *::before, .portal-page *::after { scroll-behavior: auto !important; transition: none !important; }
+  .portal-page *, .portal-page *::before, .portal-page *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   .role-card:hover, .nav-link:hover { transform: none; }
+}
+</style>
+
+<style>
+.portal-login-dialog {
+  --accent: #a5b4fc;
+  --accent-soft: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, #344259 0%, #484a6a 48%, #366169 100%);
+  box-shadow: 0 24px 60px rgba(20, 35, 80, 0.5);
+}
+.portal-login-dialog .el-dialog__header { padding: 14px 20px 0; }
+.portal-login-dialog .el-dialog__headerbtn { top: 16px; right: 16px; }
+.portal-login-dialog .el-dialog__headerbtn .el-dialog__close { color: rgba(255,255,255,.7); }
+.portal-login-dialog .el-dialog__headerbtn:hover .el-dialog__close { color: #fff; }
+.portal-login-dialog .el-dialog__body { padding: 8px 34px 30px; }
+.portal-login-dialog .role-badge { color: #dbe3ff; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.22); }
+.portal-login-dialog .form-kicker { color: #c7d2fe; }
+.portal-login-dialog .brand-title { color: #fff; }
+.portal-login-dialog .brand-subtitle { color: rgba(226,232,244,.85); }
+.portal-login-dialog .auth-form .el-form-item__label { color: rgba(235,240,250,.92); }
+.portal-login-dialog .auth-form .el-input__inner { border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: #fff; }
+.portal-login-dialog .auth-form .el-input__inner::placeholder { color: rgba(226,232,244,.55); }
+.portal-login-dialog .auth-form .el-input__inner:hover { border-color: rgba(255,255,255,.55); }
+.portal-login-dialog .auth-form .el-input__inner:focus { border-color: #a5b4fc; background: rgba(255,255,255,.16); box-shadow: 0 0 0 3px rgba(165,180,252,.25); }
+.portal-login-dialog .auth-form .el-input__prefix { color: rgba(226,232,244,.7); }
+.portal-login-dialog .auth-footer { color: rgba(226,232,244,.8); }
+.portal-login-dialog .auth-footer .footer-sep { color: rgba(255,255,255,.35); }
+.portal-login-dialog .auth-footer .auth-link { color: #c7d2fe; }
+.portal-login-dialog .auth-footer .auth-link:hover, .portal-login-dialog .auth-footer .auth-link:focus { color: #dbe3fe; }
+.portal-login-dialog .auth-form .auth-submit-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; }
+.portal-login-dialog .auth-form .auth-submit-btn:hover,
+.portal-login-dialog .auth-form .auth-submit-btn:focus { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); filter: brightness(1.1); }
+.portal-login-dialog .form-privacy { color: rgba(214,222,240,.68); }
+@media (max-width: 768px) {
+  .portal-login-dialog { width: calc(100vw - 32px) !important; }
+  .portal-login-dialog .el-dialog__body { padding: 8px 24px 24px; }
 }
 </style>
