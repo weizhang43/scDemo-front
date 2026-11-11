@@ -50,7 +50,7 @@ export function roleByType(uType) {
 export const MENUS = [
   { path: '/home', label: '首页', icon: 'el-icon-s-home', types: [1, 2, 3] },
   { path: '/products', label: '商品管理', icon: 'el-icon-goods', types: [1] },
-  { path: '/categories', label: '分类管理', icon: 'el-icon-menu', types: [3] },
+  { path: '/categories', label: '商品分类', icon: 'el-icon-menu', types: [3] },
   { path: '/seckills', label: '秒杀活动', icon: 'el-icon-alarm-clock', types: [1] },
   { path: '/coupon-templates', label: '优惠券管理', icon: 'el-icon-s-ticket', types: [1] },
   { path: '/orders', label: '订单管理', icon: 'el-icon-s-order', types: [1] },
@@ -82,7 +82,18 @@ export const MENUS = [
     ]
   },
   { path: '/notices', label: '通知管理', icon: 'el-icon-bell', types: [3] },
-  { path: '/logs', label: '日志管理', icon: 'el-icon-document', types: [3] },
+  {
+    path: '/log-manage',
+    label: '日志管理',
+    icon: 'el-icon-document',
+    types: [3],
+    children: [
+      { path: '/logs', label: '操作日志', icon: 'el-icon-document-copy' },
+      { path: '/admin/login-logs', label: '登录日志', icon: 'el-icon-monitor' }
+    ]
+  },
+  { path: '/admin/dict', label: '数据字典', icon: 'el-icon-notebook-2', types: [3] },
+  { path: '/admin/region', label: '区域维护', icon: 'el-icon-location-outline', types: [3] },
   { path: '/customer-service', label: '智能客服', icon: 'el-icon-service', types: [1, 2, 3] },
   { path: '/messages', label: '消息中心', icon: 'el-icon-message', types: [1, 2, 3] },
   { path: '/admin/jobs', label: '定时任务', icon: 'el-icon-time', types: [3] }
@@ -110,9 +121,9 @@ export function landingFor(uType) {
 }
 
 export function pageKey(route) {
-  return route.path === '/profile' && route.query.id
-    ? `${route.path}?id=${route.query.id}`
-    : route.path;
+  if (route.path === '/profile' && route.query.id) return `${route.path}?id=${route.query.id}`;
+  if (route.path === '/admin/dict/data' && route.query.dictType) return `${route.path}?dictType=${route.query.dictType}`;
+  return route.path;
 }
 
 export function pageTitle(route) {
@@ -121,7 +132,7 @@ export function pageTitle(route) {
   const names = {
     ProductDetail: '商品详情', ProductBuy: '商品详情', OrderDetail: '订单详情',
     OrderPay: '订单支付', MockCashier: '收银台', UserProfile: '个人中心',
-    UserDetail: '用户详情', UserAddress: '收货地址', UserList: '用户列表'
+    UserDetail: '用户详情', UserAddress: '收货地址', UserList: '用户列表', DictDataPage: '字典数据'
   };
   const title = names[route.name] || route.meta.title || '页面';
   return route.params.id ? `${title} #${route.params.id}` : title;

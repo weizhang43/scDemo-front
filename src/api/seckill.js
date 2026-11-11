@@ -41,3 +41,12 @@ export function cancelSeckill(id) {
     method: 'delete'
   });
 }
+
+/** 顾客侧：我的秒杀订单记录 */
+export function getMySeckillRecords(params) {
+  return request({
+    url: '/order/seckill/my-records',
+    method: 'get',
+    params
+  });
+}

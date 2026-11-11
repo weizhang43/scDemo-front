@@ -57,9 +57,7 @@
           </el-form-item>
           <el-form-item label="性别" prop="gender">
             <el-radio-group v-model="form.gender">
-              <el-radio :label="1">男</el-radio>
-              <el-radio :label="2">女</el-radio>
-              <el-radio :label="0">保密</el-radio>
+              <el-radio v-for="opt in genderOptions" :key="opt.value" :label="opt.value">{{ opt.label }}</el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="手机号" prop="phone">
@@ -90,6 +88,7 @@
 <script>
 import { getUserDetail, updateUserProfile, getMyProfile, updateMyProfile } from '../../api/user';
 import { getToken } from '../../utils/auth';
+import { loadDictCache } from '../../utils/dictCache';
 
 export default {
   name: 'UserDetail',
@@ -114,6 +113,7 @@ export default {
       submitting: false,
       avatarUploading: false,
       original: {},
+      genderOptions: [],
       form: {
         uId: null,
         uName: '',
@@ -144,8 +144,32 @@ export default {
   },
   created() {
     this.fetchData();
+    this.loadGenderOptions();
+  },
+  activated() {
+    this.loadGenderOptions();
   },
   methods: {
+    loadGenderOptions() {
+      loadDictCache(['sex_dict'], true).then(dict => {
+        const list = dict.sex_dict || [];
+        if (list.length) {
+          this.genderOptions = list.map(d => ({ label: d.label, value: Number(d.value) }));
+        } else {
+          this.genderOptions = [
+            { label: '男', value: 1 },
+            { label: '女', value: 2 },
+            { label: '保密', value: 0 }
+          ];
+        }
+      }).catch(() => {
+        this.genderOptions = [
+          { label: '男', value: 1 },
+          { label: '女', value: 2 },
+          { label: '保密', value: 0 }
+        ];
+      });
+    },
     fetchData() {
       let req;
       if (this.self) {

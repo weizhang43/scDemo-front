@@ -44,7 +44,6 @@
             <el-divider direction="vertical" class="filter-divider" />
             <el-checkbox v-model="searchForm.hasStock" class="stock-check">仅看有货</el-checkbox>
           </div>
-          <el-button type="primary" plain size="small" icon="el-icon-search" class="filter-apply" @click="handleSearch">筛选</el-button>
         </div>
       </div>
 
@@ -533,9 +532,6 @@ export default {
   background: #e4e8f2;
 }
 .stock-check {
-  flex-shrink: 0;
-}
-.filter-apply {
   flex-shrink: 0;
 }
 .list-toolbar {

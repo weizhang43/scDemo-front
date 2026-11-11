@@ -248,6 +248,30 @@ const routes = [
         meta: { requiresAuth: true, types: [2] }
       },
       {
+        path: 'admin/login-logs',
+        name: 'LoginLogList',
+        component: () => import('../views/system/LoginLogList.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
+        path: 'admin/dict',
+        name: 'DictManage',
+        component: () => import('../views/system/DictManage.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
+        path: 'admin/dict/data',
+        name: 'DictDataPage',
+        component: () => import('../views/system/DictDataPage.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
+        path: 'admin/region',
+        name: 'RegionManage',
+        component: () => import('../views/system/RegionManage.vue'),
+        meta: { requiresAuth: true, types: [3] }
+      },
+      {
         path: 'admin/jobs',
         name: 'JobScheduler',
         component: () => import('../views/system/JobScheduler.vue'),
@@ -351,8 +375,10 @@ router.beforeEach((to, from, next) => {
     next('/home');
   } else if (to.meta.requiresAuth && store.state.openPages.length >= 10 &&
     !store.state.openPages.some(page => page.key === pageKey(to))) {
-    Message.warning('最多打开10个页面');
-    next(false);
+    const firstKey = store.state.openPages[0].key;
+    store.commit('CLOSE_PAGE', firstKey);
+    Message.warning('最多打开10个页面，已自动关闭最早的页面');
+    next();
   } else {
     if (!hasToken && store.state.openPages.length) store.commit('CLEAR_PAGES');
     next();

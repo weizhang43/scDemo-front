@@ -25,7 +25,7 @@
           </div>
           <div class="coupon-mid">
             <div class="coupon-name">{{ tpl.name }}</div>
-            <div class="coupon-time">{{ tpl.validStart }} ~ {{ tpl.validEnd }}</div>
+            <div class="coupon-time">{{ formatTime(tpl.validStart) }} ~ {{ formatTime(tpl.validEnd) }}</div>
             <div class="coupon-remain">剩余 {{ tpl.redisRemain == null ? tpl.remainCount : tpl.redisRemain }} 张</div>
           </div>
           <div class="coupon-right">
@@ -71,14 +71,16 @@
             <template slot-scope="s">{{ ruleText(s.row) }}</template>
           </el-table-column>
           <el-table-column label="有效期" width="300">
-            <template slot-scope="s">{{ s.row.validStart }} ~ {{ s.row.validEnd }}</template>
+            <template slot-scope="s">{{ formatTime(s.row.validStart) }} ~ {{ formatTime(s.row.validEnd) }}</template>
           </el-table-column>
           <el-table-column label="状态" width="100">
             <template slot-scope="s">
               <el-tag :type="statusOf(s.row).type" size="mini">{{ statusOf(s.row).label }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="claimTime" label="领取时间" width="170" />
+          <el-table-column label="领取时间" width="170">
+            <template slot-scope="scope">{{ formatTime(scope.row.claimTime) }}</template>
+          </el-table-column>
         </el-table>
       </div>
     </el-card>
@@ -87,6 +89,7 @@
 
 <script>
 import { couponCenter, claimCoupon, myCoupons } from '../../api/coupon';
+import { formatTime } from '../../utils/format';
 
 const UC_STATUS = {
   0: { label: '未使用', type: 'success' },
@@ -114,6 +117,7 @@ export default {
     this.refresh();
   },
   methods: {
+    formatTime,
     refresh() {
       if (this.activeTab === 'center') {
         this.fetchCenter();

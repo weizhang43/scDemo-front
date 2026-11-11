@@ -182,7 +182,7 @@ export default {
   justify-content: center;
   padding: 50px 34px 30px;
   box-sizing: border-box;
-  background: rgba(255,253,249,.98);
+  background: rgba(225,218,208,.98);
 }
 .panel-right::before { position: absolute; top: 0; right: 0; left: 0; height: 4px; background: var(--accent); content: ''; }
 .back-link { position: absolute; top: 22px; left: 28px; color: #748091; font-size: 12px; text-decoration: none; }

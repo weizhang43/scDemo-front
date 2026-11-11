@@ -4,15 +4,23 @@
       <div slot="header" class="card-header">
         <div class="header-left">
           <span class="card-title">限时秒杀</span>
-          <span class="header-meta">共 {{ list.length }} 场</span>
+          <span class="header-meta">{{ activeTab === 'my' ? '我参与的 ' + myTotal + ' 场' : '共 ' + list.length + ' 场' }}</span>
         </div>
         <div class="header-actions">
           <el-button type="default" plain icon="el-icon-refresh" class="toolbar-action" @click="fetchData">刷新</el-button>
         </div>
       </div>
 
-      <el-row v-if="list.length" :gutter="16">
-        <el-col v-for="item in list" :key="item.id" :xs="24" :sm="12" :md="8">
+      <el-tabs v-model="activeTab" class="status-tabs pill-tabs" @tab-click="handleTabChange">
+        <el-tab-pane label="进行中" name="running" />
+        <el-tab-pane label="历史秒杀" name="history" />
+        <el-tab-pane label="我的秒杀" name="my" />
+      </el-tabs>
+
+      <!-- 进行中 / 历史秒杀 -->
+      <template v-if="activeTab !== 'my'">
+        <el-row v-if="filteredList.length" :gutter="16">
+        <el-col v-for="item in filteredList" :key="item.id" :xs="24" :sm="12" :md="8">
           <div class="seckill-card" :class="{ 'seckill-card--disabled': !isRunning(item) || item.remainStock <= 0 }">
             <div class="seckill-image-wrap">
               <el-image v-if="item.imageUrl" :src="item.imageUrl" fit="cover" class="seckill-image">
@@ -54,6 +62,40 @@
       </el-row>
 
       <el-empty v-else-if="!loading" description="暂无秒杀活动" />
+      </template>
+
+      <!-- 我的秒杀 -->
+      <template v-else>
+        <el-table v-loading="myLoading" :data="myRecords" border stripe style="width:100%;"
+          :header-cell-style="{ background:'#f5f7fb', color:'#4a5568', fontWeight:600, textAlign:'center' }"
+          :cell-style="{ textAlign:'center' }"
+          empty-text="还没有秒杀记录，快去抢购吧">
+          <el-table-column type="index" label="序号" width="70" align="center" :index="myIndexMethod" />
+          <el-table-column label="商品" min-width="200" align="left">
+            <template slot-scope="scope">{{ scope.row.addPerson || '-' }}</template>
+          </el-table-column>
+          <el-table-column label="订单编号" min-width="180">
+            <template slot-scope="scope">{{ scope.row.orderNo }}</template>
+          </el-table-column>
+          <el-table-column label="金额" width="120">
+            <template slot-scope="scope">¥ {{ scope.row.orderAmount }}</template>
+          </el-table-column>
+          <el-table-column label="状态" width="120" align="center">
+            <template slot-scope="scope">
+              <el-tag :type="orderStatusTag(scope.row.orderStatus)" size="small" effect="light">
+                {{ orderStatusText(scope.row.orderStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="下单时间" width="180">
+            <template slot-scope="scope">{{ formatTime(scope.row.createTime) }}</template>
+          </el-table-column>
+        </el-table>
+        <div v-if="myTotal" class="pagination-wrap">
+          <el-pagination background layout="total, prev, pager, next" :total="myTotal"
+            :page-size="myPageSize" :current-page.sync="myPageNo" @current-change="loadMyRecords" />
+        </div>
+      </template>
     </el-card>
 
     <!-- 抢购确认 -->
@@ -87,9 +129,13 @@
 </template>
 
 <script>
-import { activeSeckillList } from '../../api/seckill';
+import { activeSeckillList, getMySeckillRecords } from '../../api/seckill';
 import { seckill, seckillResult } from '../../api/order';
 import { getMyAddressList } from '../../api/address';
+import { formatTime } from '../../utils/format';
+
+const ORDER_STATUS_MAP = { '-1': '已取消', '0': '待付款', '1': '已支付', '2': '已完成', '3': '已发货' };
+const ORDER_STATUS_TAG = { '-1': 'info', '0': 'warning', '1': 'success', '2': '', '3': 'success' };
 
 /** 结果轮询：秒杀是异步落库，PENDING 期间最多等这么久 */
 const POLL_INTERVAL = 1000;
@@ -101,7 +147,6 @@ export default {
     return {
       list: [],
       loading: false,
-      // 每秒自增，驱动倒计时与阶段判断重新计算
       now: Date.now(),
       tickTimer: null,
       addressList: [],
@@ -120,8 +165,28 @@ export default {
       pendingGrab: null,
       grabSubmitting: false,
       pageActive: true,
-      hasDeactivated: false
+      hasDeactivated: false,
+      activeTab: 'running',
+      myRecords: [],
+      myLoading: false,
+      myPageNo: 1,
+      myPageSize: 10,
+      myTotal: 0
     };
+  },
+  computed: {
+    filteredList() {
+      if (this.activeTab === 'running') {
+        return this.list.filter(item => this.isRunning(item));
+      }
+      if (this.activeTab === 'history') {
+        return this.list.filter(item => {
+          const phase = this.phaseOf(item);
+          return phase.key === 'ended';
+        });
+      }
+      return this.list;
+    }
   },
   created() {
     this.fetchData();
@@ -158,6 +223,7 @@ export default {
     this.pendingGrab = null;
   },
   methods: {
+    formatTime,
     startClock() {
       this.now = Date.now();
       if (!this.tickTimer) this.tickTimer = setInterval(() => { this.now = Date.now(); }, 1000);
@@ -176,6 +242,25 @@ export default {
         .catch(() => {})
         .finally(() => { if (this.pageActive && request === this.dataRequest) this.loading = false; });
     },
+    handleTabChange(tab) {
+      if (tab.name === 'my' && !this.myRecords.length) this.loadMyRecords();
+    },
+    loadMyRecords() {
+      this.myLoading = true;
+      getMySeckillRecords({ pageNo: this.myPageNo, pageSize: this.myPageSize })
+        .then(res => {
+          const data = res.daoResult || {};
+          this.myRecords = data.records || [];
+          this.myTotal = Number(data.total) || 0;
+        })
+        .catch(() => {})
+        .finally(() => { this.myLoading = false; });
+    },
+    myIndexMethod(index) {
+      return (this.myPageNo - 1) * this.myPageSize + index + 1;
+    },
+    orderStatusText(status) { return ORDER_STATUS_MAP[status] || '未知'; },
+    orderStatusTag(status) { return ORDER_STATUS_TAG[status] || 'info'; },
     loadAddresses() {
       const user = this.$store.state.userInfo || {};
       if (!user.uId) return;

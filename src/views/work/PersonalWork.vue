@@ -50,8 +50,12 @@
               </template>
             </el-table-column>
             <el-table-column prop="createName" label="生成人" width="120" />
-            <el-table-column prop="createTime" label="生成时间" width="170" />
-            <el-table-column prop="updateTime" label="修改时间" width="170" />
+            <el-table-column label="生成时间" width="170">
+              <template slot-scope="scope">{{ formatTime(scope.row.createTime) }}</template>
+            </el-table-column>
+            <el-table-column label="修改时间" width="170">
+              <template slot-scope="scope">{{ formatTime(scope.row.updateTime) }}</template>
+            </el-table-column>
             <el-table-column label="操作" width="130">
               <template slot-scope="scope">
                 <div class="table-actions work-table-actions">
@@ -201,6 +205,7 @@ import '@wangeditor/editor/dist/css/style.css';
 import { getReportPage, deleteReport, sendReport } from '../../api/workReport';
 import { getPlanPage, getPlanDetail, addPlan, updatePlan, deletePlan, completePlan } from '../../api/studyPlan';
 import { getToken } from '../../utils/auth';
+import { formatTime } from '../../utils/format';
 
 export default {
   name: 'PersonalWork',
@@ -263,6 +268,7 @@ export default {
     }
   },
   methods: {
+    formatTime,
     fetchList() {
       this.loading = true;
       getReportPage({

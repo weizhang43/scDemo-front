@@ -27,10 +27,16 @@
       <div class="workspace-topbar">
         <button class="mobile-menu" type="button" aria-label="打开导航菜单" :aria-expanded="String(drawerOpen)" @click="drawerOpen = !drawerOpen"><i class="el-icon-s-fold" /></button>
         <div class="tabs-scroll" role="tablist" aria-label="已打开页面">
-          <div v-for="page in openPages" :key="page.key" class="page-tab" :class="{ active: page.key === activeKey }" role="tab" :aria-selected="String(page.key === activeKey)">
+          <div v-for="page in openPages" :key="page.key" class="page-tab" :class="{ active: page.key === activeKey }" role="tab" :aria-selected="String(page.key === activeKey)" @contextmenu.prevent="openTabMenu($event, page)">
             <button type="button" class="tab-link" :title="page.title" :aria-label="page.title" @click="switchPage(page)">{{ Array.from(page.title).length > 4 ? Array.from(page.title).slice(0, 4).join('') + '...' : page.title }}</button>
             <button type="button" class="tab-close" :aria-label="`关闭${page.title}`" @click="closePage(page)"><i class="el-icon-close" /></button>
           </div>
+        </div>
+        <!-- 页签右键菜单 -->
+        <div v-if="contextMenuVisible" class="tab-context-menu" :style="contextMenuStyle" @click.stop>
+          <div class="context-menu-item" @click="handleRefreshCurrent">刷新当前</div>
+          <div class="context-menu-item" @click="handleCloseCurrent">关闭当前</div>
+          <div class="context-menu-item" @click="handleCloseOther">关闭其他</div>
         </div>
         <el-dropdown trigger="click" class="msg-dropdown" @visible-change="onMsgDropdown">
           <button type="button" class="msg-bell" aria-label="站内消息">
@@ -90,7 +96,10 @@ export default {
     return {
       drawerOpen: false,
       recentMessages: [],
-      pointsLevel: ''
+      pointsLevel: '',
+      contextMenuVisible: false,
+      contextMenuStyle: {},
+      contextMenuPage: null
     };
   },
   computed: {
@@ -139,9 +148,11 @@ export default {
     this.$store.dispatch('startMessageSocket');
     this.loadPointsLevel();
     window.addEventListener('keydown', this.handleKeydown);
+    document.addEventListener('click', this.handleDocClick);
   },
   beforeDestroy() {
     window.removeEventListener('keydown', this.handleKeydown);
+    document.removeEventListener('click', this.handleDocClick);
   },
   methods: {
     handleKeydown(event) {
@@ -220,6 +231,44 @@ export default {
       if (cmd === 'profile') this.$router.push('/my-profile').catch(() => {});
       if (cmd === 'logout') this.handleLogout();
     },
+    openTabMenu(event, page) {
+      this.contextMenuPage = page;
+      this.contextMenuStyle = { left: event.clientX + 'px', top: event.clientY + 'px' };
+      this.contextMenuVisible = true;
+    },
+    handleDocClick() {
+      this.contextMenuVisible = false;
+      this.contextMenuPage = null;
+    },
+    handleCloseCurrent() {
+      if (this.contextMenuPage) this.closePage(this.contextMenuPage);
+      this.contextMenuVisible = false;
+    },
+    handleRefreshCurrent() {
+      const page = this.contextMenuPage;
+      if (!page) { this.contextMenuVisible = false; return; }
+      // 销毁当前页签的组件缓存，再重新挂载同一路由触发刷新
+      delete pageComponents[page.cacheName];
+      this.$store.commit('CLOSE_PAGE', page.key);
+      const seq = ++resetPageSequence;
+      this.$nextTick(() => {
+        this.$store.commit('OPEN_PAGE', { ...page, cacheName: `WorkspacePageReset${seq}` });
+        this.$router.replace(page.fullPath).catch(() => {});
+      });
+      this.contextMenuVisible = false;
+    },
+    handleCloseOther() {
+      const keep = this.contextMenuPage;
+      const pages = this.openPages.filter(p => p.key !== keep.key);
+      pages.forEach(p => {
+        delete pageComponents[p.cacheName];
+        this.$store.commit('CLOSE_PAGE', p.key);
+      });
+      if (keep.key !== this.activeKey) {
+        this.$router.push(keep.fullPath).catch(() => {});
+      }
+      this.contextMenuVisible = false;
+    },
     handleLogout() {
       this.$confirm('确认退出登录吗？', '提示', {
         confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
@@ -288,6 +337,24 @@ export default {
 .tab-link { max-width: 116px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; font-weight: 550; }
 .tab-close { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 5px; font-size: 9px; }
 .tab-close:hover { background: rgba(102,126,234,.14); }
+.tab-context-menu {
+  position: fixed;
+  z-index: 3000;
+  min-width: 110px;
+  background: #fff;
+  border: 1px solid #e4e8f2;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(31,41,59,.14);
+  padding: 4px 0;
+}
+.context-menu-item {
+  padding: 8px 18px;
+  font-size: 13px;
+  color: #43537a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.context-menu-item:hover { background: #f0f3ff; color: #344bb2; }
 .layout-main { overflow: auto; min-height: 0; padding: 20px; background: linear-gradient(180deg, #f5f7fb, #eef1f7); }
 .mobile-menu { display: none; }
 .workspace button:focus-visible { outline: 2px solid #ffd166; outline-offset: 2px; }

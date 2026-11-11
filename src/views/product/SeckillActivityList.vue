@@ -44,8 +44,12 @@
             <span class="quota-total"> / {{ scope.row.seckillStock }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="startTime" label="开始时间" width="160" align="center" />
-        <el-table-column prop="endTime" label="结束时间" width="160" align="center" />
+        <el-table-column label="开始时间" width="160" align="center">
+          <template slot-scope="scope">{{ formatTime(scope.row.startTime) }}</template>
+        </el-table-column>
+        <el-table-column label="结束时间" width="160" align="center">
+          <template slot-scope="scope">{{ formatTime(scope.row.endTime) }}</template>
+        </el-table-column>
         <el-table-column label="状态" width="90" align="center">
           <template slot-scope="scope">
             <el-tag :type="phaseOf(scope.row).type" size="mini" effect="plain">{{ phaseOf(scope.row).text }}</el-tag>
@@ -84,6 +88,7 @@
 
 <script>
 import { seckillPageQuery, cancelSeckill } from '../../api/seckill';
+import { formatTime } from '../../utils/format';
 
 export default {
   name: 'SeckillActivityList',
@@ -98,6 +103,7 @@ export default {
     this.fetchData();
   },
   methods: {
+    formatTime,
     fetchData() {
       this.loading = true;
       seckillPageQuery({ pageNo: this.pagination.pageNo, pageSize: this.pagination.pageSize })

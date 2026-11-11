@@ -39,7 +39,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="sort" label="排序" width="80" align="center" />
-        <el-table-column prop="createTime" label="创建时间" width="170" align="center" />
+        <el-table-column label="创建时间" width="170" align="center">
+          <template slot-scope="scope">{{ formatTime(scope.row.createTime) }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="150" align="center">
           <template slot-scope="s">
             <div class="table-actions category-actions">
@@ -105,6 +107,7 @@
 
 <script>
 import { getCategoryTree, addCategory, updateCategory, deleteCategory } from '../../api/category';
+import { formatTime } from '../../utils/format';
 
 export default {
   name: 'CategoryManage',
@@ -131,6 +134,7 @@ export default {
     this.fetchTree();
   },
   methods: {
+    formatTime,
     fetchTree() {
       this.loading = true;
       getCategoryTree()

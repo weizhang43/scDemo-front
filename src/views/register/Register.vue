@@ -159,12 +159,36 @@ export default {
       }
     };
     const validatePhone = (rule, value, callback) => {
+
+
+
+
       if (!value) {
         callback();
         return;
       }
       if (!/^1[3-9]\d{9}$/.test(value)) {
         callback(new Error('请输入正确的手机号码'));
+      } else {
+        callback();
+      }
+    };
+    const validatePassword = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('请输入密码'));
+        return;
+      }
+      if (value.length < 6 || value.length > 64) {
+        callback(new Error('密码长度 6-64 字符'));
+        return;
+      }
+      let types = 0;
+      if (/[a-z]/.test(value)) types++;
+      if (/[A-Z]/.test(value)) types++;
+      if (/\d/.test(value)) types++;
+      if (/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(value)) types++;
+      if (types < 2) {
+        callback(new Error('密码需包含大写字母、小写字母、数字、特殊字符中至少两种'));
       } else {
         callback();
       }
@@ -198,7 +222,7 @@ export default {
         ],
         password: [
           { required: true, message: '请输入密码', trigger: 'blur' },
-          { min: 6, max: 64, message: '密码长度 6-64 字符', trigger: 'blur' }
+          { validator: validatePassword, trigger: 'blur' }
         ],
         confirmPassword: [
           { required: true, message: '请再次输入密码', trigger: 'blur' },
@@ -533,7 +557,7 @@ export default {
   margin-right: -8px;
 }
 .register-form >>> .el-form-item {
-  margin-bottom: 0;
+  margin-bottom: 22px;
 }
 .register-form >>> .el-form-item__label {
   font-size: 12px;

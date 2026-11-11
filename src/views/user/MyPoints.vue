@@ -80,7 +80,9 @@
         <el-table-column prop="orderNo" label="关联单号" min-width="160" align="center">
           <template slot-scope="scope"><span class="mono">{{ scope.row.orderNo || '-' }}</span></template>
         </el-table-column>
-        <el-table-column prop="createTime" label="时间" width="180" align="center" />
+        <el-table-column label="时间" width="180" align="center">
+          <template slot-scope="scope">{{ formatTime(scope.row.createTime) }}</template>
+        </el-table-column>
       </el-table>
 
       <div class="pagination-wrap">
@@ -100,6 +102,7 @@
 <script>
 import { Message } from 'element-ui';
 import { getPointsSummary, getPointsRecords, redeemPoints } from '../../api/points';
+import { formatTime } from '../../utils/format';
 
 const TYPE_TEXT = { EARN: '下单获取', REDEEM: '兑换消耗', COMPENSATE: '兑换返还' };
 
@@ -144,6 +147,7 @@ export default {
     this.loadAll();
   },
   methods: {
+    formatTime,
     indexMethod(index) {
       return (this.pagination.pageNum - 1) * this.pagination.pageSize + index + 1;
     },

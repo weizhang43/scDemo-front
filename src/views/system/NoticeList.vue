@@ -45,7 +45,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="createName" label="创建人" width="110" />
-        <el-table-column prop="createTime" label="创建时间" width="160" />
+        <el-table-column label="创建时间" width="160">
+          <template slot-scope="scope">{{ formatTime(scope.row.createTime) }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="240">
           <template slot-scope="scope">
             <div class="table-actions">
@@ -135,6 +137,7 @@ import '@wangeditor/editor/dist/css/style.css';
 import { getToken } from '../../utils/auth';
 import request from '../../utils/request';
 import { getNoticePage, addNotice, updateNotice, deleteNotice, changeNoticeStatus } from '../../api/notice';
+import { formatTime } from '../../utils/format';
 
 export default {
   name: 'NoticeList',
@@ -195,6 +198,7 @@ export default {
     if (this.editor) this.editor.destroy();
   },
   methods: {
+    formatTime,
     fetchList() {
       this.loading = true;
       const params = {
