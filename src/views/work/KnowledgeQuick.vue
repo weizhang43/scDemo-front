@@ -23,7 +23,7 @@
           clearable
           @change="handleTagFilterChange"
         >
-          <el-option v-for="t in TAGS" :key="t.value" :label="t.label" :value="t.value" />
+          <el-option v-for="t in TAGS" :key="t.value" :label="tagOptionLabel(t.value, t.label)" :value="t.value" />
         </el-select>
         <el-autocomplete
           v-model="searchKeyword"
@@ -46,13 +46,18 @@
       @touchmove.passive="handleSwipeMove"
       @touchend="handleSwipeEnd"
       @touchcancel="handleSwipeCancel">
-      <div class="question">
+      <div class="question" :class="{ 'has-tag': current.tag }">
+        <span v-if="current.tag" class="tag-corner">
+          <span class="tag-ribbon" :class="tagColorClass(current.tag)" :title="tagName(current.tag)">
+            <i :class="tagIcon(current.tag)" />
+            <span class="tag-ribbon-label">{{ tagName(current.tag) }}</span>
+          </span>
+        </span>
         <div class="section-label question-header">
           <div class="question-title">
             <i class="el-icon-question" /> 题干
-            <el-tag v-if="current.tag" size="small" :type="tagType(current.tag)" class="question-tag">{{ tagName(current.tag) }}</el-tag>
             <el-tag v-if="isFavorite" type="danger" size="small" effect="plain" class="favorite-tag">★ 已收藏</el-tag>
-            <el-button v-if="mobile" type="danger" plain size="mini" class="question-ignore action-delete" icon="el-icon-delete" circle @click="handleIgnore" title="忽略此题" />
+            <el-button v-if="mobile" type="success" plain size="mini" class="question-ignore action-delete" icon="el-icon-circle-check" circle @click="handleIgnore" title="标记为已掌握" />
           </div>
           <div class="question-meta">
             <span class="meta-item"><i class="el-icon-view" /> 已查看 {{ current.viewCount || 0 }} 次</span>
@@ -72,7 +77,7 @@
         <div v-if="!mobile" class="section-label answer-header">
           <div class="answer-title"><i class="el-icon-document" /> 答案</div>
           <div class="answer-actions">
-            <span class="answer-hint">先查看答案，再决定收藏、记录或忽略</span>
+            <span v-if="!answerVisible" class="answer-hint">先查看答案，再决定收藏、记录或标记已掌握</span>
             <el-button type="primary" plain size="small" icon="el-icon-view" @click="handleShowAnswer">{{ answerVisible ? '隐藏答案' : '查看答案' }}</el-button>
           </div>
         </div>
@@ -95,7 +100,8 @@
             @click="handleFavorite"
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
           <el-button type="warning" size="small" icon="el-icon-edit" class="action-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
-          <el-button v-if="!mobile" type="danger" plain size="small" icon="el-icon-remove-outline" @click="handleIgnore">忽略此题</el-button>
+          <el-button type="success" plain size="small" icon="el-icon-chat-dot-round" @click="aiPanelVisible = !aiPanelVisible">向 AI 追问</el-button>
+          <el-button v-if="!mobile" type="success" plain size="small" icon="el-icon-circle-check" @click="handleIgnore">已掌握</el-button>
         </div>
         <div v-if="!mobile" class="action-group action-group-nav">
           <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
@@ -105,10 +111,49 @@
 
       <div v-if="hasPosition" class="position-bar">
         <span class="position-badge">
-          <span class="position-current">{{ current.index }}</span>
+          <span v-if="!positionEditing" class="position-current" :title="'双击题号跳转'" @dblclick="startEditPosition">{{ current.index }}</span>
+          <input
+            v-else
+            ref="positionInput"
+            v-model.number="positionInputValue"
+            class="position-input"
+            type="number"
+            :min="1"
+            :max="current.total"
+            @keyup.enter="commitPosition"
+            @keyup.esc="cancelPosition"
+            @blur="commitPosition"
+          />
           <span class="position-sep">/</span>
           <span class="position-total">{{ current.total }}</span>
         </span>
+      </div>
+
+      <div v-if="aiPanelVisible" class="ai-panel">
+        <div class="ai-panel-header">
+          <div class="ai-title"><i class="el-icon-cpu" /> AI 追问</div>
+          <el-button size="mini" type="text" @click="aiPanelVisible = false">收起</el-button>
+        </div>
+        <el-input
+          v-model="aiQuestion"
+          type="textarea"
+          :rows="2"
+          placeholder="针对这道题还有什么疑问？例如：请举一个实际使用场景"
+          maxlength="500"
+          show-word-limit
+          :disabled="aiGenerating"
+        />
+        <div class="ai-actions">
+          <el-radio-group v-model="aiModel" size="mini" :disabled="aiGenerating">
+            <el-radio-button label="qianwen">通义千问</el-radio-button>
+            <el-radio-button label="deepseek">DeepSeek</el-radio-button>
+          </el-radio-group>
+          <el-button type="primary" size="small" icon="el-icon-position" :loading="aiGenerating" @click="handleAskAi">发送</el-button>
+        </div>
+        <div v-if="aiAnswer || aiGenerating" class="ai-answer">
+          <div class="ai-answer-label"><i class="el-icon-bangzhu" /> 回答</div>
+          <div class="rich-text ai-answer-text">{{ aiAnswer }}<span v-if="aiGenerating" class="ai-cursor">▍</span></div>
+        </div>
       </div>
 
       <div v-if="noteInputVisible" class="note-input">
@@ -190,7 +235,7 @@
 </template>
 
 <script>
-import { addKnowledge, getNextKnowledge, getPrevKnowledge, getRandomKnowledge, getKnowledgeById, viewKnowledge, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, updateKnowledgeNote, deleteKnowledgeNote, searchKnowledge } from '../../api/knowledge';
+import { addKnowledge, getNextKnowledge, getPrevKnowledge, getRandomKnowledge, getKnowledgeById, getKnowledgeByIndex, viewKnowledge, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, updateKnowledgeNote, deleteKnowledgeNote, searchKnowledge, getKnowledgeTagStats } from '../../api/knowledge';
 
 function plainText(html) {
   if (!html) return '';
@@ -218,26 +263,27 @@ export default {
         { value: 'all', label: '顺序刷题' },
         { value: 'random', label: '随机刷题' },
         { value: 'favorite', label: '只刷收藏' },
-        { value: 'note', label: '只刷笔记题' }
+        { value: 'note', label: '只刷笔记题' },
+        { value: 'everything', label: '所有题' }
       ],
       TYPES: [
         { value: 'favorite', label: '已收藏' },
         { value: 'note', label: '已添加笔记' },
-        { value: 'ignored', label: '已忽略' }
+        { value: 'ignored', label: '已掌握' }
       ],
       TAGS: [
-        { value: 1, label: 'Java基础与核心特性', type: '' },
-        { value: 2, label: 'Java集合与数据结构', type: 'success' },
-        { value: 3, label: 'Java多线程与JUC', type: 'warning' },
-        { value: 4, label: 'JVM与性能调优', type: 'danger' },
-        { value: 5, label: 'Spring全家桶框架', type: 'info' },
-        { value: 6, label: 'MyBatis与MyBatis-Plus', type: 'success' },
-        { value: 7, label: '数据库与缓存', type: 'success' },
-        { value: 8, label: '微服务架构', type: 'warning' },
-        { value: 9, label: '消息队列', type: 'warning' },
-        { value: 10, label: 'ES搜索引擎', type: 'danger' },
-        { value: 11, label: '前端Vue知识', type: '' },
-        { value: 12, label: '项目实战', type: 'info' }
+        { value: 1, label: 'Java基础与核心特性', type: '', icon: 'el-icon-coffee' },
+        { value: 2, label: 'Java集合与数据结构', type: 'success', icon: 'el-icon-files' },
+        { value: 3, label: 'Java多线程与JUC', type: 'warning', icon: 'el-icon-connection' },
+        { value: 4, label: 'JVM与性能调优', type: 'danger', icon: 'el-icon-data-line' },
+        { value: 5, label: 'Spring全家桶框架', type: 'spring', icon: 'el-icon-sunny' },
+        { value: 6, label: 'MyBatis与MyBatis-Plus', type: 'success', icon: 'el-icon-tickets' },
+        { value: 7, label: '数据库与缓存', type: 'success', icon: 'el-icon-coin' },
+        { value: 8, label: '微服务架构', type: 'warning', icon: 'el-icon-share' },
+        { value: 9, label: '消息队列', type: 'warning', icon: 'el-icon-message' },
+        { value: 10, label: 'ES搜索引擎', type: 'danger', icon: 'el-icon-search' },
+        { value: 11, label: '前端Vue知识', type: '', icon: 'el-icon-monitor' },
+        { value: 12, label: '项目实战', type: 'info', icon: 'el-icon-trophy' }
       ],
       loading: false,
       current: null,
@@ -261,6 +307,7 @@ export default {
       editingNoteId: null,
       editingNoteContent: '',
       noteSaving: false,
+      tagStats: {},
       addVisible: false,
       addSaving: false,
       addForm: { question: '', answer: '', tag: null },
@@ -268,7 +315,15 @@ export default {
         tag: [{ required: true, message: '请选择标签', trigger: 'change' }],
         question: [{ required: true, message: '请输入题干', trigger: 'blur' }],
         answer: [{ required: true, message: '请输入答案', trigger: 'blur' }]
-      }
+      },
+      aiPanelVisible: false,
+      aiQuestion: '',
+      aiAnswer: '',
+      aiModel: 'qianwen',
+      aiGenerating: false,
+      aiEventSource: null,
+      positionEditing: false,
+      positionInputValue: ''
     };
   },
   computed: {
@@ -289,6 +344,7 @@ export default {
   },
   created() {
     this.restore();
+    this.fetchTagStats();
     window.addEventListener('keydown', this.handleShortcut);
   },
   beforeDestroy() {
@@ -296,6 +352,7 @@ export default {
     if (this.pageTurnTimer) {
       clearTimeout(this.pageTurnTimer);
     }
+    this.closeAiStream();
   },
   methods: {
     restore() {
@@ -311,6 +368,20 @@ export default {
           this.fetchNext(Number(savedId));
         }
       });
+    },
+    fetchTagStats() {
+      getKnowledgeTagStats()
+        .then(res => {
+          const map = {};
+          (res.dataList || []).forEach(s => { map[s.tag] = s; });
+          this.tagStats = map;
+        })
+        .catch(() => {});
+    },
+    tagOptionLabel(tag, label) {
+      const s = this.tagStats[tag];
+      if (!s || !s.total) return label;
+      return `${label}（${s.learned}/${s.total}）`;
     },
     boldAnswer(html) {
       if (!html) return '';
@@ -397,7 +468,7 @@ export default {
       if (this.practiceScope === 'random') {
         return this.fetchRandom();
       }
-      return this.fetch(getNextKnowledge, currentId, this.filterTag, this.activeFilterType());
+      return this.fetch(getNextKnowledge, currentId, this.filterTag, this.activeFilterType(), 'next');
     },
     fetchRandom() {
       this.loading = true;
@@ -408,24 +479,44 @@ export default {
         .finally(() => { this.loading = false; });
     },
     activeFilterType() {
-      return this.practiceScope === 'favorite' || this.practiceScope === 'note'
-        ? this.practiceScope : this.filterType;
+      if (this.practiceScope === 'favorite' || this.practiceScope === 'note') {
+        return this.practiceScope;
+      }
+      if (this.practiceScope === 'everything') {
+        return 'all';
+      }
+      return this.filterType;
     },
-    fetch(api, currentId, tag, type) {
+    fetch(api, currentId, tag, type, direction) {
       this.loading = true;
+      const prevId = this.current ? this.current.id : null;
       return api(currentId, tag, type)
         .then(res => {
-          this.applyCurrent(res.daoResult);
+          const next = res.daoResult;
+          this.notifyLoop(prevId, next, direction);
+          this.applyCurrent(next);
         })
         .finally(() => { this.loading = false; });
+    },
+    notifyLoop(prevId, next, direction) {
+      if (!prevId || !next || !direction) return;
+      if (direction === 'next' && next.id <= prevId) {
+        this.$message({ message: '已是最后一题，回到第一题', type: 'info', duration: 1500 });
+      } else if (direction === 'prev' && next.id >= prevId) {
+        this.$message({ message: '已是第一题，回到最后一题', type: 'info', duration: 1500 });
+      }
     },
     tagName(tag) {
       const t = this.TAGS.find(x => x.value === tag);
       return t ? t.label : '';
     },
-    tagType(tag) {
+    tagColorClass(tag) {
+      const idx = this.TAGS.findIndex(x => x.value === tag);
+      return idx < 0 ? '' : `tag-color-${idx % 4}`;
+    },
+    tagIcon(tag) {
       const t = this.TAGS.find(x => x.value === tag);
-      return t ? t.type : '';
+      return t && t.icon ? t.icon : 'el-icon-collection-tag';
     },
     handleTypeFilterChange() {
       this.fetchNext();
@@ -450,10 +541,14 @@ export default {
       this.noteContent = '';
       this.editingNoteId = null;
       this.editingNoteContent = '';
+      this.closeAiStream();
+      this.aiAnswer = '';
+      this.aiQuestion = '';
       if (this.current) {
         localStorage.setItem('knowledge-current-id', this.current.id);
         this.fetchNotes();
-        if (this.activeFilterType() !== 'ignored') {
+        const type = this.activeFilterType();
+        if (type !== 'ignored' && type !== 'all') {
           this.recordView();
         }
       }
@@ -520,10 +615,11 @@ export default {
       });
     },
     handleIgnore() {
-      this.$confirm('确认忽略这道题？忽略后不再显示。', '提示', { type: 'warning' })
+      this.$confirm('确认标记为已掌握？标记后不再显示。', '提示', { type: 'success' })
         .then(() => ignoreKnowledge(this.current.id))
         .then(() => {
-          this.$message.success('已忽略');
+          this.$message.success('已标记为已掌握');
+          this.fetchTagStats();
           this.fetchNext(this.current.id);
         })
         .catch(() => {});
@@ -532,7 +628,7 @@ export default {
       this.fetchNext(this.current ? this.current.id : undefined);
     },
     handlePrev() {
-      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.activeFilterType());
+      this.fetch(getPrevKnowledge, this.current ? this.current.id : undefined, this.filterTag, this.activeFilterType(), 'prev');
     },
     startPageTurn(direction) {
       if (!this.mobile || !this.current || this.loading || this.pageTurnClass) return;
@@ -544,7 +640,7 @@ export default {
         this.pageTurnTimer = null;
         const request = isNext
           ? this.fetchNext(currentId)
-          : this.fetch(getPrevKnowledge, currentId, this.filterTag, this.activeFilterType());
+          : this.fetch(getPrevKnowledge, currentId, this.filterTag, this.activeFilterType(), 'prev');
 
         Promise.resolve(request)
           .then(() => {
@@ -573,6 +669,89 @@ export default {
           this.fetchNotes();
         })
         .finally(() => { this.noteSaving = false; });
+    },
+    handleAskAi() {
+      if (!this.current) return;
+      const question = (this.aiQuestion || '').trim();
+      if (!question) {
+        this.$message.warning('请输入追问内容');
+        return;
+      }
+      if (this.aiGenerating) return;
+      this.closeAiStream();
+      this.aiAnswer = '';
+      this.aiGenerating = true;
+      const prompt = this.buildAiPrompt(question);
+      const url = this.aiModel === 'deepseek'
+        ? `/streamDeepseek?message=${encodeURIComponent(prompt)}`
+        : `/streamQianwen?message=${encodeURIComponent(prompt)}`;
+      const source = new EventSource(url);
+      this.aiEventSource = source;
+      source.onmessage = event => {
+        if (event.data === '[DONE]') {
+          this.aiGenerating = false;
+          this.closeAiStream();
+          return;
+        }
+        this.aiAnswer += event.data;
+      };
+      source.onerror = () => {
+        this.aiGenerating = false;
+        this.closeAiStream();
+        if (!this.aiAnswer) {
+          this.$message.warning('AI 回答失败，请稍后再试');
+        }
+      };
+    },
+    buildAiPrompt(question) {
+      const plainQuestion = plainText(this.current.question);
+      const plainAnswer = plainText(this.current.answer);
+      return `以下是一道技术面试题及其参考答案，请基于此回答我的追问。\n\n【题干】\n${plainQuestion}\n\n【参考答案】\n${plainAnswer}\n\n【我的追问】\n${question}`;
+    },
+    closeAiStream() {
+      if (this.aiEventSource) {
+        this.aiEventSource.close();
+        this.aiEventSource = null;
+      }
+    },
+    startEditPosition() {
+      this.positionInputValue = this.current ? this.current.index : 1;
+      this.positionEditing = true;
+      this.$nextTick(() => {
+        const input = this.$refs.positionInput;
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      });
+    },
+    cancelPosition() {
+      this.positionEditing = false;
+      this.positionInputValue = '';
+    },
+    commitPosition() {
+      if (!this.positionEditing) return;
+      const target = Number(this.positionInputValue);
+      this.positionEditing = false;
+      this.positionInputValue = '';
+      if (!Number.isInteger(target) || target < 1) {
+        this.$message.warning('请输入有效题号');
+        return;
+      }
+      if (this.current && target === this.current.index) return;
+      if (this.current && target > this.current.total) {
+        this.$message.warning(`题号不能超过 ${this.current.total}`);
+        return;
+      }
+      if (this.loading) return;
+      this.loading = true;
+      getKnowledgeByIndex(target, this.filterTag, this.activeFilterType())
+        .then(res => {
+          if (res.daoResult) {
+            this.applyCurrent(res.daoResult);
+          }
+        })
+        .finally(() => { this.loading = false; });
     },
     startEditNote(note) {
       this.editingNoteId = note.id;
@@ -638,6 +817,7 @@ export default {
           .then(() => {
             this.$message.success('添加成功');
             this.addVisible = false;
+            this.fetchTagStats();
             if (!this.current) this.fetchNext();
           })
           .finally(() => { this.addSaving = false; });
@@ -653,7 +833,44 @@ export default {
 .tag-filter { width: 170px; }
 .scope-filter { width: 120px; }
 .type-filter { width: 130px; }
-.question-tag { margin-left: 8px; }
+.tag-corner {
+  position: absolute;
+  top: -25px;
+  right: -29px;
+  z-index: 3;
+  width: 160px;
+  height: 160px;
+  overflow: hidden;
+  border-top-right-radius: 10px;
+  pointer-events: none;
+}
+.tag-ribbon {
+  position: absolute;
+  top: 32px;
+  right: -64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 220px;
+  height: 26px;
+  padding: 0 10px;
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+  transform: rotate(45deg);
+  box-shadow: 0 3px 8px rgba(31, 45, 77, 0.22);
+  pointer-events: auto;
+}
+.tag-ribbon i { flex-shrink: 0; line-height: 1; color: #fff; font-size: 10px; }
+.tag-ribbon-label { flex-shrink: 0; white-space: nowrap; }
+.tag-ribbon.tag-color-0 { background: linear-gradient(135deg, #53a4ff 0%, #3180e0 100%); }
+.tag-ribbon.tag-color-1 { background: linear-gradient(135deg, #7bcc55 0%, #5aa72f 100%); }
+.tag-ribbon.tag-color-2 { background: linear-gradient(135deg, #efb355 0%, #d18b27 100%); }
+.tag-ribbon.tag-color-3 { background: linear-gradient(135deg, #f77c7c 0%, #d85555 100%); }
 .favorite-tag {
   margin-left: 6px;
   border-color: rgba(245, 108, 108, 0.28);
@@ -718,6 +935,30 @@ export default {
   color: var(--color-primary, #409eff);
   font-size: 14px;
   font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+.position-current:hover { text-decoration: underline; }
+.position-input {
+  width: 48px;
+  padding: 0 4px;
+  border: 1px solid var(--color-primary, #409eff);
+  border-radius: 4px;
+  color: var(--color-primary, #409eff);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  line-height: 1.5;
+  outline: none;
+  background: #fff;
+  /* 隐藏 number input 上下箭头 */
+  -moz-appearance: textfield;
+}
+.position-input::-webkit-outer-spin-button,
+.position-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .position-sep {
   color: rgba(102, 126, 234, 0.5);
@@ -726,15 +967,17 @@ export default {
   color: #a8b0c0;
   font-weight: 500;
 }
-.question { margin-bottom: 0; }
+.question { margin-bottom: 0; position: relative; }
+.question.has-tag .question-header { padding-top: 6px; }
+.question.has-tag .question-meta { padding-right: 48px; }
 .question-text { font-size: 17px; font-weight: 600; color: #303133; line-height: 1.7; }
 .qa-divider { margin: 16px 0; }
 .qa-divider >>> .el-divider__text { background-color: transparent; }
 .answer { min-height: 60px; }
 .answer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .answer-title { padding-top: 6px; }
-.answer-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.answer-hint { color: #a8b0c0; font-size: 12px; line-height: 1.5; text-align: right; }
+.answer-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-height: 42px; justify-content: flex-end; }
+.answer-hint { color: #b6bcc9; font-size: 11px; line-height: 1.4; text-align: right; opacity: 0.85; }
 .answer .rich-text { color: #4a5568; line-height: 1.8; }
 .is-favorite .question .rich-text,
 .is-favorite .answer .rich-text { color: inherit; }
@@ -749,6 +992,66 @@ export default {
 .action-group-nav { justify-content: flex-end; margin-left: 0; padding-top: 12px; border-top: 1px solid #f0f2f5; }
 .actions .el-button { min-width: 90px; }
 .note-input { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.ai-panel {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(102, 126, 234, 0.25);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(102, 126, 234, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
+}
+.ai-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.ai-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary, #409eff);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.ai-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+}
+.ai-answer {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+}
+.ai-answer-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #909399;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.ai-answer-text {
+  color: #303133;
+  font-size: 14px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ai-cursor {
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--color-primary, #409eff);
+  animation: ai-blink 1s steps(2, start) infinite;
+}
+@keyframes ai-blink {
+  to { visibility: hidden; }
+}
 .note-list { margin-top: 22px; }
 .note-list-header {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
@@ -895,6 +1198,34 @@ export default {
     height: 30px;
     margin-left: auto;
   }
+  .knowledge-pane-mobile .question.has-tag .question-header {
+    padding-top: 10px;
+  }
+  .knowledge-pane-mobile .question.has-tag .question-title {
+    padding-right: 62px;
+  }
+  .knowledge-pane-mobile .question.has-tag .question-meta {
+    padding-right: 0;
+  }
+  .knowledge-pane-mobile .tag-corner {
+    top: -17px;
+    right: -15px;
+    width: 120px;
+    height: 120px;
+    border-top-right-radius: 12px;
+  }
+  .knowledge-pane-mobile .tag-ribbon {
+    top: 26px;
+    right: -56px;
+    width: 180px;
+    height: 24px;
+    padding: 0 8px;
+    gap: 3px;
+    font-size: 8.5px;
+  }
+  .knowledge-pane-mobile .tag-ribbon i {
+    font-size: 9px;
+  }
   .knowledge-pane-mobile .position-bar {
     margin-top: 12px;
   }
@@ -968,7 +1299,7 @@ export default {
     background-color: rgba(102, 126, 234, 0.04);
   }
   .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header.is-active {
-    color: var(--color-primary, #667eea);
+    color: var(--color-primary, #409eff);
     border-bottom-color: #f0f2f5;
   }
   .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__wrap {
@@ -1023,13 +1354,13 @@ export default {
   }
   .knowledge-pane-mobile .question-ignore {
     margin-left: auto;
-    color: #f56c6c;
-    border-color: rgba(245, 108, 108, 0.3);
+    color: #67c23a;
+    border-color: rgba(103, 194, 58, 0.3);
     background: #fff;
-    box-shadow: 0 1px 4px rgba(245, 108, 108, 0.12);
+    box-shadow: 0 1px 4px rgba(103, 194, 58, 0.12);
   }
   .knowledge-pane-mobile .question-ignore:hover {
-    background: rgba(245, 108, 108, 0.06);
+    background: rgba(103, 194, 58, 0.06);
   }
   .knowledge-pane-mobile .action-group-nav {
     display: grid;
@@ -1045,6 +1376,18 @@ export default {
     margin-top: 12px;
   }
   .knowledge-pane-mobile .note-input .el-button {
+    width: 100%;
+  }
+  .knowledge-pane-mobile .ai-panel {
+    margin-top: 12px;
+    padding: 12px;
+  }
+  .knowledge-pane-mobile .ai-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .knowledge-pane-mobile .ai-actions .el-button {
     width: 100%;
   }
   .knowledge-pane-mobile .note-list {

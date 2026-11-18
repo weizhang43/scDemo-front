@@ -22,6 +22,18 @@ module.exports = {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/chat': {
+        target: 'http://localhost:9000',
+        changeOrigin: true
+      },
+      '/streamQianwen': {
+        target: 'http://localhost:9000',
+        changeOrigin: true
+      },
+      '/streamDeepseek': {
+        target: 'http://localhost:9000',
+        changeOrigin: true
+      },
       '/xxl-job-admin': {
         target: 'http://localhost',
         changeOrigin: true

@@ -54,6 +54,15 @@ export function getRandomKnowledge(tag, type) {
   });
 }
 
+// 按题号跳转（在当前筛选范围内的序号，从 1 开始）
+export function getKnowledgeByIndex(index, tag, type) {
+  return request({
+    url: '/user/knowledge/byIndex',
+    method: 'get',
+    params: { index, tag, type }
+  });
+}
+
 // 查看答案，同时记录查看进度
 export function viewKnowledge(id) {
   return request({
@@ -109,5 +118,13 @@ export function deleteKnowledgeNote(noteId) {
   return request({
     url: `/user/knowledge/note/${noteId}`,
     method: 'delete'
+  });
+}
+
+// 按标签统计总数与已学习数，用于标签下拉框进度展示
+export function getKnowledgeTagStats() {
+  return request({
+    url: '/user/knowledge/tagStats',
+    method: 'get'
   });
 }
