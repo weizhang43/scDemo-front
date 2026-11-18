@@ -60,7 +60,10 @@
             <span v-if="!mobile" class="meta-item"><i class="el-icon-plus" /> 添加于 {{ current.addTime }}</span>
           </div>
         </div>
-        <div class="rich-text question-text" v-html="current.question" />
+        <div class="question-body">
+          <span v-if="hasPosition" class="question-no">{{ current.index }}</span>
+          <div class="rich-text question-text" v-html="current.question" />
+        </div>
       </div>
 
       <el-divider class="qa-divider" />
@@ -98,6 +101,14 @@
           <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
           <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
         </div>
+      </div>
+
+      <div v-if="hasPosition" class="position-bar">
+        <span class="position-badge">
+          <span class="position-current">{{ current.index }}</span>
+          <span class="position-sep">/</span>
+          <span class="position-total">{{ current.total }}</span>
+        </span>
       </div>
 
       <div v-if="noteInputVisible" class="note-input">
@@ -268,6 +279,12 @@ export default {
       return Array.isArray(this.answerPanel)
         ? this.answerPanel.indexOf('answer') !== -1
         : this.answerPanel === 'answer';
+    },
+    hasPosition() {
+      return !!this.current
+        && Number.isInteger(this.current.index)
+        && Number.isInteger(this.current.total)
+        && this.current.total > 0;
     }
   },
   created() {
@@ -297,12 +314,28 @@ export default {
     },
     boldAnswer(html) {
       if (!html) return '';
+      const normalizedHtml = String(html)
+        .replace(/&lt;br\s*\/?&gt;/gi, '<br>')
+        .replace(/\r\n?|\n/g, '<br>');
       const div = document.createElement('div');
-      div.innerHTML = html;
+      div.innerHTML = normalizedHtml;
       div.querySelectorAll('p').forEach(p => {
-        const m = p.textContent.match(/^([^：:]{1,40})([：:])(.*)$/s);
-        if (m) {
-          p.innerHTML = `<strong>${m[1]}</strong>${m[2]}${m[3]}`;
+        const m = p.textContent.match(/^([^：:]{1,40})([：:])/);
+        if (!m) return;
+        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        let textNode;
+        let prefixLength = m[1].length;
+        while ((textNode = walker.nextNode())) {
+          if (prefixLength <= textNode.nodeValue.length) {
+            const range = document.createRange();
+            range.setStart(p, 0);
+            range.setEnd(textNode, prefixLength);
+            const strong = document.createElement('strong');
+            strong.appendChild(range.extractContents());
+            range.insertNode(strong);
+            break;
+          }
+          prefixLength -= textNode.nodeValue.length;
         }
       });
       return div.innerHTML;
@@ -428,7 +461,10 @@ export default {
     recordView() {
       if (!this.current) return;
       viewKnowledge(this.current.id).then(res => {
-        this.current = res.daoResult || this.current;
+        const next = res.daoResult;
+        if (!next) return;
+        this.$set(this.current, 'viewCount', next.viewCount);
+        this.$set(this.current, 'lastViewTime', next.lastViewTime);
       });
     },
     handleShowAnswer() {
@@ -476,7 +512,10 @@ export default {
     },
     handleFavorite() {
       favoriteKnowledge(this.current.id).then(res => {
-        this.current = res.daoResult || this.current;
+        const next = res.daoResult;
+        if (next) {
+          this.$set(this.current, 'status', next.status);
+        }
         this.$message.success(this.isFavorite ? '已收藏' : '已取消收藏');
       });
     },
@@ -637,8 +676,56 @@ export default {
 .section-label i { margin-right: 4px; }
 .question-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .question-title { display: flex; align-items: center; flex-shrink: 0; }
+.question-body { display: flex; align-items: flex-start; gap: 10px; }
+.question-no {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 3px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.26);
+}
 .question-meta { display: flex; align-items: center; justify-content: flex-end; gap: 14px; color: #a8b0c0; font-size: 12px; font-weight: 400; letter-spacing: 0; }
 .question-meta .meta-item i { margin-right: 3px; }
+.position-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 18px;
+}
+.position-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 5px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.12) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.22);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.position-current {
+  color: var(--color-primary, #409eff);
+  font-size: 14px;
+  font-weight: 700;
+}
+.position-sep {
+  color: rgba(102, 126, 234, 0.5);
+}
+.position-total {
+  color: #a8b0c0;
+  font-weight: 500;
+}
 .question { margin-bottom: 0; }
 .question-text { font-size: 17px; font-weight: 600; color: #303133; line-height: 1.7; }
 .qa-divider { margin: 16px 0; }
@@ -786,6 +873,16 @@ export default {
   .knowledge-pane-mobile .question-title > i {
     flex-shrink: 0;
   }
+  .knowledge-pane-mobile .question-no {
+    width: 22px;
+    height: 22px;
+    margin-top: 3px;
+    font-size: 11px;
+    box-shadow: 0 1px 4px rgba(102, 126, 234, 0.22);
+  }
+  .knowledge-pane-mobile .question-body {
+    gap: 8px;
+  }
   .knowledge-pane-mobile .question-title >>> .el-tag {
     max-width: calc(100% - 42px);
     overflow: hidden;
@@ -797,6 +894,15 @@ export default {
     width: 30px;
     height: 30px;
     margin-left: auto;
+  }
+  .knowledge-pane-mobile .position-bar {
+    margin-top: 12px;
+  }
+  .knowledge-pane-mobile .position-badge {
+    padding: 4px 14px;
+  }
+  .knowledge-pane-mobile .position-current {
+    font-size: 13px;
   }
   .knowledge-pane-mobile .question-meta {
     width: 100%;
