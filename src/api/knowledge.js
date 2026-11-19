@@ -71,6 +71,15 @@ export function viewKnowledge(id) {
   });
 }
 
+// 上报一次刷题耗时（秒）
+export function reportViewDuration(id, duration) {
+  return request({
+    url: `/user/knowledge/viewDuration/${id}`,
+    method: 'post',
+    params: { duration }
+  });
+}
+
 // 切换收藏
 export function favoriteKnowledge(id) {
   return request({
@@ -125,6 +134,30 @@ export function deleteKnowledgeNote(noteId) {
 export function getKnowledgeTagStats() {
   return request({
     url: '/user/knowledge/tagStats',
+    method: 'get'
+  });
+}
+
+// 时间维度：近七天每日刷题统计（刷题数/收藏数/笔记数/掌握数/刷题时长）
+export function getKnowledgeDailyStats() {
+  return request({
+    url: '/user/knowledge/stats/daily',
+    method: 'get'
+  });
+}
+
+// 标签维度：各标签数量/耗时/收藏/笔记/掌握统计
+export function getKnowledgeTagDetailStats() {
+  return request({
+    url: '/user/knowledge/stats/tag',
+    method: 'get'
+  });
+}
+
+// 试题维度：添加笔记次数前十 / 耗时前十 / 查看次数前十
+export function getKnowledgeQuestionTopStats() {
+  return request({
+    url: '/user/knowledge/stats/questionTop',
     method: 'get'
   });
 }

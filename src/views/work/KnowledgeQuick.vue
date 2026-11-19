@@ -249,7 +249,7 @@
 </template>
 
 <script>
-import { addKnowledge, getNextKnowledge, getPrevKnowledge, getRandomKnowledge, getKnowledgeById, getKnowledgeByIndex, viewKnowledge, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, updateKnowledgeNote, deleteKnowledgeNote, searchKnowledge, getKnowledgeTagStats } from '../../api/knowledge';
+import { addKnowledge, getNextKnowledge, getPrevKnowledge, getRandomKnowledge, getKnowledgeById, getKnowledgeByIndex, viewKnowledge, reportViewDuration, favoriteKnowledge, ignoreKnowledge, addKnowledgeNote, getKnowledgeNotes, updateKnowledgeNote, deleteKnowledgeNote, searchKnowledge, getKnowledgeTagStats } from '../../api/knowledge';
 
 function plainText(html) {
   if (!html) return '';
@@ -337,7 +337,8 @@ export default {
       aiGenerating: false,
       aiEventSource: null,
       positionEditing: false,
-      positionInputValue: ''
+      positionInputValue: '',
+      viewStartTime: 0
     };
   },
   computed: {
@@ -372,6 +373,7 @@ export default {
       clearTimeout(this.pageTurnTimer);
     }
     this.closeAiStream();
+    this.flushViewDuration();
   },
   methods: {
     restore() {
@@ -551,6 +553,7 @@ export default {
       this.fetchNext();
     },
     applyCurrent(knowledge) {
+      this.flushViewDuration();
       this.current = knowledge || null;
       this.answerVisible = this.mode === 'recite';
       this.answerPanel = this.mode === 'recite' ? ['answer'] : [];
@@ -570,7 +573,20 @@ export default {
         if (type !== 'ignored' && type !== 'all') {
           this.recordView();
         }
+        this.viewStartTime = Date.now();
+      } else {
+        this.viewStartTime = 0;
       }
+    },
+    flushViewDuration() {
+      if (!this.current || !this.viewStartTime) return;
+      const seconds = Math.round((Date.now() - this.viewStartTime) / 1000);
+      const id = this.current.id;
+      this.viewStartTime = 0;
+      // 太短的浏览视为无效，避免污染统计
+      if (seconds < 2) return;
+      // 防止后台标签页停留过久污染数据：最长 30 分钟由后端再兜底
+      reportViewDuration(id, seconds).catch(() => {});
     },
     recordView() {
       if (!this.current) return;

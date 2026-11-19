@@ -1,12 +1,12 @@
 // 统计页共用的 echarts 按需注册：只打包用到的图表与组件
 import * as echarts from 'echarts/core';
-import { PieChart, BarChart, LineChart } from 'echarts/charts';
-import { TooltipComponent, LegendComponent, GridComponent } from 'echarts/components';
+import { PieChart, BarChart, LineChart, FunnelChart, ScatterChart } from 'echarts/charts';
+import { TooltipComponent, LegendComponent, GridComponent, PolarComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
 echarts.use([
-  PieChart, BarChart, LineChart,
-  TooltipComponent, LegendComponent, GridComponent,
+  PieChart, BarChart, LineChart, FunnelChart, ScatterChart,
+  TooltipComponent, LegendComponent, GridComponent, PolarComponent,
   CanvasRenderer
 ]);
 

@@ -6,15 +6,27 @@
           <i class="el-icon-collection-tag" />
           知识速记
         </div>
-        <router-link to="/portal" class="back-link">
-          <i class="el-icon-back" />
-          返回首页
-        </router-link>
+        <div class="header-actions">
+          <button
+            type="button"
+            class="stats-toggle-btn"
+            :class="{ 'is-active': showStats }"
+            @click="showStats = !showStats"
+          >
+            <i :class="showStats ? 'el-icon-document' : 'el-icon-data-analysis'" />
+            <span>{{ showStats ? '返回刷题' : '刷题统计' }}</span>
+          </button>
+          <router-link to="/portal" class="back-link">
+            <i class="el-icon-back" />
+            返回首页
+          </router-link>
+        </div>
       </div>
     </div>
     <div class="page-body">
       <el-card>
-        <KnowledgeQuick :mobile="mobile" />
+        <KnowledgeStats v-if="showStats" :mobile="mobile" />
+        <KnowledgeQuick v-else :mobile="mobile" />
       </el-card>
     </div>
   </div>
@@ -22,13 +34,15 @@
 
 <script>
 import KnowledgeQuick from './KnowledgeQuick.vue';
+import KnowledgeStats from './KnowledgeStats.vue';
 
 export default {
   name: 'KnowledgePage',
-  components: { KnowledgeQuick },
+  components: { KnowledgeQuick, KnowledgeStats },
   data() {
     return {
-      mobile: window.matchMedia('(max-width: 768px)').matches
+      mobile: window.matchMedia('(max-width: 768px)').matches,
+      showStats: false
     };
   },
   created() {
@@ -49,6 +63,40 @@ export default {
 .header-inner,
 .page-body {
   max-width: 1500px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats-toggle-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+.stats-toggle-btn i {
+  font-size: 14px;
+}
+
+.stats-toggle-btn:hover {
+  color: #fff;
+}
+
+.stats-toggle-btn.is-active {
+  color: #fff;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
