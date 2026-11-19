@@ -66,6 +66,7 @@
           </div>
         </div>
         <div class="question-body">
+          <span v-if="hasPosition" class="question-no-prefix">Q{{ current.index }}:</span>
           <div class="rich-text question-text" v-html="current.question" />
         </div>
       </div>
@@ -1023,6 +1024,7 @@ export default {
 .question.has-tag .question-header { padding-top: 6px; }
 .question.has-tag .question-meta { padding-right: 48px; }
 .question-text { font-size: 17px; font-weight: 600; color: #303133; line-height: 1.7; }
+.question-no-prefix { font-size: 17px; font-weight: 700; color: #303133; flex-shrink: 0; line-height: 1.7; }
 .qa-divider { margin: 16px 0; }
 .qa-divider >>> .el-divider__text { background-color: transparent; }
 .answer { min-height: 60px; }
