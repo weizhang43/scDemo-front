@@ -54,7 +54,7 @@
           </span>
         </span>
         <div class="section-label question-header">
-          <div v-if="!mobile" class="question-title">
+          <div class="question-title">
             <i class="el-icon-reading" /> 题干
             <el-tag v-if="isFavorite" type="danger" size="small" effect="plain" class="favorite-tag">★ 已收藏</el-tag>
             <el-button v-if="mobile" type="warning" plain size="mini" class="question-ignore action-delete" icon="el-icon-circle-check" circle @click="handleIgnore" title="标记为已掌握" />
@@ -910,7 +910,7 @@ export default {
 .section-label { font-size: 13px; color: #909399; margin-bottom: 10px; letter-spacing: 1px; }
 .section-label i { margin-right: 4px; }
 .question-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.question-title { display: flex; align-items: center; flex-shrink: 0; font-size: 16px; font-weight: 600; color: #303133; letter-spacing: 0.5px; }
+.question-title { display: flex; align-items: center; flex-shrink: 0; font-size: 13px; font-weight: 400; color: #a8b0c0; letter-spacing: 0.5px; }
 .question-title > i { font-size: 20px; color: #667eea; margin-right: 6px; }
 .question-body { display: flex; align-items: flex-start; gap: 10px; }
 .question-no {
@@ -933,6 +933,7 @@ export default {
 .question-meta { display: flex; align-items: center; justify-content: flex-end; gap: 14px; color: #a8b0c0; font-size: 12px; font-weight: 400; letter-spacing: 0; }
 .question-meta .meta-item i { margin-right: 3px; }
 .position-bar {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1026,7 +1027,7 @@ export default {
 .qa-divider >>> .el-divider__text { background-color: transparent; }
 .answer { min-height: 60px; }
 .answer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
-.answer-title { padding-top: 6px; font-size: 16px; font-weight: 600; color: #303133; letter-spacing: 0.5px; display: flex; align-items: center; }
+.answer-title { padding-top: 6px; font-size: 13px; font-weight: 400; color: #a8b0c0; letter-spacing: 0.5px; display: flex; align-items: center; }
 .answer-title > i { font-size: 20px; color: #409eff; margin-right: 6px; }
 .answer-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-height: 42px; justify-content: flex-end; }
 .answer-hint { color: #b6bcc9; font-size: 11px; line-height: 1.4; text-align: right; opacity: 0.85; }
