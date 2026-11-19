@@ -54,10 +54,10 @@
           </span>
         </span>
         <div class="section-label question-header">
-          <div class="question-title">
-            <i class="el-icon-question" /> 题干
+          <div v-if="!mobile" class="question-title">
+            <i class="el-icon-reading" /> 题干
             <el-tag v-if="isFavorite" type="danger" size="small" effect="plain" class="favorite-tag">★ 已收藏</el-tag>
-            <el-button v-if="mobile" type="success" plain size="mini" class="question-ignore action-delete" icon="el-icon-circle-check" circle @click="handleIgnore" title="标记为已掌握" />
+            <el-button v-if="mobile" type="warning" plain size="mini" class="question-ignore action-delete" icon="el-icon-circle-check" circle @click="handleIgnore" title="标记为已掌握" />
           </div>
           <div class="question-meta">
             <span class="meta-item"><i class="el-icon-view" /> 已查看 {{ current.viewCount || 0 }} 次</span>
@@ -66,7 +66,6 @@
           </div>
         </div>
         <div class="question-body">
-          <span v-if="hasPosition" class="question-no">{{ current.index }}</span>
           <div class="rich-text question-text" v-html="current.question" />
         </div>
       </div>
@@ -91,6 +90,12 @@
         </el-collapse>
       </div>
 
+      <div v-if="mobile && hasPosition" class="answer-position" :title="'当前 ' + current.index + ' / ' + current.total">
+        <span class="answer-position-current">{{ current.index }}</span>
+        <span class="answer-position-sep">/</span>
+        <span class="answer-position-total">{{ current.total }}</span>
+      </div>
+
       <div class="actions">
         <div class="action-group action-group-primary">
           <el-button
@@ -100,32 +105,40 @@
             @click="handleFavorite"
           >{{ isFavorite ? '取消收藏' : '收藏' }}</el-button>
           <el-button type="warning" size="small" icon="el-icon-edit" class="action-edit" @click="noteInputVisible = !noteInputVisible">添加笔记</el-button>
-          <el-button type="success" plain size="small" icon="el-icon-chat-dot-round" @click="aiPanelVisible = !aiPanelVisible">向 AI 追问</el-button>
-          <el-button v-if="!mobile" type="success" plain size="small" icon="el-icon-circle-check" @click="handleIgnore">已掌握</el-button>
+          <el-button v-if="!mobile" type="success" plain size="small" icon="el-icon-chat-dot-round" @click="aiPanelVisible = !aiPanelVisible">向 AI 追问</el-button>
+          <el-button type="warning" plain size="small" icon="el-icon-circle-check" @click="handleIgnore">已掌握</el-button>
         </div>
-        <div v-if="!mobile" class="action-group action-group-nav">
-          <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
-          <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon--right" /></el-button>
-        </div>
+        <!--        <div v-if="!mobile" class="action-group action-group-nav">
+                  <el-button size="small" icon="el-icon-arrow-left" @click="handlePrev">上一题</el-button>
+                  <el-button type="primary" size="small" @click="handleNext">下一题<i class="el-icon-arrow-right el-icon&#45;&#45;right" /></el-button>
+                </div>-->
       </div>
 
-      <div v-if="hasPosition" class="position-bar">
-        <span class="position-badge">
-          <span v-if="!positionEditing" class="position-current" :title="'双击题号跳转'" @dblclick="startEditPosition">{{ current.index }}</span>
-          <input
-            v-else
-            ref="positionInput"
-            v-model.number="positionInputValue"
-            class="position-input"
-            type="number"
-            :min="1"
-            :max="current.total"
-            @keyup.enter="commitPosition"
-            @keyup.esc="cancelPosition"
-            @blur="commitPosition"
-          />
-          <span class="position-sep">/</span>
-          <span class="position-total">{{ current.total }}</span>
+      <div v-if="hasPosition && !mobile" class="position-bar">
+        <span class="position-nav" role="group" aria-label="题号导航">
+          <button class="position-nav-btn" type="button" title="上一题" @click="handlePrev">
+            <i class="el-icon-arrow-left" />
+          </button>
+          <span class="position-core">
+            <span v-if="!positionEditing" class="position-current" :title="'双击题号跳转'" @dblclick="startEditPosition">{{ current.index }}</span>
+            <input
+              v-else
+              ref="positionInput"
+              v-model.number="positionInputValue"
+              class="position-input"
+              type="number"
+              :min="1"
+              :max="current.total"
+              @keyup.enter="commitPosition"
+              @keyup.esc="cancelPosition"
+              @blur="commitPosition"
+            />
+            <span class="position-sep">/</span>
+            <span class="position-total">{{ current.total }}</span>
+          </span>
+          <button class="position-nav-btn" type="button" title="下一题" @click="handleNext">
+            <i class="el-icon-arrow-right" />
+          </button>
         </span>
       </div>
 
@@ -340,6 +353,11 @@ export default {
         && Number.isInteger(this.current.index)
         && Number.isInteger(this.current.total)
         && this.current.total > 0;
+    },
+    positionPercent() {
+      if (!this.hasPosition) return 0;
+      const i = Math.max(1, Math.min(this.current.total, this.current.index));
+      return Math.round((i / this.current.total) * 100);
     }
   },
   created() {
@@ -889,10 +907,11 @@ export default {
 .knowledge-card:hover { border-color: #c0c4cc; }
 .knowledge-card.is-favorite { border-color: #e4e7ed; }
 .knowledge-card.is-favorite:hover { border-color: #c0c4cc; }
-.section-label { font-size: 13px; color: #909399; margin-bottom: 8px; letter-spacing: 1px; }
+.section-label { font-size: 13px; color: #909399; margin-bottom: 10px; letter-spacing: 1px; }
 .section-label i { margin-right: 4px; }
 .question-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-.question-title { display: flex; align-items: center; flex-shrink: 0; }
+.question-title { display: flex; align-items: center; flex-shrink: 0; font-size: 16px; font-weight: 600; color: #303133; letter-spacing: 0.5px; }
+.question-title > i { font-size: 20px; color: #667eea; margin-right: 6px; }
 .question-body { display: flex; align-items: flex-start; gap: 10px; }
 .question-no {
   flex-shrink: 0;
@@ -917,42 +936,73 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 18px;
+  margin-top: 20px;
 }
-.position-badge {
+.position-nav {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.12) 0%, rgba(118, 75, 162, 0.16) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.26);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+  overflow: hidden;
+}
+.position-nav-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--color-primary, #409eff);
+  padding: 0 14px;
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.2s, color 0.2s;
+}
+.position-nav-btn:hover {
+  background: rgba(102, 126, 234, 0.16);
+  color: #667eea;
+}
+.position-nav-btn:active {
+  background: rgba(102, 126, 234, 0.24);
+}
+.position-nav-btn:focus-visible {
+  outline: 2px solid var(--color-primary, #409eff);
+  outline-offset: -2px;
+}
+.position-core {
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
-  padding: 5px 16px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.12) 100%);
-  border: 1px solid rgba(102, 126, 234, 0.22);
+  gap: 8px;
+  padding: 6px 16px;
+  border-left: 1px solid rgba(102, 126, 234, 0.22);
+  border-right: 1px solid rgba(102, 126, 234, 0.22);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   line-height: 1.5;
 }
 .position-current {
   color: var(--color-primary, #409eff);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   user-select: none;
+  letter-spacing: 0.5px;
 }
 .position-current:hover { text-decoration: underline; }
 .position-input {
-  width: 48px;
-  padding: 0 4px;
+  width: 56px;
+  padding: 0 6px;
   border: 1px solid var(--color-primary, #409eff);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--color-primary, #409eff);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   text-align: center;
   line-height: 1.5;
   outline: none;
   background: #fff;
-  /* 隐藏 number input 上下箭头 */
   -moz-appearance: textfield;
 }
 .position-input::-webkit-outer-spin-button,
@@ -961,11 +1011,12 @@ export default {
   margin: 0;
 }
 .position-sep {
-  color: rgba(102, 126, 234, 0.5);
+  color: rgba(102, 126, 234, 0.55);
+  font-weight: 500;
 }
 .position-total {
-  color: #a8b0c0;
-  font-weight: 500;
+  color: #909399;
+  font-weight: 600;
 }
 .question { margin-bottom: 0; position: relative; }
 .question.has-tag .question-header { padding-top: 6px; }
@@ -975,10 +1026,14 @@ export default {
 .qa-divider >>> .el-divider__text { background-color: transparent; }
 .answer { min-height: 60px; }
 .answer-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
-.answer-title { padding-top: 6px; }
+.answer-title { padding-top: 6px; font-size: 16px; font-weight: 600; color: #303133; letter-spacing: 0.5px; display: flex; align-items: center; }
+.answer-title > i { font-size: 20px; color: #409eff; margin-right: 6px; }
 .answer-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-height: 42px; justify-content: flex-end; }
 .answer-hint { color: #b6bcc9; font-size: 11px; line-height: 1.4; text-align: right; opacity: 0.85; }
 .answer .rich-text { color: #4a5568; line-height: 1.8; }
+.answer-position {
+  display: none;
+}
 .is-favorite .question .rich-text,
 .is-favorite .answer .rich-text { color: inherit; }
 .rich-text >>> p { margin: 0 0 8px; }
@@ -1227,13 +1282,18 @@ export default {
     font-size: 9px;
   }
   .knowledge-pane-mobile .position-bar {
-    margin-top: 12px;
+    margin-top: 14px;
   }
-  .knowledge-pane-mobile .position-badge {
-    padding: 4px 14px;
+  .knowledge-pane-mobile .position-nav-btn {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+  .knowledge-pane-mobile .position-core {
+    padding: 5px 12px;
+    gap: 6px;
   }
   .knowledge-pane-mobile .position-current {
-    font-size: 13px;
+    font-size: 14px;
   }
   .knowledge-pane-mobile .question-meta {
     width: 100%;
@@ -1283,6 +1343,31 @@ export default {
     background: #fff;
     box-shadow: none;
     overflow: hidden;
+  }
+  .knowledge-pane-mobile .answer-position {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 6px 0;
+    border-top: 1px dashed rgba(102, 126, 234, 0.22);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.5;
+  }
+  .knowledge-pane-mobile .answer-position-current {
+    color: var(--color-primary, #409eff);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .knowledge-pane-mobile .answer-position-sep {
+    color: rgba(102, 126, 234, 0.55);
+  }
+  .knowledge-pane-mobile .answer-position-total {
+    color: #909399;
+    font-weight: 600;
   }
   .knowledge-pane-mobile .answer-collapse >>> .el-collapse-item__header {
     height: 46px;
@@ -1345,12 +1430,15 @@ export default {
   }
   .knowledge-pane-mobile .action-group-primary {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
   }
   .knowledge-pane-mobile .action-group-primary .el-button {
     width: 100%;
+    margin-left: 0;
+    padding-left: 6px;
+    padding-right: 6px;
   }
   .knowledge-pane-mobile .question-ignore {
     margin-left: auto;
